@@ -69,6 +69,7 @@
       wbeeler $ StaticMifToXsd.xsl version 2.0</xs:documentation>
   </xs:annotation>
   <xs:include schemaLocation="../coreschemas/infrastructureRoot.xsd"/>
+
   <xs:complexType name="POQM_MT000002UV.AccessParticipant">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
@@ -213,7 +214,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClass" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       default="false"/>
@@ -324,7 +326,8 @@
       <xs:element name="onlyOneFalse"
         type="POQM_MT000002UV.OnlyOneFalse"/>
 
-      <xs:element name="actReference" type="POQM_MT000002UV.ActReference"/>
+      <xs:element name="actReference"
+        type="POQM_MT000002UV.ActReference"/>
       <xs:element name="substanceAdministrationReference"
         type="POQM_MT000002UV.SubstanceAdministrationReference"/>
       <xs:element name="encounterReference"
@@ -352,8 +355,7 @@
   </xs:group>
   <xs:group name="POQM_MT000002UV.CriteriaChoice">
     <xs:choice>
-      <xs:element name="actCriteria" 
-        type="POQM_MT000002UV.ActCriteria"/>
+      <xs:element name="actCriteria" type="POQM_MT000002UV.ActCriteria"/>
       <xs:element name="substanceAdministrationCriteria"
         type="POQM_MT000002UV.SubstanceAdministrationCriteria"/>
       <xs:element name="encounterCriteria"
@@ -377,7 +379,7 @@
         type="POQM_MT000002UV.ProcedureReference"/>
       <xs:element name="supplyReference"
         type="POQM_MT000002UV.SupplyReference"/>
-      
+
     </xs:choice>
   </xs:group>
 
@@ -475,11 +477,28 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClassRoot" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       default="false"/>
   </xs:complexType>
+
+  <xs:group name="CriteriaRelations">
+    <xs:sequence>
+      <xs:element name="participant" type="POQM_MT000002UV.Participant"
+        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="definition" type="POQM_MT000002UV.Definition"
+        minOccurs="0" maxOccurs="1"/>
+      <xs:element name="excerpt" type="POQM_MT000002UV.Excerpt"
+        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="sourceOf" type="POQM_MT000002UV.SourceOf"
+        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="temporallyRelatedInformation"
+        type="POQM_MT000002UV.TemporallyRelatedInformation"
+        minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:group>
 
   <xs:complexType name="POQM_MT000002UV.ActCriteria">
     <xs:sequence>
@@ -506,16 +525,12 @@
       <xs:element name="reasonCode" type="CE" minOccurs="0"
         maxOccurs="unbounded"/>
       <xs:element name="languageCode" type="CE" minOccurs="0"/>
-      <xs:element name="participant" type="POQM_MT000002UV.Participant"
-        minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="definition" type="POQM_MT000002UV.Definition"
-        minOccurs="0" maxOccurs="1"/>
-      <xs:element name="sourceOf" type="POQM_MT000002UV.SourceOf"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="CriteriaRelations"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClassRoot" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       fixed="true"/>
@@ -525,12 +540,12 @@
       <xs:group ref="InfrastructureRootElements"/>
       <xs:element name="id" type="II" minOccurs="0"
         maxOccurs="unbounded"/>
-      <xs:element name="sourceOf" type="POQM_MT000002UV.SourceOf"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="CriteriaRelations"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClassRoot" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
   </xs:complexType>
   <xs:complexType
     name="POQM_MT000002UV.SubstanceAdministrationReference">
@@ -538,27 +553,28 @@
       <xs:group ref="InfrastructureRootElements"/>
       <xs:element name="id" type="II" minOccurs="0"
         maxOccurs="unbounded"/>
-      <xs:element name="sourceOf" type="POQM_MT000002UV.SourceOf"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="CriteriaRelations"/>
+      
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode"
-      type="ActClassSubstanceAdministration" use="optional" 
+      type="ActClassSubstanceAdministration" use="optional"
       default="SBADM"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000002UV.ObservationReference">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
       <xs:element name="id" type="II" minOccurs="0"
         maxOccurs="unbounded"/>
-      <xs:element name="sourceOf" type="POQM_MT000002UV.SourceOf"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="CriteriaRelations"/>
+      
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClassObservation"
       use="optional" default="OBS"/>
-    <xs:attribute name="moodCode" type="ActMood" use="optional" 
+    <xs:attribute name="moodCode" type="ActMood" use="optional"
       default="EVN"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000002UV.EncounterReference">
@@ -566,39 +582,41 @@
       <xs:group ref="InfrastructureRootElements"/>
       <xs:element name="id" type="II" minOccurs="0"
         maxOccurs="unbounded"/>
-      <xs:element name="sourceOf" type="POQM_MT000002UV.SourceOf"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="CriteriaRelations"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClassEncounter"
       use="optional" default="ENC"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000002UV.ProcedureReference">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
       <xs:element name="id" type="II" minOccurs="0"
         maxOccurs="unbounded"/>
-      <xs:element name="sourceOf" type="POQM_MT000002UV.SourceOf"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="CriteriaRelations"/>
+      
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClassProcedure"
       use="optional" default="PROC"/>
-    <xs:attribute name="moodCode" type="ActMood" 
-      use="optional" default="EVN"/>
+    <xs:attribute name="moodCode" type="ActMood" use="optional"
+      default="EVN"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000002UV.SupplyReference">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
       <xs:element name="id" type="II" minOccurs="0"
         maxOccurs="unbounded"/>
-      <xs:element name="sourceOf" type="POQM_MT000002UV.SourceOf"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="CriteriaRelations"/>
+      
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
-    <xs:attribute name="classCode" type="ActClassSupply" default="SPLY" use="optional"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="classCode" type="ActClassSupply" default="SPLY"
+      use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
   </xs:complexType>
 
   <xs:complexType name="POQM_MT000002UV.ActDefinition">
@@ -634,7 +652,8 @@
         minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
-    <xs:attribute name="classCode" type="ActClassRoot" fixed="ACT" use="optional"/>
+    <xs:attribute name="classCode" type="ActClassRoot" fixed="ACT"
+      use="optional"/>
     <xs:attribute name="moodCode" type="ActMood" fixed="DEF"
       use="optional"/>
   </xs:complexType>
@@ -836,7 +855,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClass" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       default="false"/>
@@ -882,7 +902,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClass" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       default="false"/>
@@ -1048,7 +1069,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClass" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       default="false"/>
@@ -1090,16 +1112,13 @@
         maxOccurs="unbounded"/>
       <xs:element name="specialArrangementCode" type="CE" minOccurs="0"
         maxOccurs="unbounded"/>
-      <xs:element name="participant" type="POQM_MT000002UV.Participant"
-        minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="definition" type="POQM_MT000002UV.Definition"
-        minOccurs="0" maxOccurs="1"/>
-      <xs:element name="sourceOf" type="POQM_MT000002UV.SourceOf"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="CriteriaRelations"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
-    <xs:attribute name="classCode" type="ActClassEncounter" use="optional" default="ENC"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="classCode" type="ActClassEncounter"
+      use="optional" default="ENC"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       fixed="true"/>
@@ -1146,7 +1165,8 @@
         minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
-    <xs:attribute name="classCode" type="ActClass" fixed="ENC" use="optional"/>
+    <xs:attribute name="classCode" type="ActClass" fixed="ENC"
+      use="optional"/>
     <xs:attribute name="moodCode" type="ActMood" use="optional"
       fixed="DEF"/>
   </xs:complexType>
@@ -1252,7 +1272,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClass" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       default="false"/>
@@ -1293,7 +1314,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClass" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       default="false"/>
@@ -1338,7 +1360,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClass" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       default="false"/>
@@ -1385,7 +1408,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClass" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       default="false"/>
@@ -1748,7 +1772,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClass" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       default="false"/>
@@ -1787,18 +1812,16 @@
         maxOccurs="unbounded"/>
       <xs:element name="targetSiteCode" type="CD" minOccurs="0"
         maxOccurs="unbounded"/>
-      <xs:element name="participant" type="POQM_MT000002UV.Participant"
-        minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="definition" type="POQM_MT000002UV.Definition"
-        minOccurs="0" maxOccurs="1"/>
-      <xs:element name="sourceOf" type="POQM_MT000002UV.SourceOf"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="CriteriaRelations"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
-    <xs:attribute name="classCode" type="ActClass" use="optional" default="OBS"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="classCode" type="ActClass" use="optional"
+      default="OBS"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
-    <xs:attribute name="isCriterionInd" type="bl" use="optional" fixed="true"/>
+    <xs:attribute name="isCriterionInd" type="bl" use="optional"
+      fixed="true"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000002UV.ObservationDefinition">
     <xs:sequence>
@@ -1839,7 +1862,8 @@
         minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
-    <xs:attribute name="classCode" type="ActClass" fixed="OBS" use="optional"/>
+    <xs:attribute name="classCode" type="ActClass" fixed="OBS"
+      use="optional"/>
     <xs:attribute name="moodCode" type="ActMood" use="optional"
       fixed="DEF"/>
   </xs:complexType>
@@ -2299,7 +2323,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClass" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       default="false"/>
@@ -2336,16 +2361,12 @@
         maxOccurs="unbounded"/>
       <xs:element name="targetSiteCode" type="CD" minOccurs="0"
         maxOccurs="unbounded"/>
-      <xs:element name="participant" type="POQM_MT000002UV.Participant"
-        minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="definition" type="POQM_MT000002UV.Definition"
-        minOccurs="0" maxOccurs="1"/>
-      <xs:element name="sourceOf" type="POQM_MT000002UV.SourceOf"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="CriteriaRelations"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClass" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       fixed="true"/>
@@ -2437,7 +2458,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClass" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       default="false"/>
@@ -2764,7 +2786,43 @@
       default="true"/>
     <xs:attribute name="negationInd" type="bl" use="optional"/>
   </xs:complexType>
-  
+  <xs:complexType name="POQM_MT000002UV.TemporallyRelatedInformation">
+    <xs:sequence>
+      <xs:group ref="InfrastructureRootElements"/>
+      <xs:element name="sequenceNumber" type="INT" minOccurs="0"/>
+      <xs:element name="pauseQuantity" type="PQ" minOccurs="0"/>
+      <xs:element name="localVariableName" type="ST" minOccurs="0"/>
+      <xs:element name="subsetCode" type="CS" minOccurs="0"/>
+      <xs:choice>
+        <xs:group ref="POQM_MT000002UV.CriteriaChoice"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="InfrastructureRootAttributes"/>
+    <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
+    <xs:attribute name="typeCode"
+      type="ActRelationshipTemporallyPertains" use="required"/>
+    <xs:attribute name="inversionInd" type="bl" use="optional"/>
+    <xs:attribute name="contextControlCode" type="ContextControl"
+      use="optional"/>
+    <xs:attribute name="contextConductionInd" type="bl" use="optional"
+      default="true"/>
+    <xs:attribute name="negationInd" type="bl" use="optional"/>
+  </xs:complexType>
+  <xs:complexType name="POQM_MT000002UV.Excerpt">
+    <xs:sequence>
+      <xs:group ref="InfrastructureRootElements"/>
+      <xs:element name="sequenceNumber" type="INT" minOccurs="0"/>
+      <xs:element name="localVariableName" type="ST" minOccurs="0"/>
+      <xs:element name="subsetCode" type="CS" minOccurs="0"/>
+      <xs:choice>
+        <xs:group ref="POQM_MT000002UV.CriteriaChoice"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="InfrastructureRootAttributes"/>
+    <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
+    <xs:attribute name="typeCode" type="ActRelationshipType"
+      use="optional" fixed="XCRPT"/>
+  </xs:complexType>
   <xs:complexType name="POQM_MT000002UV.Definition">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
@@ -2777,7 +2835,7 @@
     <xs:attribute name="typeCode" type="ActRelationshipType"
       use="optional" fixed="INST"/>
   </xs:complexType>
-  
+
   <xs:complexType name="POQM_MT000002UV.SourceOf2">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
@@ -2923,7 +2981,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="classCode" type="ActClass" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       default="false"/>
@@ -2968,16 +3027,14 @@
       <xs:element name="maxDoseQuantity" type="RTO_QTY_QTY"
         minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="administrationUnitCode" type="CE" minOccurs="0"/>
-      <xs:element name="participant" type="POQM_MT000002UV.Participant"
-        minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="definition" type="POQM_MT000002UV.Definition"
-        minOccurs="0" maxOccurs="1"/>
-      <xs:element name="sourceOf" type="POQM_MT000002UV.SourceOf"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="CriteriaRelations"/>
+      
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
-    <xs:attribute name="classCode" type="ActClass" use="optional" default="SBADM"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="classCode" type="ActClass" use="optional"
+      default="SBADM"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       fixed="true"/>
@@ -3060,16 +3117,13 @@
       <xs:element name="languageCode" type="CE" minOccurs="0"/>
       <xs:element name="quantity" type="PQ" minOccurs="0"/>
       <xs:element name="expectedUseTime" type="IVL_TS" minOccurs="0"/>
-      <xs:element name="participant" type="POQM_MT000002UV.Participant"
-        minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="definition" type="POQM_MT000002UV.Definition"
-        minOccurs="0" maxOccurs="1"/>
-      <xs:element name="sourceOf" type="POQM_MT000002UV.SourceOf"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="CriteriaRelations"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
-    <xs:attribute name="classCode" type="ActClass" use="optional" default="SPLY"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="classCode" type="ActClass" use="optional"
+      default="SPLY"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       fixed="true"/>
@@ -3109,7 +3163,8 @@
         minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
-    <xs:attribute name="classCode" type="ActClass" use="optional" default="SPLY"/>
+    <xs:attribute name="classCode" type="ActClass" use="optional"
+      default="SPLY"/>
     <xs:attribute name="moodCode" type="ActMood" use="optional"
       fixed="DEF"/>
   </xs:complexType>
@@ -3148,30 +3203,36 @@
         minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
-    <xs:attribute name="classCode" type="ActClass" use="optional" default="SPLY"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="classCode" type="ActClass" use="optional"
+      default="SPLY"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       default="false"/>
   </xs:complexType>
 
-  <xs:complexType abstract="true" name="POQM_MT000002UV.AbstractCriteria">
+  <xs:complexType abstract="true"
+    name="POQM_MT000002UV.AbstractCriteria">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
       <xs:element name="id" type="II" minOccurs="0"
         maxOccurs="unbounded"/>
       <xs:element name="code" type="CD" minOccurs="0"/>
-      <xs:element name="precondition" type="POQM_MT000002UV.Precondition"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="precondition"
+        type="POQM_MT000002UV.Precondition" minOccurs="0"
+        maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
-    <xs:attribute name="classCode" type="ActClass" default="OBS" use="optional"/>
-    <xs:attribute name="moodCode" type="ActMood" default="EVN" use="optional"/>
+    <xs:attribute name="classCode" type="ActClass" default="OBS"
+      use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" default="EVN"
+      use="optional"/>
     <xs:attribute name="actionNegationInd" type="bl" use="optional"/>
     <xs:attribute name="isCriterionInd" type="bl" use="optional"
       fixed="true"/>
   </xs:complexType>
-  
+
   <xs:complexType name="POQM_MT000002UV.PatientPopulationCriteria">
     <xs:complexContent>
       <xs:extension base="POQM_MT000002UV.AbstractCriteria"/>
@@ -3205,15 +3266,18 @@
   <xs:complexType name="POQM_MT000002UV.Precondition">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
-      <xs:element name="localVariableName" type="ST" minOccurs="0" maxOccurs="1"/>
-      <xs:element name="conjunctionCode" type="CS" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="localVariableName" type="ST" minOccurs="0"
+        maxOccurs="1"/>
+      <xs:element name="conjunctionCode" type="CS" minOccurs="0"
+        maxOccurs="1"/>
       <xs:choice>
-        <xs:group ref="POQM_MT000002UV.PreconditionChoice" />
+        <xs:group ref="POQM_MT000002UV.PreconditionChoice"/>
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="typeCode" fixed="COMP" type="ActRelationshipType"
-      use="optional"/>
+    <xs:attribute name="typeCode" fixed="COMP"
+      type="ActRelationshipType" use="optional"/>
   </xs:complexType>
+
 </xs:schema>

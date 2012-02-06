@@ -156,6 +156,19 @@
     <xs:attribute name="contextConductionInd" type="bl" use="optional"
       fixed="true"/>
   </xs:complexType>
+  <xs:complexType name="POQM_MT000001UV.ControlVariable">
+    <xs:sequence>
+      <xs:group ref="InfrastructureRootElements"/>
+      <xs:element name="localVariableName" type="ST" 
+        fixed="MeasurePeriod" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="measurePeriod"
+        type="POQM_MT000001UV.MeasurePeriod" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="InfrastructureRootAttributes"/>
+    <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
+    <xs:attribute name="typeCode" type="ActRelationshipType"
+      use="optional" fixed="CTRLV"/>
+  </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.Custodian">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
@@ -338,6 +351,8 @@
         maxOccurs="unbounded"/>
       <xs:element name="subjectOf" type="POQM_MT000001UV.Subject"
         minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="controlVariable" type="POQM_MT000001UV.ControlVariable"
+        minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="componentOf" type="POQM_MT000001UV.Component"
         minOccurs="0"/>
       <xs:element name="component" type="POQM_MT000001UV.Component2"
@@ -438,6 +453,20 @@
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="POQM_MT000001UV.MeasurePeriod">
+    <xs:sequence>
+      <xs:group ref="InfrastructureRootElements"/>
+      <xs:element name="id" type="II"/>
+      <xs:element name="code" type="CD" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="value" type="IVL_TS"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="InfrastructureRootAttributes"/>
+    <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
+    <xs:attribute name="classCode" type="ActClass" use="optional"
+      fixed="OBS"/>
+    <xs:attribute name="moodCode" type="ActMood" use="optional"
+      fixed="EVN"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.MeasureObservationSection">
     <xs:complexContent>

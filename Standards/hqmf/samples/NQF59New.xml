@@ -16,9 +16,18 @@
   <custodian typeCode="CST">
     <assignedPerson classCode="ASSIGNED"/>
   </custodian>
+  <controlVariable>
+    <localVariableName>MeasurePeriod</localVariableName>
+    <measurePeriod>
+      <id root="0" extension="StartDate"/>
+      <value>
+        <width unit='a' value='1'/>
+      </value>
+    </measurePeriod>
+  </controlVariable>
+  
   <component>
     <measureDescriptionSection>
-      <code code="34089-3" codeSystem="2.16.840.1.113883.6.1"/>
       <title>Measure Description Section</title>
       <text>This is a description of the measure.</text>
     </measureDescriptionSection>
@@ -29,20 +38,6 @@
       <title>Data Criteria Section</title>
       <text>This section describes the data criteria.</text>
       <!-- Define the measure parameters as observations in event mood -->
-      <entry>
-        <localVariableName>StartDate</localVariableName>
-        <observationCriteria>
-          <code code="52832-3" codeSystem="2.16.840.1.113883.6.1"/>
-          <value xsi:type="TS" value="20100101"/>
-        </observationCriteria>
-      </entry>
-      <entry>
-        <localVariableName>EndDate</localVariableName>
-        <observationCriteria>
-          <code code="52833-1" codeSystem="2.16.840.1.113883.6.1"/>
-          <value xsi:type="TS" value="20101231"/>
-        </observationCriteria>
-      </entry>
       <entry>
         <localVariableName>ageBetween17and64</localVariableName>
         <observationCriteria>
@@ -198,38 +193,44 @@
           <id root="0" extension="EDorInpatientEncounter"/>
           <code valueSet="2.16.840.1.113883.3.464.1.42"/>
           <!-- EDorInpatientEncounterValueSet -->
-          <effectiveTime>
-            <high nullFlavor="DER">
-              <expression>EndDate.add(new PQ(-2,"a"))</expression>
-            </high>
-          </effectiveTime>
           <definition>
             <observationReference moodCode="DEF">
               <id root="0" extension="Encounter"/>
             </observationReference>
           </definition>
+          <temporallyRelatedInformation typeCode="SAS">
+            <pauseQuantity value="-1" unit="a"/>
+            <observationReference moodCode="EVN">
+              <id root="0" extension="MeasurementPeriod"/>
+            </observationReference>
+          </temporallyRelatedInformation>
         </encounterCriteria>
       </entry>
       <entry>
         <localVariableName>AmbulatoryEncounter</localVariableName>
-        <subsetCode code="PREVSUM"/>
         <encounterCriteria>
           <id root="0" extension="AmbulatoryEncounter"/>
-          <code valueSet="2.16.840.1.113883.3.464.1.1142"/>
           <!-- AmbulatoryEncounterValueSet -->
-          <effectiveTime>
-            <high nullFlavor="DER">
-              <expression>EndDate.add(new PQ(-2,"a"))</expression>
-            </high>
-          </effectiveTime>
-          <repeatNumber>
-            <low value="2" inclusive="true"/>
-          </repeatNumber>
+          <code valueSet="2.16.840.1.113883.3.464.1.1142"/>
           <definition>
             <observationReference moodCode="DEF">
               <id root="0" extension="Encounter"/>
             </observationReference>
           </definition>
+          <excerpt>
+            <subsetCode code="PREVSUM"/>
+            <encounterCriteria>
+              <repeatNumber>
+                <low value="2" inclusive="true"/>
+              </repeatNumber>
+            </encounterCriteria>
+          </excerpt>
+          <temporallyRelatedInformation typeCode="EAS">
+            <pauseQuantity value="-1" unit="a"/>
+            <observationReference>
+              <id root="0" extension="MeasurePeriod"/>
+            </observationReference>
+          </temporallyRelatedInformation>
         </encounterCriteria>
       </entry>
       <entry>
@@ -249,14 +250,6 @@
         <localVariableName>HasGestationalDiabetes</localVariableName>
         <observationCriteria>
           <id root="0" extension="HasGestationalDiabetes"/>
-          <effectiveTime>
-            <low nullFlavor="DER">
-              <expression>StartDate</expression>
-            </low>
-            <high nullFlavor="DER">
-              <expression>EndDate</expression>
-            </high>
-          </effectiveTime>
           <value xsi:type="CD" valueSet="2.16.840.1.113883.3.464.1.67"/>
           <!-- DiabetesValueSet" -->
           <definition>
@@ -270,68 +263,63 @@
         <localVariableName>HasPolycysticOvaries</localVariableName>
         <observationCriteria>
           <id root="0" extension="HasPolycysticOvaries"/>
-          <effectiveTime>
-            <low nullFlavor="DER">
-              <expression>StartDate.add(new PQ(-1,"a"))</expression>
-            </low>
-            <high nullFlavor="DER">
-              <expression>EndDate</expression>
-            </high>
-          </effectiveTime>
           <value xsi:type="CD" valueSet="2.16.840.1.113883.3.464.1.98"/>
           <definition>
             <observationReference moodCode="DEF">
               <id root="0" extension="Problem"/>
             </observationReference>
           </definition>
+          <temporallyRelatedInformation typeCode="SAS">
+            <pauseQuantity value="-1" unit="a"/>
+            <observationReference>
+              <id root="0" extension="MeasurePeriod"/>
+            </observationReference>
+          </temporallyRelatedInformation>
         </observationCriteria>
       </entry>
       <entry>
         <localVariableName>HasSteroidInducedDiabetes</localVariableName>
         <observationCriteria>
           <id root="0" extension="HasSteroidInducedDiabetes"/>
-          <effectiveTime>
-            <low nullFlavor="DER">
-              <expression>StartDate</expression>
-            </low>
-            <high nullFlavor="DER">
-              <expression>EndDate</expression>
-            </high>
-          </effectiveTime>
           <value xsi:type="CD" valueSet="2.16.840.1.113883.3.464.1.113"/>
           <definition>
             <observationReference moodCode="DEF">
               <id root="0" extension="Problem"/>
             </observationReference>
           </definition>
+          <temporallyRelatedInformation typeCode="SAS">
+            <pauseQuantity value="-1" unit="a"/>
+            <observationReference>
+              <id root="0" extension="MeasurePeriod"/>
+            </observationReference>            
+          </temporallyRelatedInformation>
         </observationCriteria>
       </entry>
       <entry>
-        <localVariableName>HbA1C</localVariableName>
-        <subsetCode code="RECENT"/>
+        <localVariableName>HbA1Cgt9</localVariableName>
         <observationCriteria>
           <id root="0" extension="HbA1C"/>
           <code valueSet="2.16.840.1.113883.3.464.1.72"/>
-          <statusCode code="completed"/>
-          <value xsi:type="IVL_PQ">
-            <low value="9" unit="%"/>
-          </value>
           <definition>
             <observationReference moodCode="DEF">
               <id root="0" extension="LabResults"/>
             </observationReference>
           </definition>
+          <excerpt>
+            <subsetCode code="RECENT"/>
+            <observationCriteria>
+              <id extension="0" root="HbA1CMeasured"/>
+              <value xsi:type="IVL_PQ">
+                <low value="9" unit="%"/>
+              </value>
+            </observationCriteria>
+          </excerpt>
         </observationCriteria>
       </entry>
       <entry>
         <localVariableName>DiabetesMedAdministered</localVariableName>
         <substanceAdministrationCriteria>
           <id root="0" extension="DiabetesMedAdministered"/>
-          <effectiveTime xsi:type="IVL_TS">
-            <high nullFlavor="DER">
-              <expression>EndDate.add(new PQ(-2,"a"))</expression>
-            </high>
-          </effectiveTime>
           <participant typeCode="CSM">
             <roleParticipant classCode="THER">
               <code valueSet="2.16.840.1.113883.3.464.1.94"/>
@@ -342,17 +330,18 @@
               <id root="0" extension="Medication"/>
             </substanceAdministrationReference>
           </definition>
+          <temporallyRelatedInformation typeCode="SAS">
+            <pauseQuantity value="-1" unit="a"/>
+            <observationReference>
+              <id root="0" extension="MeasurePeriod"/>
+            </observationReference>            
+          </temporallyRelatedInformation>
         </substanceAdministrationCriteria>
       </entry>
       <entry>
         <localVariableName>DiabetesMedIntended</localVariableName>
         <substanceAdministrationCriteria moodCode="INT">
           <id root="0" extension="DiabetesMedIntended"/>
-          <effectiveTime xsi:type="IVL_TS">
-            <high nullFlavor="DER">
-              <expression>EndDate.add(new PQ(-2,"a"))</expression>
-            </high>
-          </effectiveTime>
           <participant typeCode="CSM">
             <roleParticipant classCode="THER">
               <code valueSet="2.16.840.1.113883.3.464.1.94"/>
@@ -363,17 +352,18 @@
               <id root="0" extension="Medication"/>
             </substanceAdministrationReference>
           </definition>
+          <temporallyRelatedInformation typeCode="SAS">
+            <pauseQuantity value="-1" unit="a"/>
+            <observationReference>
+              <id root="0" extension="MeasurePeriod"/>
+            </observationReference>            
+          </temporallyRelatedInformation>
         </substanceAdministrationCriteria>
       </entry>
       <entry>
         <localVariableName>DiabetesMedSupplied</localVariableName>
         <supplyCriteria>
           <id root="0" extension="DiabetesMedSupplied"/>
-          <effectiveTime xsi:type="IVL_TS">
-            <high nullFlavor="DER">
-              <expression>EndDate.add(new PQ(-2,"a"))</expression>
-            </high>
-          </effectiveTime>
           <participant typeCode="PRD">
             <roleParticipant classCode="THER">
               <code valueSet="2.16.840.1.113883.3.464.1.94"/>
@@ -384,17 +374,18 @@
               <id root="0" extension="RX"/>
             </supplyReference>
           </definition>
+          <temporallyRelatedInformation typeCode="SAS">
+            <pauseQuantity value="-1" unit="a"/>
+            <observationReference>
+              <id root="0" extension="MeasurePeriod"/>
+            </observationReference>            
+          </temporallyRelatedInformation>
         </supplyCriteria>
       </entry>
       <entry>
         <localVariableName>DiabetesMedOrdered</localVariableName>
         <supplyCriteria moodCode="RQO">
           <id root="0" extension="DiabetesMedOrdered"/>
-          <effectiveTime xsi:type="IVL_TS">
-            <high nullFlavor="DER">
-              <expression>EndDate.add(new PQ(-2,"a"))</expression>
-            </high>
-          </effectiveTime>
           <participant typeCode="PRD">
             <roleParticipant classCode="THER">
               <code valueSet="2.16.840.1.113883.3.464.1.94"/>
@@ -405,6 +396,12 @@
               <id root="0" extension="RX"/>
             </supplyReference>
           </definition>
+          <temporallyRelatedInformation typeCode="SAS">
+            <pauseQuantity value="-1" unit="a"/>
+            <observationReference>
+              <id root="0" extension="MeasurePeriod"/>
+            </observationReference>            
+          </temporallyRelatedInformation>
         </supplyCriteria>
       </entry>
     </dataCriteriaSection>
@@ -487,7 +484,7 @@
             extension="NUMER"/>
           <precondition>
             <observationReference>
-              <id root="0" extension="HbA1C"/>
+              <id root="0" extension="HbA1Cgt9"/>
             </observationReference>
           </precondition>
         </numeratorCriteria>
@@ -528,34 +525,34 @@
           <id root="c75181d0-73eb-11de-8a39-0800200c9a66"
             extension="CLASSIFIER1"/>
           <precondition>
-            <substanceAdministrationReference>
+            <observationReference>
               <id root="0" extension="ageBetween17and21"/>
-            </substanceAdministrationReference>
+            </observationReference>
           </precondition>
           <precondition>
-            <substanceAdministrationReference>
+            <observationReference>
               <id root="0" extension="ageBetween22and29"/>
-            </substanceAdministrationReference>
+            </observationReference>
           </precondition>
           <precondition>
-            <substanceAdministrationReference>
+            <observationReference>
               <id root="0" extension="ageBetween30and39"/>
-            </substanceAdministrationReference>
+            </observationReference>
           </precondition>
           <precondition>
-            <substanceAdministrationReference>
+            <observationReference>
               <id root="0" extension="ageBetween40and49"/>
-            </substanceAdministrationReference>
+            </observationReference>
           </precondition>
           <precondition>
-            <substanceAdministrationReference>
+            <observationReference>
               <id root="0" extension="ageBetween50and59"/>
-            </substanceAdministrationReference>
+            </observationReference>
           </precondition>
           <precondition>
-            <substanceAdministrationReference>
+            <observationReference>
               <id root="0" extension="ageBetween60and64"/>
-            </substanceAdministrationReference>
+            </observationReference>
           </precondition>
         </stratifierCriteria>
       </entry>
@@ -565,14 +562,14 @@
           <id root="c75181d0-73eb-11de-8a39-0800200c9a66"
             extension="CLASSIFIER2"/>
           <precondition>
-            <substanceAdministrationReference>
+            <observationReference>
               <id root="0" extension="genderMale"/>
-            </substanceAdministrationReference>
+            </observationReference>
           </precondition>
           <precondition>
-            <substanceAdministrationReference>
+            <observationReference>
               <id root="0" extension="genderFemale"/>
-            </substanceAdministrationReference>
+            </observationReference>
           </precondition>
         </stratifierCriteria>
       </entry>
