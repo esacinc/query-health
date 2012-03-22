@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QualityMeasureDocument xmlns="urn:hl7-org:v3"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="urn:hl7-org:v3 file:/D:/hl7/hqmf/html/domains/uvqm/schemas/EMeasureNew.xsd"
+  classCode="DOC">
+  <typeId root="2.16.840.1.113883.1.3" extension="POQM_HD00001"/>
+  <id root="0"/>
+  <code code="57024-2" codeSystem="2.16.840.1.113883.6.1"/>
+  <title>Percentage of all patients aged 18 and older with a diagnosis of heart failure and paroxysmal or chronic atrial fibrillation who were prescribed warfarin therapy </title>
+	<statusCode code="completed"/>
+	<setId root="0"/>
+	<versionNumber value="1"/>
+	<author typeCode="AUT" contextControlCode="OP">
+		<assignedPerson classCode="ASSIGNED"/>
+	</author>
+	<custodian typeCode="CST">
+		<assignedPerson classCode="ASSIGNED"/>
+	</custodian>
+	<controlVariable>
+		<localVariableName>MeasurePeriod</localVariableName>
+		<measurePeriod>
+			<id root="0" extension="StartDate"/>
+			<value>
+				<width unit="a" value="1"/>
+			</value>
+		</measurePeriod>
+	</controlVariable>
+	<component>
+		<measureDescriptionSection>
+			<title>Measure Description Section</title>
+			<text>This is a description of the measure.</text>
+		</measureDescriptionSection>
+	</component>
+	<component>
+		<dataCriteriaSection>
+			<code code="57025-9" codeSystem="2.16.840.1.113883.6.1"/>
+			<title>Data Criteria Section</title>
+			<text>This section describes the data criteria.</text>
+			<!-- Define the measure parameters as observations in event mood -->
+			<entry>
+				<localVariableName>Population18andOlder</localVariableName>
+				<observationCriteria>
+					<id root="0" extension="Population18andOlder"/>
+					<code code="424144002" codeSystem="2.16.840.1.113883.6.96" displayName="Population"/>
+					<!--Determine what the best way is to represent a population 18 years and older-->
+					<value xsi:type="IVL_TS">
+						<low value="18" unit="a"/>
+						<high value="100" unit="a"/>
+					</value>
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Demographics"/>
+						</observationReference>
+					</definition>
+				</observationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>ageBetween17and21</localVariableName>
+				<observationCriteria>
+					<id root="0" extension="ageBetween17and21"/>
+					<code code="424144002" codeSystem="2.16.840.1.113883.6.96" displayName="Age"/>
+					<value xsi:type="IVL_PQ">
+						<low value="17" unit="a"/>
+						<high value="21" unit="a"/>
+					</value>
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Demographics"/>
+						</observationReference>
+					</definition>
+				</observationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>ageBetween22and29</localVariableName>
+				<observationCriteria>
+					<id root="0" extension="ageBetween22and29"/>
+					<code code="424144002" codeSystem="2.16.840.1.113883.6.96" displayName="Age"/>
+					<value xsi:type="IVL_PQ">
+						<low value="22" unit="a"/>
+						<high value="29" unit="a"/>
+					</value>
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Demographics"/>
+						</observationReference>
+					</definition>
+				</observationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>ageBetween30and39</localVariableName>
+				<observationCriteria>
+					<id root="0" extension="ageBetween30and39"/>
+					<code code="424144002" codeSystem="2.16.840.1.113883.6.96" displayName="Age"/>
+					<value xsi:type="IVL_PQ">
+						<low value="30" unit="a"/>
+						<high value="39" unit="a"/>
+					</value>
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Demographics"/>
+						</observationReference>
+					</definition>
+				</observationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>ageBetween40and49</localVariableName>
+				<observationCriteria>
+					<id root="0" extension="ageBetween40and49"/>
+					<code code="424144002" codeSystem="2.16.840.1.113883.6.96" displayName="Age"/>
+					<value xsi:type="IVL_PQ">
+						<low value="40" unit="a"/>
+						<high value="49" unit="a"/>
+					</value>
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Demographics"/>
+						</observationReference>
+					</definition>
+				</observationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>ageBetween50and59</localVariableName>
+				<observationCriteria>
+					<id root="0" extension="ageBetween50and59"/>
+					<code code="424144002" codeSystem="2.16.840.1.113883.6.96" displayName="Age"/>
+					<value xsi:type="IVL_PQ">
+						<low value="50" unit="a"/>
+						<high value="59" unit="a"/>
+					</value>
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Demographics"/>
+						</observationReference>
+					</definition>
+				</observationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>ageBetween60and64</localVariableName>
+				<observationCriteria>
+					<id root="0" extension="ageBetween60and64"/>
+					<code code="424144002" codeSystem="2.16.840.1.113883.6.96" displayName="Age"/>
+					<value xsi:type="IVL_PQ">
+						<low value="60" unit="a"/>
+						<high value="64" unit="a"/>
+					</value>
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Demographics"/>
+						</observationReference>
+					</definition>
+				</observationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>genderMale</localVariableName>
+				<observationCriteria>
+					<id root="0" extension="genderMale"/>
+					<code code="263495000" codeSystem="2.16.840.1.113883.6.96" displayName="Gender"/>
+					<value xsi:type="CD" codeSystem="2.16.840.1.113883.5.1" code="M"/>
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Demographics"/>
+						</observationReference>
+					</definition>
+				</observationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>genderFemale</localVariableName>
+				<observationCriteria>
+					<id root="0" extension="genderFemale"/>
+					<code code="263495000" codeSystem="2.16.840.1.113883.6.96" displayName="Gender"/>
+					<value xsi:type="CD" codeSystem="2.16.840.1.113883.5.1" code="F"/>
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Demographics"/>
+						</observationReference>
+					</definition>
+				</observationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>EDorInpatientEncounter</localVariableName>
+				<encounterCriteria>
+					<id root="0" extension="EDorInpatientEncounter"/>
+					<code valueSet="2.16.840.1.113883.3.464.1.42"/>
+					<!-- EDorInpatientEncounterValueSet -->
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Encounter"/>
+						</observationReference>
+					</definition>
+					<temporallyRelatedInformation typeCode="SAS">
+						<pauseQuantity value="-1" unit="a"/>
+						<observationReference moodCode="EVN">
+							<id root="0" extension="MeasurementPeriod"/>
+						</observationReference>
+					</temporallyRelatedInformation>
+				</encounterCriteria>
+			</entry>
+			<entry>
+				<localVariableName>AmbulatoryEncounter</localVariableName>
+				<encounterCriteria>
+					<id root="0" extension="AmbulatoryEncounter"/>
+					<!-- AmbulatoryEncounterValueSet -->
+					<code valueSet="2.16.840.1.113883.3.464.1.1142"/>
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Encounter"/>
+						</observationReference>
+					</definition>
+					<excerpt>
+						<subsetCode code="PREVSUM"/>
+						<encounterCriteria>
+							<repeatNumber>
+								<low value="2" inclusive="true"/>
+							</repeatNumber>
+						</encounterCriteria>
+					</excerpt>
+					<temporallyRelatedInformation typeCode="EAS">
+						<pauseQuantity value="-1" unit="a"/>
+						<observationReference>
+							<id root="0" extension="MeasurePeriod"/>
+						</observationReference>
+					</temporallyRelatedInformation>
+				</encounterCriteria>
+			</entry>
+			<entry>
+				<localVariableName>HasDiabetes</localVariableName>
+				<observationCriteria>
+					<id root="0" extension="HasDiabetes"/>
+					<statusCode code="completed"/>
+					<value xsi:type="CD" valueSet="2.16.840.1.113883.3.464.1.37"/>
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Problem"/>
+						</observationReference>
+					</definition>
+				</observationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>HasGestationalDiabetes</localVariableName>
+				<observationCriteria>
+					<id root="0" extension="HasGestationalDiabetes"/>
+					<value xsi:type="CD" valueSet="2.16.840.1.113883.3.464.1.67"/>
+					<!-- DiabetesValueSet" -->
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Problem"/>
+						</observationReference>
+					</definition>
+				</observationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>HasPolycysticOvaries</localVariableName>
+				<observationCriteria>
+					<id root="0" extension="HasPolycysticOvaries"/>
+					<value xsi:type="CD" valueSet="2.16.840.1.113883.3.464.1.98"/>
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Problem"/>
+						</observationReference>
+					</definition>
+					<temporallyRelatedInformation typeCode="SAS">
+						<pauseQuantity value="-1" unit="a"/>
+						<observationReference>
+							<id root="0" extension="MeasurePeriod"/>
+						</observationReference>
+					</temporallyRelatedInformation>
+				</observationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>HasSteroidInducedDiabetes</localVariableName>
+				<observationCriteria>
+					<id root="0" extension="HasSteroidInducedDiabetes"/>
+					<value xsi:type="CD" valueSet="2.16.840.1.113883.3.464.1.113"/>
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="Problem"/>
+						</observationReference>
+					</definition>
+					<temporallyRelatedInformation typeCode="SAS">
+						<pauseQuantity value="-1" unit="a"/>
+						<observationReference>
+							<id root="0" extension="MeasurePeriod"/>
+						</observationReference>
+					</temporallyRelatedInformation>
+				</observationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>HbA1Cgt9</localVariableName>
+				<observationCriteria>
+					<id root="0" extension="HbA1C"/>
+					<code valueSet="2.16.840.1.113883.3.464.1.72"/>
+					<definition>
+						<observationReference moodCode="DEF">
+							<id root="0" extension="LabResults"/>
+						</observationReference>
+					</definition>
+					<excerpt>
+						<subsetCode code="RECENT"/>
+						<observationCriteria>
+							<id extension="0" root="HbA1CMeasured"/>
+							<value xsi:type="IVL_PQ">
+								<low value="9" unit="%"/>
+							</value>
+						</observationCriteria>
+					</excerpt>
+				</observationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>WarfarinTherapy</localVariableName>
+				<substanceAdministrationCriteria>
+					<id root="0" extension="WarfarinTherapy"/>
+					<participant typeCode="CSM">
+						<roleParticipant classCode="MMAT">
+							<code valueSet="2.16.840.1.113883.3.526.02.135"/>
+						</roleParticipant>
+					</participant>
+					<definition>
+						<substanceAdministrationReference moodCode="DEF">
+							<id root="0" extension="Medication"/>
+						</substanceAdministrationReference>
+					</definition>
+					<!--Adjust to reflect the measurement period-->
+					<temporallyRelatedInformation typeCode="SAS">
+						<pauseQuantity value="-1" unit="a"/>
+						<observationReference>
+							<id root="0" extension="MeasurePeriod"/>
+						</observationReference>
+					</temporallyRelatedInformation>
+				</substanceAdministrationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>DiabetesMedIntended</localVariableName>
+				<substanceAdministrationCriteria moodCode="INT">
+					<id root="0" extension="DiabetesMedIntended"/>
+					<participant typeCode="CSM">
+						<roleParticipant classCode="THER">
+							<code valueSet="2.16.840.1.113883.3.464.1.94"/>
+						</roleParticipant>
+					</participant>
+					<definition>
+						<substanceAdministrationReference moodCode="DEF">
+							<id root="0" extension="Allergy"/>
+						</substanceAdministrationReference>
+					</definition>
+					<temporallyRelatedInformation typeCode="SAS">
+						<pauseQuantity value="-1" unit="a"/>
+						<observationReference>
+							<id root="0" extension="MeasurePeriod"/>
+						</observationReference>
+					</temporallyRelatedInformation>
+				</substanceAdministrationCriteria>
+			</entry>
+			<entry>
+				<localVariableName>DiabetesMedSupplied</localVariableName>
+				<supplyCriteria>
+					<id root="0" extension="DiabetesMedSupplied"/>
+					<participant typeCode="PRD">
+						<roleParticipant classCode="THER">
+							<code valueSet="2.16.840.1.113883.3.464.1.94"/>
+						</roleParticipant>
+					</participant>
+					<definition>
+						<supplyReference moodCode="DEF">
+							<id root="0" extension="RX"/>
+						</supplyReference>
+					</definition>
+					<temporallyRelatedInformation typeCode="SAS">
+						<pauseQuantity value="-1" unit="a"/>
+						<observationReference>
+							<id root="0" extension="MeasurePeriod"/>
+						</observationReference>
+					</temporallyRelatedInformation>
+				</supplyCriteria>
+			</entry>
+			<entry>
+				<localVariableName>DiabetesMedOrdered</localVariableName>
+				<supplyCriteria moodCode="RQO">
+					<id root="0" extension="DiabetesMedOrdered"/>
+					<participant typeCode="PRD">
+						<roleParticipant classCode="THER">
+							<code valueSet="2.16.840.1.113883.3.464.1.94"/>
+						</roleParticipant>
+					</participant>
+					<definition>
+						<supplyReference moodCode="DEF">
+							<id root="0" extension="RX"/>
+						</supplyReference>
+					</definition>
+					<temporallyRelatedInformation typeCode="SAS">
+						<pauseQuantity value="-1" unit="a"/>
+						<observationReference>
+							<id root="0" extension="MeasurePeriod"/>
+						</observationReference>
+					</temporallyRelatedInformation>
+				</supplyCriteria>
+			</entry>
+		</dataCriteriaSection>
+	</component>
+	<component>
+		<populationCriteriaSection>
+			<code code="57026-7" codeSystem="2.16.840.1.113883.6.1"/>
+			<title>Population Criteria Section</title>
+			<text>This section describes the Initial Patient Population,
+        Numerator, Denominator, Denominator Exceptions, and Measure
+        Populations</text>
+			<entry>
+				<patientPopulationCriteria>
+					<id root="c75181d0-73eb-11de-8a39-0800200c9a66" extension="IPP"/>
+					<precondition>
+						<observationReference>
+							<id root="0" extension="Population18andOlder"/>
+						</observationReference>
+					</precondition>
+				</patientPopulationCriteria>
+			</entry>
+			<entry>
+				<denominatorCriteria>
+					<id root="c75181d0-73eb-11de-8a39-0800200c9a66" extension="DENOM"/>
+					<!--Need to add specific denominator criteria here-->
+				</denominatorCriteria>
+			</entry>
+			<entry>
+				<numeratorCriteria>
+					<id root="c75181d0-73eb-11de-8a39-0800200c9a66" extension="NUMER"/>
+					<precondition>
+						<observationReference>
+							<id root="0" extension="WarfarinTherapy"/>
+						</observationReference>
+					</precondition>
+				</numeratorCriteria>
+			</entry>
+			<entry>
+				<localVariableName>Population18andOlder</localVariableName>
+				<stratifierCriteria>
+					<id root="c75181d0-73eb-11de-8a39-0800200c9a66" extension="CLASSIFIER1"/>
+					<precondition>
+						<observationReference>
+							<id root="0" extension="Population18andOlder"/>
+						</observationReference>
+					</precondition>
+				</stratifierCriteria>
+			</entry>
+			</populationCriteriaSection>
+	</component>
+</QualityMeasureDocument>
