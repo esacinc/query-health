@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="cda.xsl"?>
+<!-- 
+Notes:
+[1] The following sample document depicts fictional health summary data. Any resemblance to a organization is coincidental. 
+[2] The HL7 QRDA specification is in pre-ballot draft format. 
+-->
+<ClinicalDocument xmlns="urn:hl7-org:v3" xmlns:voc="urn:hl7-org:v3/voc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:hl7-org:v3 CDA.xsd">
+	<!-- 
+********************************************************
+QRDA Category III Header
+********************************************************
+-->
+	<realmCode code="US"/>
+	<typeId root="2.16.840.1.113883.1.3" extension="POCD_HD000040"/>
+
+	<!-- QRDA Category III template ID. -->
+	<templateId root="2.16.840.1.113883.10.20.14"/>
+
+	<id root="88414c01-715a-45bb-83bb-db7ac860fe9d"/>
+	
+	<!-- QRDA document type code (yet to be created). -->
+	<code code="55184-6" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="Quality Measure Report"/>
+
+	<!-- The QRDA Category III Summary Report is patterned partially after the HEDIS report schema in that one report contains summary data for any number of measures. -->
+	<title>What is the percentage of all patients aged 18 and older with a diagnosis of heart failure and paroxysmal or chronic atrial fibrillation who were prescribed warfarin therapy?</title>
+
+	<effectiveTime value="20120301"/>
+	<confidentialityCode codeSystem="2.16.840.1.113883.5.25" code="N"/>
+	<languageCode code="en-US"/>
+
+	<!-- This is an aggregate summary report. Therefore CDA's required patient identifier is nulled. -->
+	<recordTarget>
+		<patientRole>
+			<id nullFlavor="NA"/>
+		</patientRole>
+	</recordTarget>
+
+	<!-- WORKFLOW CONSIDERATIONS
+	In this sample, the Custodian, and LegalAuthenticator are played by the healthcare organization, 
+	the Author represents the Processing Entity, 
+	and the reporting healthcare facility is represented using the CCD "Source of Information" construct,
+	via the Informant participant. 
+	Other workflows are also possible.
+	-->
+
+	<!-- The author of the CDA document in this example is an IS06 "Processing Entity".	-->
+	<author>
+		<time value="20120301"/>
+		<assignedAuthor>
+			<id nullFlavor="NA"/>
+			<representedOrganization>
+				<id root="2.16.840.1.113883.19.598"/>
+				<name>Query Health Information Source</name>
+			</representedOrganization>
+		</assignedAuthor>
+	</author>
+	
+	<!-- The reporting healthcare facility is represented using the CCD "Source of Information" construct, via the Informant participant. -->
+	<informant>
+		<assignedEntity>
+			<id nullFlavor="NA"/>
+			<representedOrganization>
+				<id root="2.16.840.1.113883.19.5"/>
+				<name>Query Health Information Source</name>
+			</representedOrganization>
+		</assignedEntity>
+	</informant>
+
+	<!-- The custodian of the CDA document is the same as the legal authenticator in this example. -->
+	<custodian>
+		<assignedCustodian>
+			<representedCustodianOrganization>
+				<id root="2.16.840.1.113883.19.5"/>
+				<name>Query Health Information Source</name>
+			</representedCustodianOrganization>
+		</assignedCustodian>
+	</custodian>
+	
+	<!-- The legal authenticator of the CDA document is the same as the custodian in this example. -->
+	<legalAuthenticator>
+		<time value="20120301"/>
+		<signatureCode code="S"/>
+		<assignedEntity>
+			<id nullFlavor="NA"/>
+			<representedOrganization>
+				<id root="2.16.840.1.113883.19.5"/>
+				<name>Query Health Information Source</name>
+			</representedOrganization>
+		</assignedEntity>
+	</legalAuthenticator>
+
+	<!-- 
+********************************************************
+QRDA Category III Body
+********************************************************
+-->
+	<component>
+		<structuredBody>
+	<!-- 
+********************************************************
+Reporting Parameters 
+********************************************************
+-->
+<!-- 
+There is a single top level reporting parameter section. Each measure then links back to 
+the Observation Parameters act via an entryRelationship.
+-->
+<component>
+<section>
+	<code code="55187-9" codeSystem="2.16.840.1.113883.6.1" />	
+	<title>Parameters for NQF84 Measure</title>
+	<text>
+		<list>
+			<item>Reporting period: 01 Jan 2012 - 31 Dec 2012</item>
+		</list>
+	</text>
+	<entry>
+		<act classCode="ACT" moodCode="EVN">
+			<id root="55a43e20-6463-46eb-81c3-9a3a1ad41225"/>
+			<code code="252116004" codeSystem="2.16.840.1.113883.6.96" displayName="Observation Parameters"/>
+			<effectiveTime>
+				<low value="20110101"/> <!-- The first day of the period reported. -->
+				<high value="20111231"/> <!-- The last day of the period reported. -->
+			</effectiveTime>
+
+			</act>
+	</entry>
+</section>
+</component>
+
+<!-- 
+********************************************************
+Measure Section: Diabetes: Eye Exam
+********************************************************
+-->
+<component>
+<section>
+	<templateId root="QRDA-MEASURE-Warfarin-control-OID"/>
+	<code code="55186-1" codeSystem="2.16.840.1.113883.6.1" />
+	<title>Measure Section: Warfarin Therapy(NQF 0084)</title>
+	<text>
+		<paragraph>
+			<content styleCode="Bold">Description: </content>
+
+		</paragraph>
+		<table border="1" width="100%">
+			<tbody align="left">
+				<tr><th>Provider</th><th>Location</th><th>Initial Patient Population</th><th>Denominator</th><th>Denominator Exclusions</th><th>Numerator</th></tr>
+				<tr><th>Jones</th><th>Information Source</th><th>64</th><th>33</th><th>3</th><th>28</th></tr>
+				<tr><th>Smith</th><th>Information Source</th><th>52</th><th>28</th><th>0</th><th>24</th></tr>
+			</tbody>
+		</table>
+	</text>
+	<entry typeCode="DRIV">
+		<act classCode="ACT" moodCode="EVN">
+			<code code="361" codeSystem="TCNYcodeSystemOID" displayName="Warfarin Therapy"/>
+			<text>What is the percentage of all patients aged 18 and older with a diagnosis of heart failure and paroxysmal or chronic atrial fibrillation who were prescribed warfarin therapy?</text>
+			<statusCode code="completed"/>
+			<performer>
+				<assignedEntity>
+					<id extension="00017" root="2.16.840.1.113883.19.5"/>
+					<assignedPerson>
+						<name>
+							<given>Robert</given>
+							<family>Jones</family>
+							<suffix>MD</suffix>
+						</name>
+					</assignedPerson>
+				</assignedEntity>
+			</performer>
+			<participant typeCode="LOC">
+				<templateId root="2.16.840.1.113883.5.90"/> <!-- CCD Location Participation template -->
+				<participantRole classCode="SDLOC">
+					<playingEntity classCode="PLC">
+						<name>Information Source</name>
+					</playingEntity>
+				</participantRole>
+			</participant>
+			<entryRelationship typeCode="REFR">
+				<act classCode="ACT" moodCode="EVN">
+					<id root="55a43e20-6463-46eb-81c3-9a3a1ad41225"/>
+					<code code="252116004" codeSystem="2.16.840.1.113883.6.96" displayName="Observation Parameters"/>
+				</act>
+			</entryRelationship>
+			<entryRelationship typeCode="COMP">
+				<observation classCode="OBS" moodCode="EVN">
+					<id root="82a2d9e8-37f1-4ace-95ea-860c8501c761"/>
+					<code code="IPP" codeSystem="TCNYcodeSystemOID" displayName="Initial Patient Population"/>
+					<statusCode code="completed"/>
+					<value xsi:type="INT" value="141"/>
+				</observation>
+			</entryRelationship>
+			<entryRelationship typeCode="COMP">
+				<observation classCode="OBS" moodCode="EVN">
+					<id root="8ff2afce-b92f-4171-970f-abb11f937b25"/>
+					<code code="DEN" codeSystem="TCNYcodeSystemOID" displayName="Denominator"/>
+					<statusCode code="completed"/>
+					<value xsi:type="INT" value="67"/>
+				</observation>
+			</entryRelationship>
+			<entryRelationship typeCode="COMP">
+				<observation classCode="OBS" moodCode="EVN">
+					<id root="0ccddc70-3da3-4565-a4e9-4fc5af3c301b"/>
+					<code code="EXCL" codeSystem="TCNYcodeSystemOID" displayName="Denominator Exclusions"/>
+					<statusCode code="completed"/>
+					<value xsi:type="INT" value="3"/>
+				</observation>
+			</entryRelationship>
+			<entryRelationship typeCode="COMP">
+				<observation classCode="OBS" moodCode="EVN">
+					<id root="82a2d9e8-37f1-4ace-95ea-860c2601c761"/>
+					<code code="NUM" codeSystem="TCNYcodeSystemOID" displayName="Numerator"/>
+					<statusCode code="completed"/>
+					<value xsi:type="INT" value="28"/>
+				</observation>
+			</entryRelationship>
+		</act>
+	</entry>
+	<entry typeCode="DRIV">
+		<act classCode="ACT" moodCode="EVN">
+			<templateId root="QRDA-MEASURE-DATA-ACT"/>
+			<code code="361" codeSystem="TCNYcodeSystemOID" displayName="Warfarin Therapy"/>
+			<text>What is the percentage of all patients aged 18 and older with a diagnosis of heart failure and paroxysmal or chronic atrial fibrillation who were prescribed warfarin therapy?</text>
+			<statusCode code="completed"/>
+			<performer>
+				<assignedEntity>
+					<id extension="00018" root="2.16.840.1.113883.19.5"/>
+					<assignedPerson>
+						<name>
+							<given>Robert</given>
+							<family>Smith</family>
+							<suffix>MD</suffix>
+						</name>
+					</assignedPerson>
+				</assignedEntity>
+			</performer>
+			<participant typeCode="LOC">
+				<templateId root="2.16.840.1.113883.5.90"/> <!-- CCD Location Participation template -->
+				<participantRole classCode="SDLOC">
+					<playingEntity classCode="PLC">
+						<name>Good Health Clinic</name>
+					</playingEntity>
+				</participantRole>
+			</participant>
+			<entryRelationship typeCode="REFR">
+				<act classCode="ACT" moodCode="EVN">
+					<id root="55a43e20-6463-46eb-81c3-9a3a1ad41225"/>
+					<code code="252116004" codeSystem="2.16.840.1.113883.6.96" displayName="Observation Parameters"/>
+				</act>
+			</entryRelationship>
+			<entryRelationship typeCode="COMP">
+				<observation classCode="OBS" moodCode="EVN">
+					<id root="82a2d9e8-37f1-4ace-95ea-860c2301c761"/>
+					<code code="IPP" codeSystem="TCNYcodeSystemOID" displayName="Initial Patient Population"/>
+					<statusCode code="completed"/>
+					<value xsi:type="INT" value="52"/>
+				</observation>
+			</entryRelationship>
+			<entryRelationship typeCode="COMP">
+				<observation classCode="OBS" moodCode="EVN">
+					<id root="28b49b7f-5764-4a6f-b32f-0d8112d61867"/>
+					<code code="DEN" codeSystem="TCNYcodeSystemOID" displayName="Denominator"/>
+					<statusCode code="completed"/>
+					<value xsi:type="INT" value="28"/>
+				</observation>
+			</entryRelationship>
+			<entryRelationship typeCode="COMP">
+				<observation classCode="OBS" moodCode="EVN">
+					<id root="1c8efc6e-af2f-4c4f-be04-84fe1417eea7"/>
+					<code code="EXCL" codeSystem="TCNYcodeSystemOID" displayName="Denominator Exclusions"/>
+					<statusCode code="completed"/>
+					<value xsi:type="INT" value="0"/>
+				</observation>
+			</entryRelationship>
+			<entryRelationship typeCode="COMP">
+				<observation classCode="OBS" moodCode="EVN">
+					<id root="96a38d04-2afa-490b-b233-97d566e35d7c"/>
+					<code code="NUM" codeSystem="TCNYcodeSystemOID" displayName="Numerator"/>
+					<statusCode code="completed"/>
+					<value xsi:type="INT" value="24"/>
+				</observation>
+			</entryRelationship>
+		</act>
+	</entry>
+</section>
+</component>
+</structuredBody>
+</component>
+</ClinicalDocument>
