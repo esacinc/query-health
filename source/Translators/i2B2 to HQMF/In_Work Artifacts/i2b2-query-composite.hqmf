@@ -1,11 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<QualityMeasureDocument xmlns="urn:hl7-org:v3" xmlns:xalan="http://xml.apache.org/xalan" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" classCode="DOC">
+<?xml version="1.0" encoding="UTF-8"?><QualityMeasureDocument xmlns="urn:hl7-org:v3" xmlns:xalan="http://xml.apache.org/xalan" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" classCode="DOC">
   <typeId extension="POQM_HD00001" root="2.16.840.1.113883.1.3"/>
-  <id root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108.1"/>
+  <id root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222.1"/>
   <code codeSystem="2.16.840.1.113883.6.1" code="57024-2"/>
   <title> 18--Diabe-HGB A@13:56:17</title>
   <statusCode code="completed"/>
-  <setId root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+  <setId root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
   <versionNumber value="1"/>
   <author contextControlCode="OP" typeCode="AUT">
     <assignedPerson classCode="ASSIGNED"/>
@@ -81,12 +80,8 @@
       <entry>
         <localVariableName>_18-34_years_old_N100A3</localVariableName>
         <observationCriteria>
-          <id extension="_18-34_years_old_N100A3" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+          <id extension="_18-34_years_old_N100A3" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
           <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
-          <effectiveTime>
-            <low value="20110101"/>
-            <high value="20111231"/>
-          </effectiveTime>
           <value xsi:type="IVL_PQ">
             <low unit="a" inclusive="true" value="18"/>
             <high unit="a" inclusive="false" value="35"/>
@@ -101,12 +96,8 @@
       <entry>
         <localVariableName>_35-44_years_old_N100BB</localVariableName>
         <observationCriteria>
-          <id extension="_35-44_years_old_N100BB" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+          <id extension="_35-44_years_old_N100BB" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
           <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
-          <effectiveTime>
-            <low value="20110101"/>
-            <high value="20111231"/>
-          </effectiveTime>
           <value xsi:type="IVL_PQ">
             <low unit="a" inclusive="true" value="35"/>
             <high unit="a" inclusive="false" value="45"/>
@@ -121,12 +112,8 @@
       <entry>
         <localVariableName>_45-54_years_old_N100D3</localVariableName>
         <observationCriteria>
-          <id extension="_45-54_years_old_N100D3" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+          <id extension="_45-54_years_old_N100D3" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
           <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
-          <effectiveTime>
-            <low value="20110101"/>
-            <high value="20111231"/>
-          </effectiveTime>
           <value xsi:type="IVL_PQ">
             <low unit="a" inclusive="true" value="45"/>
             <high unit="a" inclusive="false" value="55"/>
@@ -141,12 +128,8 @@
       <entry>
         <localVariableName>_55-64_years_old_N100EB</localVariableName>
         <observationCriteria>
-          <id extension="_55-64_years_old_N100EB" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+          <id extension="_55-64_years_old_N100EB" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
           <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
-          <effectiveTime>
-            <low value="20110101"/>
-            <high value="20111231"/>
-          </effectiveTime>
           <value xsi:type="IVL_PQ">
             <low unit="a" inclusive="true" value="55"/>
             <high unit="a" inclusive="false" value="65"/>
@@ -161,12 +144,12 @@
       <entry>
         <localVariableName>Diabetes_mellitus_N1011B</localVariableName>
         <observationCriteria>
-          <id extension="Diabetes_mellitus_N1011B" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+          <id extension="Diabetes_mellitus_N1011B" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
           <effectiveTime>
             <low value="20100101"/>
             <high value="20111231"/>
           </effectiveTime>
-          <value displayName="Diabetes mellitus" code="250" xsi:type="CD" codeSystem="2.16.840.1.113883.6.103" codeSystemName="ICD-9-CM"/>
+          <value xsi:type="CD" code="250" displayName="Diabetes mellitus" codeSystem="2.16.840.1.113883.6.103" codeSystemName="ICD-9-CM"/>
           <definition>
             <observationReference moodCode="DEF">
               <id extension="Problems" root="2.16.840.1.113883.3.1619.5148.1"/>
@@ -177,12 +160,12 @@
       <entry>
         <localVariableName>type_II_diabetes_mellitus_non-insulin_dependent_type_NIDDM_type_adult-onset_type_or_unspecified_type,_not_stated_as_uncontrolled,_without_mention_of_complication_N10133</localVariableName>
         <observationCriteria>
-          <id extension="type_II_diabetes_mellitus_non-insulin_dependent_type_NIDDM_type_adult-onset_type_or_unspecified_type,_not_stated_as_uncontrolled,_without_mention_of_complication_N10133" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+          <id extension="type_II_diabetes_mellitus_non-insulin_dependent_type_NIDDM_type_adult-onset_type_or_unspecified_type,_not_stated_as_uncontrolled,_without_mention_of_complication_N10133" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
           <effectiveTime>
             <low value="20100101"/>
             <high value="20111231"/>
           </effectiveTime>
-          <value displayName="type II diabetes mellitus (non-insulin dependent type) (NIDDM type) (adult-onset type) or unspecified type, not stated as uncontrolled, without mention of complication" code="250.00" xsi:type="CD" codeSystem="2.16.840.1.113883.6.103" codeSystemName="ICD-9-CM"/>
+          <value xsi:type="CD" code="250.00" displayName="type II diabetes mellitus (non-insulin dependent type) (NIDDM type) (adult-onset type) or unspecified type, not stated as uncontrolled, without mention of complication" codeSystem="2.16.840.1.113883.6.103" codeSystemName="ICD-9-CM"/>
           <definition>
             <observationReference moodCode="DEF">
               <id extension="Problems" root="2.16.840.1.113883.3.1619.5148.1"/>
@@ -193,8 +176,8 @@
       <entry>
         <localVariableName>HGB_A1C_LOINC4548-4_GE_9__N10166</localVariableName>
         <observationCriteria>
-          <id extension="HGB_A1C_LOINC4548-4_GE_9__N10166" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
-          <value displayName="HGB A1C (LOINC:4548-4)" code="4548-4" xsi:type="CD" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC"/>
+          <id extension="HGB_A1C_LOINC4548-4_GE_9__N10166" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+          <code xsi:type="CD" code="4548-4" displayName="HGB A1C (LOINC:4548-4)" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC"/>
           <effectiveTime>
             <low value="20110101"/>
             <high value="20111231"/>
@@ -212,32 +195,22 @@
       <entry>
         <localVariableName>CAD_Bypass_N1019F</localVariableName>
         <procedureCriteria>
-          <id extension="CAD_Bypass_N1019F" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
-          <value displayName="Abdominal - coronary artery bypass" code="36.17" xsi:type="CD" codeSystem="2.16.840.1.113883.6.103" codeSystemName="ICD-9-CM"/>
+          <id extension="CAD_Bypass_N1019F" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+          <code xsi:type="CD" code="36.17" displayName="Abdominal - coronary artery bypass" codeSystem="2.16.840.1.113883.6.104" codeSystemName="ICD-9-CM"/>
           <definition>
-            <observationReference moodCode="DEF">
+            <procedureReference moodCode="DEF">
               <id extension="Procedures" root="2.16.840.1.113883.3.1619.5148.1"/>
-            </observationReference>
+            </procedureReference>
           </definition>
-          <excerpt>
-            <subsetCode code="RECENT"/>
-            <observationCriteria>
-              <id root="Procedure Performed" extension="0"/>
-              <value xsi:type="IVL_PQ">
-                <high inclusive="true" unit="a" value="1"/>
-              </value>
-            </observationCriteria>
-          </excerpt>
         </procedureCriteria>
       </entry>
       <entry>
         <localVariableName>Baclofen_10mg_tablet_Schein_Pharmaceuticals_Inc_N101CB</localVariableName>
         <substanceAdministrationCriteria>
-          <id extension="Baclofen_10mg_tablet_Schein_Pharmaceuticals_Inc_N101CB" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
-          <quantity unit="1" value="1"/>
+          <id extension="Baclofen_10mg_tablet_Schein_Pharmaceuticals_Inc_N101CB" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
           <participant typeCode="CSM">
             <roleParticipant classCode="THER">
-              <value codeSystem="2.16.840.1.113883.3.1619.5148.19.1" code="\\i2b2_MEDS\i2b2\Medications\MUL\(LME92)+central+nervous+system+agents\(LME121)+muscle+relaxants\(LME124)+skeletal+muscle+relaxants\baclofen\00364231290\\" xsi:type="CD"/>
+              <code xsi:type="CD" code="\\i2b2_MEDS\i2b2\Medications\MUL\(LME92)+central+nervous+system+agents\(LME121)+muscle+relaxants\(LME124)+skeletal+muscle+relaxants\baclofen\00364231290\\" codeSystem="2.16.840.1.113883.3.1619.5148.19.1"/>
             </roleParticipant>
           </participant>
           <definition>
@@ -250,11 +223,10 @@
       <entry>
         <localVariableName>Baclofen_N101EF</localVariableName>
         <substanceAdministrationCriteria>
-          <id extension="Baclofen_N101EF" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
-          <quantity unit="1" value="1"/>
+          <id extension="Baclofen_N101EF" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
           <participant typeCode="CSM">
             <roleParticipant classCode="THER">
-              <value displayName="Baclofen" code="1292" xsi:type="CD" codeSystem="2.16.840.1.113883.6.88" codeSystemName="rxNorm"/>
+              <code xsi:type="CD" code="1292" displayName="Baclofen" codeSystem="2.16.840.1.113883.6.88" codeSystemName="RxNorm"/>
             </roleParticipant>
           </participant>
           <definition>
@@ -267,10 +239,10 @@
       <entry>
         <localVariableName>Visit_at_age_9_or_less_N1021C</localVariableName>
         <encounterCriteria>
-          <id extension="Visit_at_age_9_or_less_N1021C" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
-          <code displayName="Age at Visit" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
+          <id extension="Visit_at_age_9_or_less_N1021C" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+          <code displayName="Age at Visit" code="424144002" codeSystem="2.16.840.1.113883.6.96" codeSystemName="SNOMED CT"/>
           <value xsi:type="IVL_PQ">
-            <low unit="a" inclusive="true" value="\\i2b2_VISIT\i2b2\Visit Details\Age at visit\0"/>
+            <low unit="a" inclusive="true" value="0"/>
             <high unit="a" inclusive="false" value="10"/>
           </value>
           <definition>
@@ -280,38 +252,15 @@
           </definition>
         </encounterCriteria>
       </entry>
-      <entry>
-        <localVariableName>_1_day_N10234</localVariableName>
-        <encounterCriteria>
-          <id extension="_1_day_N10234" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
-          <code displayName="Length of stay" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="?"/>
-          <value value="" xsi:type="CD"/>
-          <definition>
-            <observationReference moodCode="DEF">
-              <id extension="Encounters" root="2.16.840.1.113883.3.1619.5148.1"/>
-            </observationReference>
-          </definition>
-        </encounterCriteria>
-      </entry>
-      <entry>
-        <localVariableName>Outpatient_visit_N1024C</localVariableName>
-        <encounterCriteria>
-          <id extension="Outpatient_visit_N1024C" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
-          <code displayName="Visit Type" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="?"/>
-          <value value="" xsi:type="CD"/>
-          <definition>
-            <observationReference moodCode="DEF">
-              <id extension="Encounters" root="2.16.840.1.113883.3.1619.5148.1"/>
-            </observationReference>
-          </definition>
-        </encounterCriteria>
-      </entry>
+
+<!-- Broken encounter criteria removed -->
+
       <entry>
         <localVariableName>Female_N10270</localVariableName>
         <observationCriteria>
-          <id extension="Female_N10270" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+          <id extension="Female_N10270" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
           <code displayName="Gender" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="263495000"/>
-          <value displayName="Female" code="F" xsi:type="CD" codeSystem="2.16.840.1.113883.5.1" codeSystemName="Gender"/>
+          <value xsi:type="CD" code="F" displayName="Female" codeSystem="2.16.840.1.113883.5.1" codeSystemName="Gender"/>
           <definition>
             <observationReference moodCode="DEF">
               <id extension="Demographics" root="2.16.840.1.113883.3.1619.5148.1"/>
@@ -322,9 +271,9 @@
       <entry>
         <localVariableName>Arabic_N1028B</localVariableName>
         <observationCriteria>
-          <id extension="Arabic_N1028B" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+          <id extension="Arabic_N1028B" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
           <code displayName="Language" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="102902016"/>
-          <value displayName="Arabic" code="ar" xsi:type="CD" codeSystem="1.0.639.1" codeSystemName="Language"/>
+          <value xsi:type="CD" code="ar" displayName="Arabic" codeSystem="1.0.639.1" codeSystemName="Language"/>
           <definition>
             <observationReference moodCode="DEF">
               <id extension="Demographics" root="2.16.840.1.113883.3.1619.5148.1"/>
@@ -335,9 +284,9 @@
       <entry>
         <localVariableName>Divorced_N102A6</localVariableName>
         <observationCriteria>
-          <id extension="Divorced_N102A6" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+          <id extension="Divorced_N102A6" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
           <code displayName="Marital Status" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="125680007"/>
-          <value displayName="Divorced" code="D" xsi:type="CD" codeSystem="2.16.840.1.113883.5.2" codeSystemName="MaritalStatus"/>
+          <value xsi:type="CD" code="D" displayName="Divorced" codeSystem="2.16.840.1.113883.5.2" codeSystemName="MaritalStatus"/>
           <definition>
             <observationReference moodCode="DEF">
               <id extension="Demographics" root="2.16.840.1.113883.3.1619.5148.1"/>
@@ -348,9 +297,9 @@
       <entry>
         <localVariableName>Latin_American_N102C1</localVariableName>
         <observationCriteria>
-          <id extension="Latin_American_N102C1" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+          <id extension="Latin_American_N102C1" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
           <code displayName="Race" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="103579009"/>
-          <value displayName="Latin American" code="2178-2" xsi:type="CD" codeSystem="2.16.840.1.113883.6.238" codeSystemName="Race"/>
+          <value xsi:type="CD" code="2178-2" displayName="Latin American" codeSystem="2.16.840.1.113883.6.238" codeSystemName="Race"/>
           <definition>
             <observationReference moodCode="DEF">
               <id extension="Demographics" root="2.16.840.1.113883.3.1619.5148.1"/>
@@ -361,7 +310,7 @@
       <entry>
         <localVariableName>_10-17_years_old_N102DC</localVariableName>
         <observationCriteria>
-          <id extension="_10-17_years_old_N102DC" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+          <id extension="_10-17_years_old_N102DC" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
           <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
           <value xsi:type="IVL_PQ">
             <low unit="a" inclusive="true" value="10"/>
@@ -385,27 +334,27 @@
             Populations</text>
       <entry>
         <patientPopulationCriteria>
-          <id extension="IPP" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+          <id extension="IPP" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
           <precondition>
             <atLeastOneTrue>
               <precondition>
                 <observationReference>
-                  <id extension="_18-34_years_old_N100A3" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+                  <id extension="_18-34_years_old_N100A3" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
                 </observationReference>
               </precondition>
               <precondition>
                 <observationReference>
-                  <id extension="_35-44_years_old_N100BB" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+                  <id extension="_35-44_years_old_N100BB" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
                 </observationReference>
               </precondition>
               <precondition>
                 <observationReference>
-                  <id extension="_45-54_years_old_N100D3" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+                  <id extension="_45-54_years_old_N100D3" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
                 </observationReference>
               </precondition>
               <precondition>
                 <observationReference>
-                  <id extension="_55-64_years_old_N100EB" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+                  <id extension="_55-64_years_old_N100EB" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
                 </observationReference>
               </precondition>
             </atLeastOneTrue>
@@ -414,51 +363,41 @@
             <atLeastOneTrue>
               <precondition>
                 <observationReference>
-                  <id extension="Diabetes_mellitus_N1011B" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+                  <id extension="Diabetes_mellitus_N1011B" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
                 </observationReference>
               </precondition>
               <precondition>
                 <observationReference>
-                  <id extension="type_II_diabetes_mellitus_non-insulin_dependent_type_NIDDM_type_adult-onset_type_or_unspecified_type,_not_stated_as_uncontrolled,_without_mention_of_complication_N10133" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+                  <id extension="type_II_diabetes_mellitus_non-insulin_dependent_type_NIDDM_type_adult-onset_type_or_unspecified_type,_not_stated_as_uncontrolled,_without_mention_of_complication_N10133" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
                 </observationReference>
               </precondition>
             </atLeastOneTrue>
           </precondition>
           <precondition>
             <observationReference>
-              <id extension="HGB_A1C_LOINC4548-4_GE_9__N10166" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+              <id extension="HGB_A1C_LOINC4548-4_GE_9__N10166" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
             </observationReference>
           </precondition>
           <precondition>
             <procedureReference>
-              <id extension="CAD_Bypass_N1019F" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+              <id extension="CAD_Bypass_N1019F" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
             </procedureReference>
           </precondition>
           <precondition>
             <substanceAdministrationReference>
-              <id extension="Baclofen_10mg_tablet_Schein_Pharmaceuticals_Inc_N101CB" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+              <id extension="Baclofen_10mg_tablet_Schein_Pharmaceuticals_Inc_N101CB" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
             </substanceAdministrationReference>
           </precondition>
           <precondition>
             <substanceAdministrationReference>
-              <id extension="Baclofen_N101EF" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+              <id extension="Baclofen_N101EF" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
             </substanceAdministrationReference>
           </precondition>
           <precondition>
             <atLeastOneTrue>
               <precondition>
                 <encounterReference>
-                  <id extension="Visit_at_age_9_or_less_N1021C" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
-                </encounterReference>
-              </precondition>
-              <precondition>
-                <encounterReference>
-                  <id extension="_1_day_N10234" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
-                </encounterReference>
-              </precondition>
-              <precondition>
-                <encounterReference>
-                  <id extension="Outpatient_visit_N1024C" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+                  <id extension="Visit_at_age_9_or_less_N1021C" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
                 </encounterReference>
               </precondition>
             </atLeastOneTrue>
@@ -467,27 +406,27 @@
             <atLeastOneTrue>
               <precondition>
                 <observationReference>
-                  <id extension="Female_N10270" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+                  <id extension="Female_N10270" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
                 </observationReference>
               </precondition>
               <precondition>
                 <observationReference>
-                  <id extension="Arabic_N1028B" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+                  <id extension="Arabic_N1028B" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
                 </observationReference>
               </precondition>
               <precondition>
                 <observationReference>
-                  <id extension="Divorced_N102A6" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+                  <id extension="Divorced_N102A6" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
                 </observationReference>
               </precondition>
               <precondition>
                 <observationReference>
-                  <id extension="Latin_American_N102C1" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+                  <id extension="Latin_American_N102C1" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
                 </observationReference>
               </precondition>
               <precondition>
                 <observationReference>
-                  <id extension="_10-17_years_old_N102DC" root="2.16.840.1.113883.3.1619.5148.3.20120328.133738108"/>
+                  <id extension="_10-17_years_old_N102DC" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
                 </observationReference>
               </precondition>
             </atLeastOneTrue>
