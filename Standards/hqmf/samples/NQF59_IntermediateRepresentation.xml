@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ihqmf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="urn:hl7-org:v3 ../schemas/HQMF%20Intermediate.xsd"
+ xmlns="urn:hl7-org:v3">
+    <title>NQF0059 Sample</title>
+    <description>This is a sample query using the simplified HQMF</description>
+    <measurePeriod>
+        <id root="0" extension="measurePeriod"/>
+        <value>
+            <low value='20110101'/>
+            <high value='20111231'/>
+        </value>
+    </measurePeriod>
+    <DemographicsCriteria>
+        <id root="0" extension="ageBetween17and64"/>
+        <localVariableName>ageBetween17and64</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
+        <value xsi:type="IVL_PQ">
+            <low value="17" unit="a"/>
+            <high value="64" unit="a"/>
+        </value>
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id root="0" extension="ageBetween17and21"/>
+        <localVariableName>ageBetween17and21</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
+        <value xsi:type="IVL_PQ">
+            <low value="17" unit="a"/>
+            <high value="21" unit="a"/>
+        </value>
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id root="0" extension="ageBetween22and29"/>
+        <localVariableName>ageBetween22and29</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
+        <value xsi:type="IVL_PQ">
+            <low value="22" unit="a"/>
+            <high value="29" unit="a"/>
+        </value>
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id root="0" extension="ageBetween30and39"/>
+        <localVariableName>ageBetween30and39</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>     
+        <value xsi:type="IVL_PQ">
+            <low value="30" unit="a"/>
+            <high value="39" unit="a"/>
+        </value>
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id root="0" extension="ageBetween40and49"/>
+        <localVariableName>ageBetween40and49</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>  
+        <value xsi:type="IVL_PQ">
+            <low value="40" unit="a"/>
+            <high value="49" unit="a"/>
+        </value>
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id root="0" extension="ageBetween50and59"/>
+        <localVariableName>ageBetween50and59</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>    
+        <value xsi:type="IVL_PQ">
+            <low value="50" unit="a"/>
+            <high value="59" unit="a"/>
+        </value>
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id root="0" extension="ageBetween60and64"/>
+        <localVariableName>ageBetween17and64</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
+        <value xsi:type="IVL_PQ">
+            <low value="60" unit="a"/>
+            <high value="64" unit="a"/>
+        </value>
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id root="0" extension="genderMale"/>
+        <localVariableName>genderMale</localVariableName>
+        <code code="263495000" codeSystem="2.16.840.1.113883.6.96"
+            displayName="Gender"/>
+        <value xsi:type="CD" code="M" codeSystem="2.16.840.1.113883.5.1" />
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id root="0" extension="genderFemale"/>
+        <localVariableName>genderFemale</localVariableName>
+        <code code="263495000" codeSystem="2.16.840.1.113883.6.96"
+            displayName="Gender"/>
+        <value xsi:type="CD" code="F" codeSystem="2.16.840.1.113883.5.1" />
+    </DemographicsCriteria>
+    <EncounterCriteria>
+        <id root="0" extension="EDorInpatientEncounter"/>
+        <localVariableName>EDorInpatientEncounter</localVariableName>
+        <code valueSet="2.16.840.1.113883.3.464.1.42"></code>
+        <timeRelationship>
+            <timeRelationshipCode>SAS</timeRelationshipCode>
+            <timeQuantity value="-1" unit="a"></timeQuantity>
+            <measurePeriodTimeReference root="0" extension="measurePeriod"/>
+        </timeRelationship>
+    </EncounterCriteria>
+    <EncounterCriteria>
+        <id root="0" extension="AmbulatoryEncounter"/>
+        <localVariableName>AmbulatoryEncounter</localVariableName>
+        <code valueSet="2.16.840.1.113883.3.464.1.1142"></code>
+        <filterCriteria>
+            <filterCode>PREVSUM</filterCode>
+            <repeatNumber>
+                <low value="2" inclusive="true"></low>
+            </repeatNumber>
+        </filterCriteria>
+        <timeRelationship>
+            <timeRelationshipCode>EAS</timeRelationshipCode>
+            <timeQuantity value="-1" unit="a"></timeQuantity>
+            <measurePeriodTimeReference root="0" extension="measurePeriod"/>
+        </timeRelationship>
+    </EncounterCriteria>
+    <ProblemCriteria>
+        <id root="0" extension="HasDiabetes"/>
+        <localVariableName>HasDiabetes</localVariableName>
+        <code valueSet="2.16.840.1.113883.3.464.1.37"></code>
+    </ProblemCriteria>
+    <ProblemCriteria>
+        <id root="0" extension="HasGestationalDiabetes"/>
+        <localVariableName>HasGestationalDiabetes</localVariableName>
+        <code valueSet="2.16.840.1.113883.3.464.1.67"></code>
+    </ProblemCriteria>
+    <ProblemCriteria>
+        <id root="0" extension="HasPolycysticOvaries"/>
+        <localVariableName>HasPolycysticOvaries</localVariableName>
+        <code valueSet="2.16.840.1.113883.3.464.1.98"></code>
+        <timeRelationship>
+            <timeRelationshipCode>SAS</timeRelationshipCode>
+            <timeQuantity value="-1" unit="a"></timeQuantity>
+            <measurePeriodTimeReference root="0" extension="measurePeriod"/>
+        </timeRelationship>
+    </ProblemCriteria>
+    <ProblemCriteria>
+        <id root="0" extension="HasSteroidInducedDiabetes"/>
+        <localVariableName>HasDiabetes</localVariableName>
+        <code valueSet="2.16.840.1.113883.3.464.1.113"></code>
+        <timeRelationship>
+            <timeRelationshipCode>SAS</timeRelationshipCode>
+            <timeQuantity value="-1" unit="a"></timeQuantity>
+            <measurePeriodTimeReference root="0" extension="measurePeriod"/>
+        </timeRelationship>
+    </ProblemCriteria>
+    <LabResultsCriteria>
+        <id root="0" extension="HbA1Cgt9"/>
+        <localVariableName>HbA1Cgt9</localVariableName>
+        <code valueSet="2.16.840.1.113883.3.464.1.72"></code>
+        <filterCriteria>
+            <filterCode>RECENT</filterCode>
+        </filterCriteria>
+        <value xsi:type="IVL_PQ">
+            <low value="9" unit="%"></low>
+        </value>
+    </LabResultsCriteria>
+    <MedicationCriteria>
+        <id root="0" extension="DiabetesMedAdministered"/>
+        <localVariableName>DiabetesMedAdministered</localVariableName>
+        <code valueSet="2.16.840.1.113883.3.464.1.94"></code>
+        <timeRelationship>
+            <timeRelationshipCode>SAS</timeRelationshipCode>
+            <timeQuantity value="-1" unit="a"></timeQuantity>
+            <measurePeriodTimeReference root="0" extension="measurePeriod"/>
+        </timeRelationship>
+        <medicationState>EVN</medicationState>
+    </MedicationCriteria>
+    <MedicationCriteria>
+        <id root="0" extension="DiabetesMedIntended"/>
+        <localVariableName>DiabetesMedIntended</localVariableName>
+        <code valueSet="2.16.840.1.113883.3.464.1.94"></code>
+        <timeRelationship>
+            <timeRelationshipCode>SAS</timeRelationshipCode>
+            <timeQuantity value="-1" unit="a"></timeQuantity>
+            <measurePeriodTimeReference root="0" extension="measurePeriod"/>
+        </timeRelationship>
+        <medicationState>INT</medicationState>
+    </MedicationCriteria>
+    <MedicationCriteria>
+        <id root="0" extension="DiabetesMedSupplied"/>
+        <localVariableName>DiabetesMedSupplied</localVariableName>
+        <code valueSet="2.16.840.1.113883.3.464.1.94"></code>
+        <timeRelationship>
+            <timeRelationshipCode>SAS</timeRelationshipCode>
+            <timeQuantity value="-1" unit="a"></timeQuantity>
+            <measurePeriodTimeReference root="0" extension="measurePeriod"/>
+        </timeRelationship>
+        <medicationState>EVN</medicationState>
+    </MedicationCriteria>
+    <MedicationCriteria>
+        <id root="0" extension="DiabetesMedOrdered"/>
+        <localVariableName>DiabetesMedOrdered</localVariableName>
+        <code valueSet="2.16.840.1.113883.3.464.1.94"></code>
+        <timeRelationship>
+            <timeRelationshipCode>SAS</timeRelationshipCode>
+            <timeQuantity value="-1" unit="a"></timeQuantity>
+            <measurePeriodTimeReference root="0" extension="measurePeriod"/>
+        </timeRelationship>
+    <medicationState>RQO</medicationState>
+    </MedicationCriteria>
+    <populationCriteria>
+        <id root="c75181d0-73eb-11de-8a39-0800200c9a66" extension="IPP"/>
+        <dataCriteriaCombiner>
+            <criteriaOperation>AllTrue</criteriaOperation>
+            <dataCriteriaReference root="0" extension="ageBetween17and64"/>
+        </dataCriteriaCombiner>
+    </populationCriteria>
+    <populationCriteria>
+        <id root="c75181d0-73eb-11de-8a39-0800200c9a66" extension="DENOM"/>
+        <dataCriteriaCombiner>
+            <criteriaOperation>AtLeastOneTrue</criteriaOperation>
+            <dataCriteriaReference root="0" extension="DiabetesMedAdministered"/>
+            <dataCriteriaReference root="0" extension="DiabetesMedIntended"/>
+            <dataCriteriaReference root="0" extension="DiabetesMedSupplied"/>
+            <dataCriteriaReference root="0" extension="DiabetesMedOrdered"/>
+            <dataCriteriaCombiner>
+                <criteriaOperation>AllTrue</criteriaOperation>
+                <dataCriteriaReference root="0" extension="HasDiabetes"/>
+                <dataCriteriaCombiner>
+                    <criteriaOperation>AtLeastOneTrue</criteriaOperation>
+                    <dataCriteriaReference root="0" extension="EDorInpatientEncounter"/>
+                    <dataCriteriaReference root="0" extension="AmbulatoryEncounter"/>
+                </dataCriteriaCombiner>
+            </dataCriteriaCombiner>
+        </dataCriteriaCombiner>
+    </populationCriteria>
+    <populationCriteria>
+        <id root="c75181d0-73eb-11de-8a39-0800200c9a66" extension="NUMER"/>
+        <dataCriteriaCombiner>
+            <criteriaOperation>AllTrue</criteriaOperation>
+            <dataCriteriaReference root="0" extension="HbA1Cgt9"/>
+        </dataCriteriaCombiner>
+    </populationCriteria>
+    <populationCriteria>
+        <id root="c75181d0-73eb-11de-8a39-0800200c9a66"
+            extension="DENEXCEP"/>
+        <dataCriteriaCombiner>
+            <criteriaOperation>AtLeastOneTrue</criteriaOperation>
+            <dataCriteriaReference root="0" extension="HasSteroidInducedDiabetes"/>
+            <dataCriteriaReference root="0" extension="HasGestationalDiabetes"/>
+            <dataCriteriaCombiner>
+                <criteriaOperation>AllTrue</criteriaOperation>
+                <dataCriteriaReference root="0" extension="HasPolycysticOvaries"/>
+                <dataCriteriaReference root="0" extension="HasDiabetes"/>
+            </dataCriteriaCombiner>
+        </dataCriteriaCombiner>
+    </populationCriteria>
+    <stratifierCriteria>
+        <id root="c75181d0-73eb-11de-8a39-0800200c9a66"
+            extension="CLASSIFIER1"/>
+        <dataCriteriaReference root="0" extension="ageBetween17and21"/>
+        <dataCriteriaReference root="0" extension="ageBetween22and29"/>
+        <dataCriteriaReference root="0" extension="ageBetween30and39"/>
+        <dataCriteriaReference root="0" extension="ageBetween40and49"/>
+        <dataCriteriaReference root="0" extension="ageBetween50and59"/>
+        <dataCriteriaReference root="0" extension="ageBetween60and64"/>
+    </stratifierCriteria>
+    <stratifierCriteria>
+        <id root="c75181d0-73eb-11de-8a39-0800200c9a66"
+            extension="CLASSIFIER2"/>
+        <dataCriteriaReference root="0" extension="genderMale"/>
+        <dataCriteriaReference root="0" extension="genderFemale"/>
+    </stratifierCriteria>
+</ihqmf>

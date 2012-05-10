@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Intermediate HQMF XSD
+    
+    Changelog:
+    Nageshwara Bashyam - 4/2012 - initial version
+    Jeff Klann - 5/2012 - numerous changes
+        Most DataCriteria are now either a DataCriteria or DataCriteriaWithValue, which adds value and status fields.
+          This reduces complexity and makes processing easier.
+        Codes are now referred to as codes, and values are referred to as values. Several other element
+          name changes have been made to increase self-consistency and similarity to HQMF.
+        Value is an ANY type, because sometimes it needs to be an IVL_PQ (e.g., age ranges) and sometimes a CD (e.g., language)
+        Description is optional
+        Removed a few redundant elements, like criteriaType (the code element reflects this) and valueSet (it's an attribute of code)
+        dataCriteriaReferences are now II types and do not include an id element (Keith's idea)
+        Two bugfixes: stratifierCriteria is now not required and dataCriteriaCombiner can contain multiple dataCriteriaCombiners
+        The XSD was rearranged a bit as these changes were being added, to reduce verbosity.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="urn:hl7-org:v3"
+    targetNamespace="urn:hl7-org:v3" elementFormDefault="qualified">
+    <xs:include schemaLocation="../coreschemas/infrastructureRoot.xsd"/>
+
+    <xs:element name="ihqmf">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="title" type="st"/>
+                <xs:element name="description" type="st" minOccurs="0"/>
+                <xs:element name="measurePeriod" type="MeasurePeriodType"/>
+                <xs:group ref="DataCriteriaChoice" maxOccurs="unbounded"/>
+                <xs:element name="populationCriteria" type="PopulationCriteriaType"
+                    maxOccurs="unbounded"/>
+                <xs:element name="stratifierCriteria" type="StratifierCriteriaType"
+                    maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:simpleType name="FilterCodeType">
+        <xs:restriction base="cs">
+            <xs:enumeration value="FIRST"/>
+            <xs:enumeration value="RECENT"/>
+            <xs:enumeration value="NEXT"/>
+            <xs:enumeration value="LAST"/>
+            <xs:enumeration value="MAX"/>
+            <xs:enumeration value="MIN"/>
+            <xs:enumeration value="FUTURE"/>
+            <xs:enumeration value="PAST"/>
+            <xs:enumeration value="SUM"/>
+            <xs:enumeration value="PREVSUM"/>
+            <xs:enumeration value="FUTSUM"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="MedicationStateType">
+        <xs:restriction base="cs">
+            <xs:enumeration value="EVN"/>
+            <xs:enumeration value="RQO"/>
+            <xs:enumeration value="INT"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="TimeRelationshipCodeType">
+        <xs:restriction base="cs">
+            <xs:enumeration value="EAS"/>
+            <xs:enumeration value="EDU"/>
+            <xs:enumeration value="EAE"/>
+            <xs:enumeration value="EBS"/>
+            <xs:enumeration value="ECW"/>
+            <xs:enumeration value="SAS"/>
+            <xs:enumeration value="SDU"/>
+            <xs:enumeration value="SAE"/>
+            <xs:enumeration value="SBS"/>
+            <xs:enumeration value="SCW"/>
+            <xs:enumeration value="CONCURRENT"/>
+            <xs:enumeration value="DURING"/>
+            <xs:enumeration value="OVERLAP"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="DataCriteriaOperationType">
+        <xs:restriction base="cs">
+            <xs:enumeration value="AllTrue"/>
+            <xs:enumeration value="AllFalse"/>
+            <xs:enumeration value="AtLeastOneTrue"/>
+            <xs:enumeration value="AtLeastOneFalse"/>
+            <xs:enumeration value="OnlyOneTrue"/>
+            <xs:enumeration value="OnlyOneFalse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PopulationCriteriaEnumType">
+        <xs:restriction base="cs">
+            <xs:enumeration value="IPP"/>
+            <xs:enumeration value="NUMER"/>
+            <xs:enumeration value="DENOM"/>
+            <xs:enumeration value="NUMEXCEP"/>
+            <xs:enumeration value="DENEXCEP"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="MeasurePeriodType">
+        <xs:sequence>
+            <xs:element name="id" type="II"/>
+            <xs:element name="value" type="IVL_TS"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="FilterCriteriaType">
+        <xs:sequence>
+            <xs:element name="filterCode" type="FilterCodeType"/>
+            <xs:element minOccurs="0" name="repeatNumber" type="IVL_INT"/>
+            <xs:element name="dataCriteriaReference" type="II" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="TimeRelationshipType">
+        <xs:sequence>
+            <xs:element name="timeRelationshipCode" type="TimeRelationshipCodeType"/>
+            <xs:element name="timeQuantity" type="PQ" minOccurs="0"/>
+            <xs:choice>
+                <xs:group ref="TimeReferenceChoice"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DataCriteriaCombinerType">
+        <xs:sequence>
+            <xs:element name="criteriaOperation" type="DataCriteriaOperationType"/>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element minOccurs="0" name="dataCriteriaCombiner"
+                    type="DataCriteriaCombinerType"/>
+                <xs:element name="dataCriteriaReference" type="II" minOccurs="0"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType abstract="false" name="DataCriteriaType">
+        <xs:sequence>
+            <xs:element name="id" type="II"/>
+            <xs:element name="localVariableName" type="ST"/>
+            <xs:element name="effectiveTime" type="IVL_TS" minOccurs="0"/>
+            <xs:element name="code" type="CD" minOccurs="0"/>
+            <xs:element name="freeTextCode" type="st" minOccurs="0"/>
+            <xs:element name="filterCriteria" type="FilterCriteriaType" minOccurs="0"
+                maxOccurs="unbounded"/>
+            <xs:element name="timeRelationship" type="TimeRelationshipType" minOccurs="0"
+                maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType abstract="false" name="DataCriteriaWithValueType">
+        <xs:complexContent>
+            <xs:extension base="DataCriteriaType">
+                <xs:sequence minOccurs="0">
+                    <xs:element minOccurs="0" name="value" type="ANY"/>
+                    <xs:element minOccurs="0" name="status" type="CS"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="PopulationCriteriaType">
+        <xs:sequence>
+            <xs:element name="id" type="II"/>
+            <xs:element name="dataCriteriaCombiner" type="DataCriteriaCombinerType"
+                maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="StratifierCriteriaType">
+        <xs:sequence>
+            <xs:element name="id" type="II"/>
+            <xs:element maxOccurs="unbounded" name="dataCriteriaReference" type="II"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- jklann: in these two types, what are body site, reaction, and category? are these needed? -->
+    <xs:complexType name="ProcedureCriteriaType">
+        <xs:complexContent>
+            <xs:extension base="DataCriteriaWithValueType">
+                <xs:sequence minOccurs="0">
+                    <xs:element name="procedureBodySite" type="cs" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="ImmunizationCriteriaType">
+        <xs:complexContent>
+            <xs:extension base="DataCriteriaType">
+                <xs:sequence>
+                    <xs:element name="reaction" type="st" minOccurs="0"/>
+                    <xs:element name="category" type="st" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="MedicationCriteriaType">
+        <xs:complexContent>
+            <xs:extension base="DataCriteriaType">
+                <xs:sequence>
+                    <xs:element name="medicationState" type="MedicationStateType"/>
+                    <xs:element name="routeCode" type="st" minOccurs="0"/>
+                    <xs:element name="medicationRateQuantity" type="PQ" minOccurs="0"/>
+                    <xs:element name="medicationDoseQuantity" type="PQ" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:group name="DataCriteriaChoice">
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="DemographicsCriteria" type="DataCriteriaWithValueType"/>
+                <xs:element name="AllergyCriteria" type="DataCriteriaType"/>
+                <xs:element name="EncounterCriteria" type="DataCriteriaType"/>
+                <xs:element name="ProcedureCriteria" type="ProcedureCriteriaType"/>
+                <xs:element name="MedicationCriteria" type="MedicationCriteriaType"/>
+                <xs:element name="ProblemCriteria" type="DataCriteriaType"/>
+                <xs:element name="LabResultsCriteria" type="DataCriteriaWithValueType"/>
+                <xs:element name="ImmunizationCriteria" type="ImmunizationCriteriaType"/>
+                <xs:element name="VitalSignsCriteria" type="DataCriteriaWithValueType"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:group>
+
+    <xs:group name="TimeReferenceChoice">
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="dataCriteriaTimeReference" type="II"/>
+                <xs:element name="measurePeriodTimeReference" type="II"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:group>
+</xs:schema>
