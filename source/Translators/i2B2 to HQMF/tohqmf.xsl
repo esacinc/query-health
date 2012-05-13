@@ -1,14 +1,169 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- i2b2 XML to HQMF Converter
+    Changelog:
+        Keith W. Boone - 3/2012 - initial version
+          Supports basic transformations using the i2b2_demo ontology.
+          Translates the following sections: Demographics->Age; Diagnosis; Lab Test Results
+        Nageshwara Bashyam - 3/2012 - bugixes
+        Jeff Klann - 03/28/2012
+           Added support for sections in the SHRINE ontology: Demographics-> Age, Race, Marital Status, Gender, Language ;
+             Medications ; Procedures ; Diagnosis
+           Note that SHRINE lab results DO NOT work properly - this was left unfinished partly because there are only a few demo labs in standard
+             SHRINE, so the demo ontology might be a better choice for labs?
+        Jeff Klann - 04/2/2012, 4/3/2012
+           Bugfixes. Added some boilerplate to link to the ONT cell through a Java webservice call.
+           
+        The current supported ontology mish-mash:
+         SHRINE Demographics-> Age, Race, Marital Status, Gender, Language
+         SHRINE Medications (RxNorm ingredients)
+         SHRINE or i2b2_demo procedures and diagnoses (ICD-9)
+         i2b2_demo labs (LOINC)
+        
+        A CEDD-compliant Query Health ontology should be finalized and missing sections (esp. unsupported demographics and encounter details)
+        should be added. In particular, the RxNorm medication tree might not be optimal because it uses RxNorm ingredients, but the i2b2_demo
+        tree is a mix of Multum and NDC codes.
+        
+        Also to do:
+           - Extensive testing and validation, including:
+                * What is the preferred SNOMED code for Language?
+           - Encounters (partly implemented, but incorrectly)
+           - Race folders are untested, as are other folder-level concepts
+           - Add basecodes to the entire terminology, where an i2b2-specific OID replaces a coded value when none exists. 
+              Update the XSLT to support this.
+           - Validation against XML Schema still shows minor issues.
+           - Various sections marked TBD:
+           - Connect with the i2b2 Ontology cell         
+-->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xalan="http://xml.apache.org/xalan"
+  xmlns:java="http://xml.apache.org/xslt/java"
+  xmlns:ont="xalan://edu.harvard.i2b2.eclipse.plugins.ontology.ws.OntServiceDriver"
+  extension-element-prefixes="ont"
   xmlns="urn:hl7-org:v3" version="1.0">
   <xsl:import href="time.xsl"/>
-  <xsl:output indent="yes"/>
+  <xsl:output indent="yes" xalan:indent-amount="2"/>
+  
+  <xalan:component prefix="ont">
+    <xalan:script lang="javaclass" src="xalan://edu.harvard.i2b2.eclipse.plugins.ontology.ws.OntServiceDriver"/>
+  </xalan:component>
+  
   <!-- 
     create a variable to access I2B2 Concepts.  In production
     this would be accessed via a web service request
   -->
   <xsl:variable name="concepts" select="document('concepts.xml')"/>
+  
+  <!-- 
+    a template for I2B2 concept lookup.
+  -->
+  <xsl:template name="get-concept">
+    <xsl:param name="item_key"/>
+    <xsl:param name="tag_name"/> <!-- Will be either code or value --> 
+    
+    <!-- locate the concept from the I2B2 ontology.  For now, this just pulls
+      from a document.  Later, it should pull the ontology XML out of a RESTful
+      API call that might look like this:
+      http://i2b2.org/ontology?key=ontologyKey
+      
+      When that API is implemented, concept should come from:
+      document(concat('http://i2b2.org/ontology?key=',current()/item_key))/concept
+    -->
+    <!-- This call suggests using the existing workspace ontology driver to link to the ONT cell in an i2b2 workbench environment. 
+      It is not fully tested yet. 
+      <xsl:variable name="concept" 
+         select="ont:getTermInfoQuick(&quot;$item_key&quot;)"/> -->
+    <xsl:variable name="concept"
+      select="$concepts//concept[key = normalize-space($item_key)]"/>
+    
+    <!-- extract the code from the I2B2 concept XML -->
+    <xsl:variable name="code"
+      select="substring-after($concept/basecode,':')"/>
+    
+    <xsl:variable name="code-system"
+      select="substring-before($concept/basecode,':')"/>
+
+    <xsl:choose>
+      <!-- if there is a basecode, output the code and system -->  
+      <xsl:when test="$concept/basecode">
+        <xsl:element name="{$tag_name}">
+          <xsl:attribute name="xsi:type">CD</xsl:attribute>
+          <xsl:attribute name="code"><xsl:value-of select="$code"/></xsl:attribute>
+          <xsl:attribute name="displayName"><xsl:value-of select="$concept/name"/></xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="substring($code-system,string-length($code-system)-3)='ICD9'">
+              <xsl:choose>
+                <!-- ICD-9s can be procedures (.104) or dx (.103), detected by a two vs. three digit code -->
+                <xsl:when test="string-length($code)=2 or string-length(substring-before($code,'.'))=2"> 
+                  <xsl:attribute name="codeSystem">2.16.840.1.113883.6.104</xsl:attribute>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:attribute name="codeSystem">2.16.840.1.113883.6.103</xsl:attribute>
+                </xsl:otherwise>
+              </xsl:choose>
+              <xsl:attribute name="codeSystemName">ICD-9-CM</xsl:attribute>
+            </xsl:when>
+            <xsl:when test="substring($code-system,string-length($code-system)-4)='LOINC'">
+              <xsl:attribute name="codeSystem">2.16.840.1.113883.6.1</xsl:attribute>
+              <xsl:attribute name="codeSystemName">LOINC</xsl:attribute>
+            </xsl:when>
+            <xsl:when test="substring($code-system,string-length($code-system)-5)='RXNORM'">
+              <xsl:attribute name="codeSystem">2.16.840.1.113883.6.88</xsl:attribute>
+              <xsl:attribute name="codeSystemName">RxNorm</xsl:attribute>
+            </xsl:when>
+            <xsl:when test="substring($code-system,string-length($code-system)-7)='PHSCDRGC'">
+              <xsl:attribute name="codeSystem">2.16.840.1.113883.12.416</xsl:attribute>
+              <xsl:attribute name="codeSystemName">DRG</xsl:attribute>
+            </xsl:when>
+            <xsl:when test="substring($code-system,string-length($code-system)-3)='RACE'">
+              <xsl:attribute name="codeSystem">2.16.840.1.113883.6.238</xsl:attribute>
+              <xsl:attribute name="codeSystemName">Race</xsl:attribute>
+            </xsl:when>
+            <xsl:when test="substring($code-system,string-length($code-system)-6)='MARITAL'">
+              <xsl:attribute name="codeSystem">2.16.840.1.113883.5.2</xsl:attribute>
+              <xsl:attribute name="codeSystemName">MaritalStatus</xsl:attribute>
+            </xsl:when>
+            <xsl:when test="substring($code-system,string-length($code-system)-7)='LANGUAGE'">
+              <xsl:attribute name="codeSystem">1.0.639.1</xsl:attribute>
+              <xsl:attribute name="codeSystemName">Language</xsl:attribute>
+            </xsl:when>
+            <xsl:when test="substring($code-system,string-length($code-system)-2)='SEX'">
+              <xsl:attribute name="codeSystem">2.16.840.1.113883.5.1</xsl:attribute>
+              <xsl:attribute name="codeSystemName">Gender</xsl:attribute>
+            </xsl:when>
+            <!-- Zipcode should be mapped to an address element really. See the commented-out code in Demographics. However zipcode is
+              not currently in SHRINE -->
+            <xsl:when test="substring($code-system,string-length($code-system)-6)='ZIPCODE'">
+              <xsl:attribute name="codeSystem">2.16.840.1.113883.6.231</xsl:attribute>
+              <xsl:attribute name="codeSystemName">Zipcode</xsl:attribute>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:attribute name="codeSystem">unknown</xsl:attribute>
+              <xsl:attribute name="codeSystemName">unknown</xsl:attribute>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:element>
+      </xsl:when>
+      <!-- otherswise, there is no Root concept, so we change this (For now)
+        to the I2B2 concept, and use the OID below to represent the I2B2 ontology
+        Because the ontology paths in I2B2 contain spaces, we change them to + signs
+        because HL7 doesn't like space characters in codes.
+        Ideally, this would be changed into a valueSet that could be accessed
+        from the I2B2 ontology cell.  I don't know if I2B2 ontology entries have
+        a numeric identifier that could be used in the construction of value set
+        identifiers, but if there was such a value, this could be done rather easily.
+      -->
+      <xsl:otherwise>
+        <xsl:element name="{$tag_name}">
+          <xsl:attribute name="xsi:type">CD</xsl:attribute>
+          <xsl:attribute name="code"><xsl:value-of select="translate(normalize-space(item_key),' ','+')"/></xsl:attribute>
+          <xsl:attribute name="codeSystem">2.16.840.1.113883.3.1619.5148.19.1</xsl:attribute>
+        </xsl:element>
+      </xsl:otherwise>
+    </xsl:choose>
+    
+  </xsl:template>
+
 
   <!-- Create an OID for the document -->
   <xsl:variable name="OID"
@@ -254,11 +409,17 @@
       <localVariableName>
         <xsl:value-of select="$name"/>
       </localVariableName>
-      <!-- 
-        Extract various parts of the ontology from item_key -->
-      -->
-      <xsl:variable name="key"
-        select="substring-after(normalize-space(item_key),'\i2b2\')"/>
+      <!-- Extract various parts of the ontology from item_key -->
+      <xsl:variable name="key">
+        <xsl:choose>
+          <xsl:when test="substring(item_key,3,6)='SHRINE'">
+            <xsl:value-of select="substring-after(normalize-space(item_key),'SHRINE\SHRINE\')"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="substring-after(normalize-space(item_key),'\i2b2\')"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
       <xsl:variable name="type"
         select="substring-before($key,&quot;\&quot;)"/>
       <xsl:variable name="subtype"
@@ -307,7 +468,7 @@
     </observationCriteria>
   -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\i2b2_DEMO\i2b2\Demographics')]">
+    match="item[starts-with(item_key,'\\i2b2_DEMO\i2b2\Demographics')] | item[starts-with(item_key,'\\SHRINE\SHRINE\Demographics\')]">
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
     <xsl:param name="name"/>
@@ -318,7 +479,7 @@
       
       <!-- Create the code element for the demographic -->
       <code code="" codeSystem="2.16.840.1.113883.6.96" codeSystemName="SNOMED CT" 
-        displayName="">
+        displayName="DummyName">
         <!-- Mapping from I2B2 Ontology to SNOMED CT 
         I2B2 Term            SNOMED Code  Display Name            Type
         Age	                 424144002  Current Chronological Age	IVL_PQ
@@ -352,6 +513,13 @@
             </xsl:attribute>
             <xsl:attribute name="code">125680007</xsl:attribute>
           </xsl:when>
+          <xsl:when test="$subtype ='Language'">
+            <!-- TBD: Keith's guide does not specify a preferred SNOMED code for language, but the CEDD v.01 specification states that language is a supported element. -->
+            <xsl:attribute name="displayName">
+              <xsl:text>Language</xsl:text>
+            </xsl:attribute>
+            <xsl:attribute name="code">102902016</xsl:attribute>
+          </xsl:when>
           <xsl:when test="$subtype ='Religion'">
             <xsl:attribute name="displayName">
               <xsl:text>Religious Preference</xsl:text>
@@ -367,10 +535,12 @@
       </code>
       <!-- Set effectiveTime for the observation from panel dates -->
       <xsl:if test="../panel_date_from|../panel_date_to">
-        <effectiveTime>
-          <xsl:apply-templates
-            select="../panel_date_from|../panel_date_to"/>
-        </effectiveTime>
+        <xsl:if test="$subtype!='Age'"> <!-- Time ranges are ignored supported for Ages in i2b2 -->
+          <effectiveTime>
+            <xsl:apply-templates
+              select="../panel_date_from|../panel_date_to"/>
+          </effectiveTime>
+        </xsl:if>
       </xsl:if>
       
       <xsl:choose>
@@ -418,29 +588,24 @@
             </xsl:otherwise>
           </xsl:choose>
         </xsl:when>
-        <!-- TBD: Map Gender codes -->
-        <xsl:when test="$subtype ='Gender'">
-          <value xsi:type="CD" value=""/>
-        </xsl:when>
-        <!-- TBD: Map Race codes -->
-        <xsl:when test="$subtype ='Race'">
-          <value xsi:type="CD" value=""/>
-        </xsl:when>
-        <!-- TBD: Map Marital Status codes -->
-        <xsl:when test="$subtype ='Marital Status'">
-          <value xsi:type="CD" value=""/>
-        </xsl:when>
         <!-- TBD: Map Religion codes -->
         <xsl:when test="$subtype ='Religion'">
           <value xsi:type="CD" value=""/>
         </xsl:when>
-        <!-- TBD: Zip Codes mapped to State, City or Postal Code -->
-        <xsl:otherwise>
+        <!-- TBD: Zip Codes mapped to State, City or Postal Code 
+        <xsl:when test="$subtype ='Zip codes'">
           <value xsi:type="AD">
             <city/>
             <state/>
             <zipCode/>
           </value>
+        </xsl:when> -->
+        <!-- Handle Gender, Marital Status, Race, Language -->
+        <xsl:otherwise>
+          <xsl:call-template name="get-concept">
+            <xsl:with-param name="item_key" select="current()/item_key"/>
+            <xsl:with-param name="tag_name">value</xsl:with-param>
+          </xsl:call-template>         
         </xsl:otherwise>
       </xsl:choose>
       <definition>
@@ -482,26 +647,11 @@
     
   -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\i2b2_DIAG\i2b2\Diagnoses')]">
+    match="item[starts-with(item_key,'\\i2b2_DIAG\i2b2\Diagnoses')] | item[starts-with(item_key,'\\SHRINE\SHRINE\Diagnoses\')]">
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
-    <xsl:param name="name"/>
-    
-    <!-- locate the concept from the I2B2 ontology.  For now, this just pulls
-      from a document.  Later, it should pull the ontology XML out of a RESTful
-      API call that might look like this:
-      http://i2b2.org/ontology?key=ontologyKey
-      
-      When that API is implemented, concept should come from:
-      document(concat('http://i2b2.org/ontology?key=',current()/item_key))/concept
-    -->
-    <xsl:variable name="concept"
-      select="$concepts//concept[key = normalize-space(current()/item_key)]"/>
-    
-    <!-- extract the code from the I2B2 concept XML -->
-    <xsl:variable name="code"
-      select="substring-after($concept/basecode,':')"/>
-    
+    <xsl:param name="name"/>   
+  
     <observationCriteria>
       <id root="{$docOID}" extension="{$name}"/>
       <xsl:if test="../panel_date_from|../panel_date_to">
@@ -510,30 +660,10 @@
             select="../panel_date_from|../panel_date_to"/>
         </effectiveTime>
       </xsl:if>
-      <xsl:choose>
-        <!-- if there is a basecode, output the ICD-9-CM code -->
-          
-        <xsl:when test="$concept/basecode">
-          <value xsi:type="CD" code="{$code}"
-            displayName="{substring-before('(',concat($concept/name,'('))"
-            codeSystem="2.16.840.1.113883.6.103"
-            codeSystemName="ICD-9-CM"/>
-        </xsl:when>
-        <!-- otherswise, there is no Root concept, so we change this (For now)
-          to the I2B2 concept, and use the OID below to represent the I2B2 ontology
-          Because the ontology paths in I2B2 contain spaces, we change them to + signs
-          because HL7 doesn't like space characters in codes.
-          Ideally, this would be changed into a valueSet that could be accessed
-          from the I2B2 ontology cell.  I don't know if I2B2 ontology entries have
-          a numeric identifier that could be used in the construction of value set
-          identifiers, but if there was such a value, this could be done rather easily.
-        -->
-        <xsl:otherwise>
-          <value xsi:type="CD"
-            code="{translate(normalize-space(item_key),' ','+')}"
-            codeSystem="2.16.840.1.113883.3.1619.5148.19.1"/>
-        </xsl:otherwise>
-      </xsl:choose>
+      <xsl:call-template name="get-concept">
+        <xsl:with-param name="item_key" select="current()/item_key"/>
+        <xsl:with-param name="tag_name">value</xsl:with-param>
+      </xsl:call-template> 
       <definition>
         <observationReference moodCode="DEF">
           <id root="2.16.840.1.113883.3.1619.5148.1"
@@ -582,24 +712,12 @@
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
     <xsl:param name="name"/>
-    <xsl:variable name="concept"
-      select="$concepts//concept[key = normalize-space(current()/item_key)]"/>
-    <xsl:variable name="code"
-      select="substring-after($concept/basecode,':')"/>
     <observationCriteria>
       <id root="{$docOID}" extension="{$name}"/>
-      <xsl:choose>
-        <xsl:when test="$concept/basecode">
-          <code code="{$code}"
-            displayName="{substring-before('(',concat($concept/name,'('))}"
-            codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC"
-          />
-        </xsl:when>
-        <xsl:otherwise>
-          <code code="{translate(normalize-space(item_key),' ','+')}"
-            codeSystem="2.16.840.1.113883.3.1619.5148.19.1"/>
-        </xsl:otherwise>
-      </xsl:choose>
+      <xsl:call-template name="get-concept">
+        <xsl:with-param name="item_key" select="current()/item_key"/>
+        <xsl:with-param name="tag_name">code</xsl:with-param>
+      </xsl:call-template>
       <xsl:if test="../panel_date_from|../panel_date_to">
         <effectiveTime>
           <xsl:apply-templates
@@ -688,15 +806,226 @@
         select="value_type"/> types </xsl:message>
   </xsl:template>
   
-  <!-- TBD: handle Medications -->
+  <!-- Handle medications
+    This template handels items coming from the medication ontology in SHRINE or i2b2demo
+    It generates an substanceAdministrationCriteria element, 
+    gives the item the appropriate id generated by the OID unique to this document and the identifier name generated
+    by the panel/item template,
+    Maps panel dates to effectiveTime, 
+    Locates the code from the ontology and puts it in the code of the participant (a consumable substance)
+    Does not do anything with temporallyRelatedInformation, which might mean effectiveTime is probably not the way to do times?
+    
+    An example is given below from the repository (no temporally related information is included):
+    <substanceAdministrationCriteria moodCode="INT">
+      <id root="0" extension="DiabetesMedIntended"/>
+       <participant typeCode="CSM">
+        <roleParticipant classCode="THER">
+          <code valueSet="2.16.840.1.113883.3.464.1.94"/>
+        </roleParticipant>
+      </participant>
+      <definition>
+        <substanceAdministrationReference moodCode="DEF">
+          <id root="0" extension="Medication"/>
+        </substanceAdministrationReference>
+      </definition>
+      <temporallyRelatedInformation typeCode="SAS">
+        <pauseQuantity value="-1" unit="a"/>
+        <observationReference>
+          <id root="0" extension="MeasurePeriod"/>
+        </observationReference>            
+      </temporallyRelatedInformation>
+    </substanceAdministrationCriteria>
+    
+  -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\i2b2_MEDS\i2b2\Medications')]"> </xsl:template>
-  <!-- TBD: handle Procedures -->
+    match="item[starts-with(item_key,'\\SHRINE\SHRINE\medications\')] | item[starts-with(item_key,'\\i2b2_MEDS\i2b2\Medications')]">
+    <xsl:param name="type"/>
+    <xsl:param name="subtype"/>
+    <xsl:param name="name"/>
+   
+    <substanceAdministrationCriteria>
+      <id root="{$docOID}" extension="{$name}"/>
+      <xsl:if test="../panel_date_from|../panel_date_to">
+        <effectiveTime>
+          <xsl:apply-templates
+            select="../panel_date_from|../panel_date_to"/>
+        </effectiveTime>
+      </xsl:if>
+      <participant typeCode="CSM">
+        <roleParticipant classCode="THER">
+            <xsl:call-template name="get-concept">
+              <xsl:with-param name="item_key" select="current()/item_key"/>
+              <xsl:with-param name="tag_name">code</xsl:with-param>
+            </xsl:call-template>     
+        </roleParticipant>
+      </participant>
+      <definition>
+        <substanceAdministrationReference  moodCode="DEF">
+          <id root="2.16.840.1.113883.3.1619.5148.1" 
+            extension="Medications"/> 
+        </substanceAdministrationReference>
+      </definition>
+    </substanceAdministrationCriteria>
+  </xsl:template>
+  
+  <!-- Handle procedures - very similar to diagnoses
+    This template handls items coming from the Procedures ontology in I2B2
+    It generates an observationCriteria element, 
+    gives the item the appropriate id generated by the OID unique to this document and the identifier name generated
+    by the panel/item template,
+    Maps panel dates to effectiveTime, 
+    Locates the code from the ontology and puts it in *code*.
+    TBD: how to indicate procedure was performed?
+
+    This example comes from a sample in the repository (this template does nothing with the excerpt element):
+    <observationCriteria>
+    <id root="0" extension="Eye Exam"/>
+    <code valueSet="2.16.840.1.113883.3.464.0001.241"/>
+    <definition>
+      <observationReference moodCode="DEF">
+        <id root="0" extension="Procedure"/>
+      </observationReference>
+    </definition>
+    <excerpt>
+      <subsetCode code="RECENT"/>
+      <observationCriteria>
+        <id extension="0" root="Procedure, Performed: eye exam"/>
+        (Review what the best datatype would be to measure whether an exam has been performed)
+          <value xsi:type="IVL_PQ">
+           <high value="1" unit="a" inclusive="true"/>
+          </value>
+        </observationCriteria>
+     </excerpt>
+    </observationCriteria>
+      -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\i2b2_PROC\i2b2\Procedures')]"> </xsl:template>
-  <!-- TBD: handle Encounters -->
+    match="item[starts-with(item_key,'\\i2b2_PROC\i2b2\Procedures')]">
+    <xsl:param name="type"/>
+    <xsl:param name="subtype"/>
+    <xsl:param name="name"/>
+
+    <procedureCriteria>
+      <id root="{$docOID}" extension="{$name}"/>
+      <xsl:if test="../panel_date_from|../panel_date_to">
+        <effectiveTime>
+          <xsl:apply-templates
+            select="../panel_date_from|../panel_date_to"/>
+        </effectiveTime>
+      </xsl:if>
+      <xsl:call-template name="get-concept">
+        <xsl:with-param name="item_key" select="current()/item_key"/>
+        <xsl:with-param name="tag_name">code</xsl:with-param>
+      </xsl:call-template> 
+      <definition>
+        <procedureReference moodCode="DEF">
+          <id root="2.16.840.1.113883.3.1619.5148.1"
+            extension="Procedures"/>
+        </procedureReference>
+      </definition>
+    </procedureCriteria>
+  </xsl:template> 
+ 
+  <!-- TBD: handle Encounters
+        None of these really work. Age at visit should not be the same snomed code as age. It probably should be an excerpt in a visit type?
+        We need to define what OIDs we're using for visit type. There is no guidance of figure out length of stay.
+  -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\i2b2_VISIT\i2b2\Visit Details')]"> </xsl:template>
+    match="item[starts-with(item_key,'\\i2b2_VISIT\i2b2\Visit Details')]"> 
+    <xsl:param name="type"/>
+    <xsl:param name="subtype"/>
+    <xsl:param name="name"/>
+    
+    <encounterCriteria>
+      <id root="{$docOID}" extension="{$name}"/>
+      <code code=""  
+        displayName="DummyName">
+          <xsl:choose>
+            <xsl:when test="$subtype='Age at visit'">
+              <xsl:attribute name="displayName">
+                <xsl:text>Age at Visit</xsl:text>
+              </xsl:attribute>
+              <xsl:attribute name="code">424144002</xsl:attribute>
+              <xsl:attribute name="codeSystem">2.16.840.1.113883.6.96</xsl:attribute>
+              <xsl:attribute name="codeSystemName">SNOMED CT</xsl:attribute>
+            </xsl:when>
+            <xsl:when test="$subtype ='Length of stay'">
+              <xsl:attribute name="displayName">Length of stay</xsl:attribute>
+              <!-- There is no guidance on how to code a length of stay -->
+            </xsl:when>
+            <xsl:when test="$subtype ='Visit type'">
+              <xsl:attribute name="displayName">Visit Type</xsl:attribute>
+              <xsl:attribute name="valueSet"><!-- This will be a visit type oid, either hedis or i2b2 --></xsl:attribute>
+            </xsl:when>
+          </xsl:choose>
+          <xsl:if test="../panel_date_from|../panel_date_to">
+            <effectiveTime>
+              <xsl:apply-templates
+                select="../panel_date_from|../panel_date_to"/>
+            </effectiveTime>
+          </xsl:if>
+      </code>
+      <xsl:choose>
+        <!-- If it's an age, map values -->
+        <xsl:when test="$subtype='Age at visit'">
+          <xsl:message><xsl:value-of select="item_key"/></xsl:message> 
+          <xsl:choose>
+            <!-- Handle Age >= X -->
+            <xsl:when test="contains(item_key,'gt;=')">
+              <xsl:variable name="age"
+                select="substring-before(substring-after(item_key,'= '),' ')"/>
+              <value xsi:type="IVL_PQ">
+                <low value="{normalize-space($age)}" inclusive="true"
+                  unit="a"/>
+              </value>
+            </xsl:when>
+            <!-- Handle Age = X -->
+            <xsl:when test="contains(item_key,'=')">
+              <xsl:variable name="age"
+                select="substring-before(substring-after(item_key,'= '),' ')"/>
+              <value xsi:type="IVL_PQ">
+                <low value="{normalize-space($age)}" inclusive="true"
+                  unit="a"/>
+                <high value="{normalize-space($age)+1}"
+                  inclusive="false" unit="a"/>
+              </value>
+            </xsl:when>
+            <!-- process age ranges -->
+            <xsl:when test="contains(item_key,'-')">
+              <xsl:variable name="agelow"
+                select="substring-after(substring-before(item_key,'-'),'Age at visit\')"/>
+              <xsl:variable name="agehigh"
+                select="substring-before(substring-after(item_key,'-'),' ')"/>
+              <value xsi:type="IVL_PQ">
+                <low value="{normalize-space($agelow)}" inclusive="true"
+                  unit="a"/>
+                <high value="{normalize-space($agehigh)+1}"
+                  inclusive="false" unit="a"/>
+              </value>
+            </xsl:when>
+            <xsl:otherwise>
+              <!-- don't recognize age format -->
+              <xsl:message terminate="yes">Cannot Parse Age Range for
+                <xsl:value-of select="item_key"/> to HQMF Demographics
+              </xsl:message>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:when>
+        <!-- TBD: Map Length-of-stay codes -->
+        <xsl:when test="$subtype ='Length of stay'">
+          <value xsi:type="CD" value=""/>
+        </xsl:when>
+      </xsl:choose>
+      <definition>
+        <observationReference moodCode="DEF">
+          <id root="2.16.840.1.113883.3.1619.5148.1"
+            extension="Encounters"/>
+        </observationReference>
+      </definition>
+
+    </encounterCriteria>
+  </xsl:template> 
+  
+
   
   <!-- If you have an item that doesn't map, and you 
     don't know how to handle it, report an error
@@ -759,6 +1088,7 @@
     <xsl:variable name="elem-name">
       <!-- The name of the reference element is set based on the ontology item_key -->
       <xsl:choose>
+        <!-- i2b2 demo ontology references -->
         <xsl:when
           test="starts-with(item_key,'\\i2b2_DEMO\i2b2\Demographics')">
           <xsl:text>observationReference</xsl:text>
@@ -776,16 +1106,36 @@
           <xsl:text>substanceAdministrationReference</xsl:text>
         </xsl:when>
         <xsl:when
-          test="starts-with(item_key,'\\i2b2_DEMO\i2b2\Procedures')">
+          test="starts-with(item_key,'\\i2b2_PROC\i2b2\Procedures')">
           <xsl:text>procedureReference</xsl:text>
         </xsl:when>
         <xsl:when
           test="starts-with(item_key,'\\i2b2_VISIT\i2b2\Visit Details')">
           <xsl:text>encounterReference</xsl:text>
         </xsl:when>
+        
+        <!-- i2b2 SHRINE ontology references -->
+        <xsl:when
+          test="starts-with(item_key,'\\SHRINE\SHRINE\Demographics')">
+          <xsl:text>observationReference</xsl:text>
+        </xsl:when>
+        <xsl:when
+          test="starts-with(item_key,'\\SHRINE\SHRINE\Diagnoses')">
+          <xsl:text>observationReference</xsl:text>
+        </xsl:when>
+        <xsl:when
+          test="starts-with(item_key,'\\SHRINE\SHRINE\Labs')">
+          <xsl:text>observationReference</xsl:text>
+        </xsl:when>
+        <xsl:when
+          test="starts-with(item_key,'\\SHRINE\SHRINE\medications')">
+          <xsl:text>substanceAdministrationReference</xsl:text>
+        </xsl:when>
+        
         <xsl:otherwise>
           <xsl:message terminate="yes"> Cannot Map <xsl:value-of
             select="item_key"/> to HQMF Criteria </xsl:message>
+          <xsl:text>UNSUPPORTED</xsl:text>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
