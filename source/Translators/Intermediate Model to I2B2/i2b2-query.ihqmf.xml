@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ihqmf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:mif="urn:hl7-org:v3/mif2" 
+ xmlns:sch="http://www.ascc.net/xml/schematron" 
+ xmlns:ex="urn:hl7-org/v3-example" 
+ xmlns="urn:hl7-org:v3"
+ xsi:schemaLocation="urn:hl7-org:v3 ../../../Standards/hqmf/schemas/HQMF%20Intermediate%20Translator.xsd"> 
+    <title>18--Diabe-HGB A@13:56:17</title>
+    <measurePeriod>
+        <id root="0" extension="measurePeriod"/> <!-- The spec currently only allows one measurePeriod so the id need never be used -->
+        <value>
+            <width value="1" unit="a"/>
+        </value>
+    </measurePeriod>
+    <DemographicsCriteria>
+        <id extension="_18-34_years_old_N100A3" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+        <localVariableName>_18-34_years_old_N100A3</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
+        <value xsi:type="IVL_PQ"> 
+            <low unit="a" inclusive="true" value="18"/>
+            <high unit="a" inclusive="false" value="35"/>           
+        </value>
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id extension="_18-34_years_old_N100A3" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+        <localVariableName>_18-34_years_old_N100A3</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>     
+        <value xsi:type="IVL_PQ"> 
+            <low unit="a" inclusive="true" value="18"/>
+            <high unit="a" inclusive="false" value="35"/>           
+        </value>
+    </DemographicsCriteria>    
+    <DemographicsCriteria>
+        <id extension="_45-54_years_old_N100D3" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+        <localVariableName>_45-54_years_old_N100D3</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
+        <value xsi:type="IVL_PQ"> 
+            <low unit="a" inclusive="true" value="45"/>
+            <high unit="a" inclusive="false" value="55"/>           
+        </value>
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id extension="_55-64_years_old_N100EB" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+        <localVariableName>_55-64_years_old_N100EB</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
+        <value xsi:type="IVL_PQ"> 
+            <low unit="a" inclusive="true" value="55"/>
+            <high unit="a" inclusive="false" value="65"/>           
+        </value>
+    </DemographicsCriteria>
+    <ProblemCriteria>
+        <id extension="Diabetes_mellitus_N1011B" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+        <localVariableName>Diabetes_mellitus_N1011B</localVariableName>
+        <effectiveTime>
+            <low value="20100101"/>
+            <high value="20111231"/>
+        </effectiveTime>
+        <code xsi:type="CD" code="250" displayName="Diabetes mellitus" codeSystem="2.16.840.1.113883.6.103" codeSystemName="ICD-9-CM"/>
+    </ProblemCriteria>
+    <LabResultsCriteria>
+        <id extension="HGB_A1C_LOINC4548-4_GE_9__N1014B" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+        <localVariableName>HGB_A1C_LOINC4548-4_GE_9__N1014B</localVariableName>
+        <effectiveTime>
+            <low value="20110101"/>
+            <high value="20111231"/>
+        </effectiveTime>
+        <code xsi:type="CD" code="4548-4" displayName="HGB A1C (LOINC:4548-4)" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC"/>
+        <value xsi:type="IVL_PQ"> 
+            <low inclusive="true" unit="%" value="9"/>
+        </value>
+    </LabResultsCriteria>
+    <populationCriteria>
+        <id root="c75181d0-73eb-11de-8a39-0800200c9a66" extension="IPP"/>
+        <dataCriteriaCombiner>
+            <criteriaOperation>AllTrue</criteriaOperation>
+            <dataCriteriaCombiner>
+                <criteriaOperation>AtLeastOneTrue</criteriaOperation>
+                <dataCriteriaReference extension="_18-34_years_old_N100A3" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+                <dataCriteriaReference extension="_35-44_years_old_N100BB" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+                <dataCriteriaReference extension="_45-54_years_old_N100D3" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+                <dataCriteriaReference extension="_55-64_years_old_N100EB" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>      
+            </dataCriteriaCombiner>
+            <dataCriteriaCombiner> 
+                <criteriaOperation>AtLeastOneTrue</criteriaOperation>
+                <dataCriteriaReference extension="Diabetes_mellitus_N1011B" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/> 
+            </dataCriteriaCombiner>
+            <dataCriteriaCombiner> 
+                <criteriaOperation>AtLeastOneTrue</criteriaOperation>
+                <dataCriteriaReference extension="HGB_A1C_LOINC4548-4_GE_9__N1014B" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>     
+            </dataCriteriaCombiner>
+        </dataCriteriaCombiner>
+    </populationCriteria>
+</ihqmf>
+
