@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ihqmf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:mif="urn:hl7-org:v3/mif2" 
+ xmlns:sch="http://www.ascc.net/xml/schematron" 
+ xmlns:ex="urn:hl7-org/v3-example" 
+ xmlns="urn:hl7-org:v3"
+ xsi:schemaLocation="urn:hl7-org:v3 ../schemas/HQMF%20Intermediate.xsd"> 
+    <title>18--Diabe-HGB A@13:56:17</title>
+    <measurePeriod>
+        <id root="0" extension="measurePeriod"/> <!-- The spec currently only allows one measurePeriod so the id need never be used -->
+        <value>
+            <width value="1" unit="a"/>
+        </value>
+    </measurePeriod>
+    <DemographicsCriteria>
+        <id extension="_18-34_years_old_N100A3" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+        <localVariableName>_18-34_years_old_N100A3</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
+        <value xsi:type="IVL_PQ"> 
+            <low unit="a" inclusive="true" value="18"/>
+            <high unit="a" inclusive="false" value="35"/>           
+        </value>
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id extension="_18-34_years_old_N100A3" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+        <localVariableName>_18-34_years_old_N100A3</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>     
+        <value xsi:type="IVL_PQ"> 
+            <low unit="a" inclusive="true" value="18"/>
+            <high unit="a" inclusive="false" value="35"/>           
+        </value>
+    </DemographicsCriteria>    
+    <DemographicsCriteria>
+        <id extension="_45-54_years_old_N100D3" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+        <localVariableName>_45-54_years_old_N100D3</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
+        <value xsi:type="IVL_PQ"> 
+            <low unit="a" inclusive="true" value="45"/>
+            <high unit="a" inclusive="false" value="55"/>           
+        </value>
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id extension="_55-64_years_old_N100EB" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+        <localVariableName>_55-64_years_old_N100EB</localVariableName>
+        <code displayName="Current Chronological Age" codeSystemName="SNOMED CT" codeSystem="2.16.840.1.113883.6.96" code="424144002"/>
+        <value xsi:type="IVL_PQ"> 
+            <low unit="a" inclusive="true" value="55"/>
+            <high unit="a" inclusive="false" value="65"/>           
+        </value>
+    </DemographicsCriteria>
+    <ProblemCriteria>
+        <id extension="Diabetes_mellitus_N1011B" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+        <localVariableName>Diabetes_mellitus_N1011B</localVariableName>
+        <effectiveTime>
+            <low value="20100101"/>
+            <high value="20111231"/>
+        </effectiveTime>
+        <code xsi:type="CD" code="250" displayName="Diabetes mellitus" codeSystem="2.16.840.1.113883.6.103" codeSystemName="ICD-9-CM"/>
+        <filterCriteria>
+            <filterCode>MIN</filterCode>
+            <repeatNumber value="2"/>
+        </filterCriteria>
+    </ProblemCriteria>
+    <LabResultsCriteria>
+        <id extension="HGB_A1C_LOINC4548-4_GE_9__N1014B" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+        <localVariableName>HGB_A1C_LOINC4548-4_GE_9__N1014B</localVariableName>
+        <effectiveTime>
+            <low value="20110101"/>
+            <high value="20111231"/>
+        </effectiveTime>
+        <code xsi:type="CD" code="4548-4" displayName="HGB A1C (LOINC:4548-4)" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC"/>
+        <value xsi:type="IVL_PQ"> 
+            <low inclusive="true" unit="%" value="9"/>
+        </value>
+    </LabResultsCriteria>
+    <ProcedureCriteria>
+        <id extension="CAD_Bypass_N1019F" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+        <localVariableName>CAD_Bypass_N1019F</localVariableName>
+        <code xsi:type="CD" code="36.17" displayName="Abdominal - coronary artery bypass" codeSystem="2.16.840.1.113883.6.104" codeSystemName="ICD-9-CM"/>
+    </ProcedureCriteria>
+    <LabResultsCriteria>
+        <id extension="nobase" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+        <localVariableName>NOBASE</localVariableName>
+        <effectiveTime>
+            <low value="20110101"/>
+            <high value="20111231"/>
+        </effectiveTime>
+        <code xsi:type="CD" code="\\i2b2_MEDS\i2b2\Medications\MUL\(LME92)+central+nervous+system+agents\(LME121)+muscle+relaxants\(LME124)+skeletal+muscle+relaxants\baclofen\00364231290\\" codeSystem="2.16.840.1.113883.3.1619.5148.19.1"/> 
+    </LabResultsCriteria>
+    <MedicationCriteria>
+        <id extension="Baclofen_N101EF" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>   
+        <localVariableName>Baclofen_N101EF</localVariableName>
+        <code xsi:type="CD" code="1292" displayName="Baclofen" codeSystem="2.16.840.1.113883.6.88" codeSystemName="RxNorm"/>
+        <medicationState>EVN</medicationState>  
+    </MedicationCriteria>
+    <EncounterCriteria>
+        <id extension="Visit_at_age_9_or_less_N1021C" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+        <localVariableName>Visit_at_age_9_or_less_N1021C</localVariableName>
+        <code displayName="Age at Visit" code="424144002" codeSystem="2.16.840.1.113883.6.96" codeSystemName="SNOMED CT"/>
+        <value xsi:type="IVL_PQ">
+            <low unit="a" inclusive="true" value="0"/>
+            <high unit="a" inclusive="false" value="10"/>
+        </value>
+    </EncounterCriteria>
+    
+    <!-- Note: the intent is that ihqmf.code=hqmf.value here. If we decide this is not a generally good idea, my xsl will have to rip out value and keep code. -->
+    <DemographicsCriteria>
+        <id extension="Female_N10270" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+        <localVariableName>Female_N10270</localVariableName>
+        <code xsi:type="CD" code="F" displayName="Female" codeSystem="2.16.840.1.113883.5.1" codeSystemName="Gender"/>
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id extension="Arabic_N1028B" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+        <localVariableName>Arabic_N1028B</localVariableName>
+        <code xsi:type="CD" code="ar" displayName="Arabic" codeSystem="1.0.639.1" codeSystemName="Language"/>
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id extension="Divorced_N102A6" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+        <localVariableName>Divorced_N102A6</localVariableName>
+        <code xsi:type="CD" code="D" displayName="Divorced" codeSystem="2.16.840.1.113883.5.2" codeSystemName="MaritalStatus"/>
+    </DemographicsCriteria>
+    <DemographicsCriteria>
+        <id extension="Latin_American_N102C1" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+        <localVariableName>Latin_American_N102C1</localVariableName>
+        <code xsi:type="CD" code="2178-2" displayName="Latin American" codeSystem="2.16.840.1.113883.6.238" codeSystemName="Race"/>
+    </DemographicsCriteria>
+    
+    <populationCriteria>
+        <id root="c75181d0-73eb-11de-8a39-0800200c9a66" extension="IPP"/>
+        <dataCriteriaCombiner>
+            <criteriaOperation>AllTrue</criteriaOperation>
+            <dataCriteriaCombiner>
+                <criteriaOperation>AtLeastOneTrue</criteriaOperation>
+                <dataCriteriaReference extension="_18-34_years_old_N100A3" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+                <dataCriteriaReference extension="_35-44_years_old_N100BB" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+                <dataCriteriaReference extension="_45-54_years_old_N100D3" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+                <dataCriteriaReference extension="_55-64_years_old_N100EB" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>      
+            </dataCriteriaCombiner>
+            <dataCriteriaCombiner> 
+                <criteriaOperation>AtLeastOneTrue</criteriaOperation>
+                <dataCriteriaReference extension="Diabetes_mellitus_N1011B" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/> 
+            </dataCriteriaCombiner>
+            <dataCriteriaCombiner> 
+                <criteriaOperation>AllFalse</criteriaOperation>
+                <dataCriteriaReference extension="HGB_A1C_LOINC4548-4_GE_9__N1014B" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>  
+                <dataCriteriaReference extension="nobase" root="2.16.840.1.113883.3.1619.5148.3.20120426.160026667"/>
+                <dataCriteriaReference extension="Baclofen_N101EF" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+                <dataCriteriaReference extension="Visit_at_age_9_or_less_N1021C" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+                <dataCriteriaReference extension="Female_N10270" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+                <dataCriteriaReference extension="Arabic_N1028B" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+                <dataCriteriaReference extension="Divorced_N102A6" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+                <dataCriteriaReference extension="Latin_American_N102C1" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+                <dataCriteriaReference extension="CAD_Bypass_N1019F" root="2.16.840.1.113883.3.1619.5148.3.20120403.150314222"/>
+            </dataCriteriaCombiner>
+        </dataCriteriaCombiner>
+    </populationCriteria>
+</ihqmf>
+

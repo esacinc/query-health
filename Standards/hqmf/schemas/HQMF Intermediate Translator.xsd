@@ -14,6 +14,12 @@
         dataCriteriaReferences are now II types and do not include an id element (Keith's idea)
         Two bugfixes: stratifierCriteria is now not required and dataCriteriaCombiner can contain multiple dataCriteriaCombiners
         The XSD was rearranged a bit as these changes were being added, to reduce verbosity.
+     Jeff Klann - 5/31/12
+       Bugfix: EncounterCriteria can have values (take age at visit for example)
+        
+     Wishlist:
+      - Could the conversion normalize all IVL_PQ to a high and low time (no width)?
+      - Could the conversion normalize time references to a measurePeriod to an effectiveTime? (Unless we choose to get rid of effectiveTime.)
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="urn:hl7-org:v3"
     targetNamespace="urn:hl7-org:v3" elementFormDefault="qualified">
@@ -210,7 +216,7 @@
             <xs:choice>
                 <xs:element name="DemographicsCriteria" type="DataCriteriaWithValueType"/>
                 <xs:element name="AllergyCriteria" type="DataCriteriaType"/>
-                <xs:element name="EncounterCriteria" type="DataCriteriaType"/>
+                <xs:element name="EncounterCriteria" type="DataCriteriaWithValueType"/>
                 <xs:element name="ProcedureCriteria" type="ProcedureCriteriaType"/>
                 <xs:element name="MedicationCriteria" type="MedicationCriteriaType"/>
                 <xs:element name="ProblemCriteria" type="DataCriteriaType"/>
