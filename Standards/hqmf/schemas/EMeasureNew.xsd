@@ -6,6 +6,7 @@
   <xs:include schemaLocation="POQM_MT000001UVNew.xsd"/>
   <xs:element name="QualityMeasureDocument"
     type="POQM_MT000001UV.QualityMeasureDocument">
+    
     <xs:unique name="UniqueID">
       <xs:selector
         xpath=".//v3:actCriteria|.//v3:actDefinition|
@@ -41,7 +42,7 @@
     </xs:keyref>
     <xs:unique name="ObservationUniqueID">
       <xs:selector
-        xpath=".//v3:observationCriteria|.//v3:observationDefinition"/>
+        xpath=".//v3:observationCriteria|.//v3:observationDefinition|.//v3:measurePeriod"/>
       <xs:field xpath="v3:id/@root"/>
       <xs:field xpath="v3:id/@extension"/>
     </xs:unique>
