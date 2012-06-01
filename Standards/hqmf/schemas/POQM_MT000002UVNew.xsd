@@ -2409,7 +2409,7 @@
         minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
-    <xs:attribute name="classCode" type="ActClass" use="required"/>
+    <xs:attribute name="classCode" type="ActClassProcedure" fixed="PROC" use="optional"/>
     <xs:attribute name="moodCode" type="ActMood" use="optional"
       fixed="DEF"/>
   </xs:complexType>
@@ -2836,6 +2836,19 @@
       use="optional" fixed="INST"/>
   </xs:complexType>
 
+  <xs:complexType name="POQM_MT000002UV.NewDefinition">
+    <xs:sequence>
+      <xs:group ref="InfrastructureRootElements"/>
+      <xs:choice>
+        <xs:group ref="POQM_MT000002UV.DefinitionChoice"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="InfrastructureRootAttributes"/>
+    <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
+    <xs:attribute name="typeCode" type="ActRelationshipType"
+      use="optional" fixed="INST"/>
+  </xs:complexType>
+
   <xs:complexType name="POQM_MT000002UV.SourceOf2">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
@@ -3086,7 +3099,7 @@
         minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
-    <xs:attribute name="classCode" type="ActClass" use="required"/>
+    <xs:attribute name="classCode" type="ActClass" use="optional" default="SBADM"/>
     <xs:attribute name="moodCode" type="ActMood" use="optional"
       fixed="DEF"/>
   </xs:complexType>

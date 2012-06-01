@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<xs:schema xmlns:ex="urn:hl7-org/v3-example"
-  xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="urn:hl7-org:v3"
-  targetNamespace="urn:hl7-org:v3" elementFormDefault="qualified">
+<xs:schema xmlns:ex="urn:hl7-org/v3-example" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v3" targetNamespace="urn:hl7-org:v3" elementFormDefault="qualified">
   <!--
 *****************************************************************************************************************
 * XML schema for message type POQM_MT000001UV.
@@ -78,26 +77,21 @@
       <xs:element name="functionCode" type="CD" minOccurs="0"/>
       <xs:element name="time" type="TS" minOccurs="0"/>
       <xs:element name="signatureCode" type="CE" minOccurs="0"/>
-      <xs:element name="assignedPerson"
-        type="COCT_MT090107UV.AssignedPerson"/>
+      <xs:element name="assignedPerson" type="COCT_MT090107UV.AssignedPerson"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="typeCode" type="ParticipationType"
-      use="optional" fixed="AUT"/>
-    <xs:attribute name="contextControlCode" type="ContextControl"
-      use="optional" fixed="OP"/>
+    <xs:attribute name="typeCode" type="ParticipationType" use="optional" fixed="AUT"/>
+    <xs:attribute name="contextControlCode" type="ContextControl" use="optional" fixed="OP"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.Component">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
-      <xs:element name="qualityMeasureSet"
-        type="POQM_MT000001UV.QualityMeasureSet"/>
+      <xs:element name="qualityMeasureSet" type="POQM_MT000001UV.QualityMeasureSet"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="typeCode" type="ActRelationshipHasComponent"
-      use="optional" fixed="COMP"/>
+    <xs:attribute name="typeCode" type="ActRelationshipHasComponent" use="optional" fixed="COMP"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.Component2">
     <xs:sequence>
@@ -106,20 +100,15 @@
         <xs:element name="section" type="POQM_MT000001UV.Section"/>
         <xs:element name="measureDescriptionSection"
           type="POQM_MT000001UV.MeasureDescriptionSection"/>
-        <xs:element name="dataCriteriaSection"
-          type="POQM_MT000001UV.DataCriteriaSection"/>
-        <xs:element name="populationCriteriaSection"
-          type="POQM_MT000001UV.Section"/>
-        <xs:element name="measureObservationSection"
-          type="POQM_MT000001UV.Section"/>
+        <xs:element name="dataCriteriaSection" type="POQM_MT000001UV.DataCriteriaSection"/>
+        <xs:element name="populationCriteriaSection" type="POQM_MT000001UV.Section"/>
+        <xs:element name="measureObservationSection" type="POQM_MT000001UV.Section"/>
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="typeCode" type="ActRelationshipHasComponent"
-      use="optional" fixed="COMP"/>
-    <xs:attribute name="contextConductionInd" type="bl" use="optional"
-      fixed="true"/>
+    <xs:attribute name="typeCode" type="ActRelationshipHasComponent" use="optional" fixed="COMP"/>
+    <xs:attribute name="contextConductionInd" type="bl" use="optional" fixed="true"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.Component3">
     <xs:sequence>
@@ -128,10 +117,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="typeCode" type="ActRelationshipHasComponent"
-      use="optional" fixed="COMP"/>
-    <xs:attribute name="contextConductionInd" type="bl" use="optional"
-      fixed="true"/>
+    <xs:attribute name="typeCode" type="ActRelationshipHasComponent" use="optional" fixed="COMP"/>
+    <xs:attribute name="contextConductionInd" type="bl" use="optional" fixed="true"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.Component4">
     <xs:sequence>
@@ -139,48 +126,38 @@
       <xs:choice>
         <xs:element name="allTrue" type="POQM_MT000002UV.AllTrue"/>
         <xs:element name="allFalse" type="POQM_MT000002UV.AllFalse"/>
-        <xs:element name="atLeastOneTrue"
-          type="POQM_MT000002UV.AtLeastOneTrue"/>
-        <xs:element name="atLeastOneFalse"
-          type="POQM_MT000002UV.AtLeastOneFalse"/>
-        <xs:element name="onlyOneTrue"
-          type="POQM_MT000002UV.OnlyOneTrue"/>
-        <xs:element name="onlyOneFalse"
-          type="POQM_MT000002UV.OnlyOneFalse"/>
+        <xs:element name="atLeastOneTrue" type="POQM_MT000002UV.AtLeastOneTrue"/>
+        <xs:element name="atLeastOneFalse" type="POQM_MT000002UV.AtLeastOneFalse"/>
+        <xs:element name="onlyOneTrue" type="POQM_MT000002UV.OnlyOneTrue"/>
+        <xs:element name="onlyOneFalse" type="POQM_MT000002UV.OnlyOneFalse"/>
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="typeCode" type="ActRelationshipHasComponent"
-      use="optional" fixed="COMP"/>
-    <xs:attribute name="contextConductionInd" type="bl" use="optional"
-      fixed="true"/>
+    <xs:attribute name="typeCode" type="ActRelationshipHasComponent" use="optional" fixed="COMP"/>
+    <xs:attribute name="contextConductionInd" type="bl" use="optional" fixed="true"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.ControlVariable">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
-      <xs:element name="localVariableName" type="ST" 
-        fixed="MeasurePeriod" minOccurs="0" maxOccurs="1"/>
-      <xs:element name="measurePeriod"
-        type="POQM_MT000001UV.MeasurePeriod" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="localVariableName" type="ST" fixed="MeasurePeriod" minOccurs="0"
+        maxOccurs="1"/>
+      <xs:element name="measurePeriod" type="POQM_MT000001UV.MeasurePeriod" minOccurs="1"
+        maxOccurs="1"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="typeCode" type="ActRelationshipType"
-      use="optional" fixed="CTRLV"/>
+    <xs:attribute name="typeCode" type="ActRelationshipType" use="optional" fixed="CTRLV"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.Custodian">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
-      <xs:element name="assignedPerson"
-        type="COCT_MT090107UV.AssignedPerson"/>
+      <xs:element name="assignedPerson" type="COCT_MT090107UV.AssignedPerson"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="typeCode" type="ParticipationType"
-      use="optional" fixed="CST"/>
-    <xs:attribute name="contextControlCode" type="ContextControl"
-      use="optional"/>
+    <xs:attribute name="typeCode" type="ParticipationType" use="optional" fixed="CST"/>
+    <xs:attribute name="contextControlCode" type="ContextControl" use="optional"/>
   </xs:complexType>
   <xs:simpleType name="ActRelationshipSubset">
     <xs:restriction base="cs">
@@ -201,31 +178,26 @@
   <xs:complexType name="POQM_MT000001UV.Entry">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
-      <xs:element name="localVariableName" minOccurs="0" maxOccurs="1"
-        type="ST"/>
+      <xs:element name="localVariableName" minOccurs="0" maxOccurs="1" type="ST"/>
       <xs:element name="subsetCode" minOccurs="0" maxOccurs="1">
         <xs:complexType>
           <xs:attribute name="code" type="ActRelationshipSubset"/>
         </xs:complexType>
       </xs:element>
       <xs:choice>
-        <xs:element name="patientPopulationCriteria" 
+        <xs:element name="patientPopulationCriteria"
           type="POQM_MT000002UV.PatientPopulationCriteria"/>
-        <xs:element name="numeratorCriteria" 
-          type="POQM_MT000002UV.NumeratorCriteria"/>
-        <xs:element name="denominatorCriteria" 
-          type="POQM_MT000002UV.DenominatorCriteria"/>
-        <xs:element name="denominatorExceptionCriteria" 
+        <xs:element name="numeratorCriteria" type="POQM_MT000002UV.NumeratorCriteria"/>
+        <xs:element name="denominatorCriteria" type="POQM_MT000002UV.DenominatorCriteria"/>
+        <xs:element name="denominatorExceptionCriteria"
           type="POQM_MT000002UV.DenominatorExceptionCriteria"/>
-        <xs:element name="stratifierCriteria" 
-          type="POQM_MT000002UV.StratifierCriteria"/>
+        <xs:element name="stratifierCriteria" type="POQM_MT000002UV.StratifierCriteria"/>
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
     <xs:attribute name="typeCode" type="cs" use="optional" default="COMP"/>
-    <xs:attribute name="contextConductionInd" type="bl" use="optional"
-      fixed="true"/>
+    <xs:attribute name="contextConductionInd" type="bl" use="optional" fixed="true"/>
   </xs:complexType>
 
   <xs:complexType name="POQM_MT000001UV.Entry1">
@@ -237,27 +209,23 @@
           <xs:attribute name="code" type="ActRelationshipSubset"/>
         </xs:complexType>
       </xs:element>
-      
+
       <xs:choice>
-        <xs:element name="patientPopulationCriteria" 
+        <xs:element name="patientPopulationCriteria"
           type="POQM_MT000002UV.PatientPopulationCriteria"/>
-        <xs:element name="numeratorCriteria"
-          type="POQM_MT000002UV.NumeratorCriteria"/>
-        <xs:element name="denominatorCriteria"
-          type="POQM_MT000002UV.DenominatorCriteria"/>
+        <xs:element name="numeratorCriteria" type="POQM_MT000002UV.NumeratorCriteria"/>
+        <xs:element name="denominatorCriteria" type="POQM_MT000002UV.DenominatorCriteria"/>
         <xs:element name="denominatorExceptionCriteria"
           type="POQM_MT000002UV.DenominatorExceptionCriteria"/>
-        <xs:element name="stratifierCriteria"
-          type="POQM_MT000002UV.StratifierCriteria"/>
+        <xs:element name="stratifierCriteria" type="POQM_MT000002UV.StratifierCriteria"/>
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
     <xs:attribute name="typeCode" type="cs" use="optional" fixed="COMP"/>
-    <xs:attribute name="contextConductionInd" type="bl" use="optional"
-      fixed="true"/>
+    <xs:attribute name="contextConductionInd" type="bl" use="optional" fixed="true"/>
   </xs:complexType>
-  
+
   <xs:complexType name="POQM_MT000001UV.Entry2">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
@@ -267,7 +235,7 @@
           <xs:attribute name="code" type="ActRelationshipSubset"/>
         </xs:complexType>
       </xs:element>
-      
+
       <xs:choice>
         <xs:group ref="POQM_MT000002UV.CriteriaChoice"/>
         <xs:element name="sourceOf" type="POQM_MT000002UV.SourceOf"/>
@@ -277,10 +245,9 @@
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
     <xs:attribute name="typeCode" type="cs" use="optional" fixed="COMP"/>
-    <xs:attribute name="contextConductionInd" type="bl" use="optional"
-      fixed="true"/>
+    <xs:attribute name="contextConductionInd" type="bl" use="optional" fixed="true"/>
   </xs:complexType>
-  
+
   <xs:complexType name="POQM_MT000001UV.MeasureAttribute">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
@@ -289,10 +256,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="classCode" type="ActClass" use="optional"
-      fixed="OBS"/>
-    <xs:attribute name="moodCode" type="ActMood" use="optional"
-      fixed="EVN"/>
+    <xs:attribute name="classCode" type="ActClass" use="optional" fixed="OBS"/>
+    <xs:attribute name="moodCode" type="ActMood" use="optional" fixed="EVN"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.ParentQualityMeasureDocument">
     <xs:sequence>
@@ -305,10 +270,8 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="classCode" type="ActClass" use="optional"
-      fixed="DOC"/>
-    <xs:attribute name="moodCode" type="ActMood" use="optional"
-      fixed="EVN"/>
+    <xs:attribute name="classCode" type="ActClass" use="optional" fixed="DOC"/>
+    <xs:attribute name="moodCode" type="ActMood" use="optional" fixed="EVN"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.Participant2">
     <xs:sequence>
@@ -316,15 +279,12 @@
       <xs:element name="functionCode" type="CD" minOccurs="0"/>
       <xs:element name="time" type="IVL_TS" minOccurs="0"/>
       <xs:element name="signatureCode" type="CE" minOccurs="0"/>
-      <xs:element name="assignedPerson"
-        type="COCT_MT090107UV.AssignedPerson"/>
+      <xs:element name="assignedPerson" type="COCT_MT090107UV.AssignedPerson"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="typeCode" type="ParticipationType"
-      use="required"/>
-    <xs:attribute name="contextControlCode" type="ContextControl"
-      use="optional" fixed="OP"/>
+    <xs:attribute name="typeCode" type="ParticipationType" use="required"/>
+    <xs:attribute name="contextControlCode" type="ContextControl" use="optional" fixed="OP"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.QualityMeasureDocument">
     <xs:sequence>
@@ -339,30 +299,25 @@
       <xs:element name="languageCode" type="CE" minOccurs="0"/>
       <xs:element name="setId" type="II"/>
       <xs:element name="versionNumber" type="INT"/>
-      <xs:element name="author" type="POQM_MT000001UV.Author"
-        maxOccurs="unbounded"/>
+      <xs:element name="author" type="POQM_MT000001UV.Author" maxOccurs="unbounded"/>
       <xs:element name="custodian" type="POQM_MT000001UV.Custodian"/>
-      <xs:element name="verifier" type="POQM_MT000001UV.Verifier"
-        minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="participant" type="POQM_MT000001UV.Participant2"
-        minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="relatedDocument"
-        type="POQM_MT000001UV.RelatedDocument" minOccurs="0"
+      <xs:element name="verifier" type="POQM_MT000001UV.Verifier" minOccurs="0"
         maxOccurs="unbounded"/>
-      <xs:element name="subjectOf" type="POQM_MT000001UV.Subject"
-        minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="controlVariable" type="POQM_MT000001UV.ControlVariable"
-        minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="componentOf" type="POQM_MT000001UV.Component"
-        minOccurs="0"/>
-      <xs:element name="component" type="POQM_MT000001UV.Component2"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="participant" type="POQM_MT000001UV.Participant2" minOccurs="0"
+        maxOccurs="unbounded"/>
+      <xs:element name="relatedDocument" type="POQM_MT000001UV.RelatedDocument" minOccurs="0"
+        maxOccurs="unbounded"/>
+      <xs:element name="subjectOf" type="POQM_MT000001UV.Subject" minOccurs="0"
+        maxOccurs="unbounded"/>
+      <xs:element name="controlVariable" type="POQM_MT000001UV.ControlVariable" minOccurs="0"
+        maxOccurs="unbounded"/>
+      <xs:element name="componentOf" type="POQM_MT000001UV.Component" minOccurs="0"/>
+      <xs:element name="component" type="POQM_MT000001UV.Component2" minOccurs="0"
+        maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
-    <xs:attribute name="classCode" type="ActClass" use="optional"
-      fixed="DOC"/>
-    <xs:attribute name="moodCode" type="ActMood" use="optional"
-      fixed="EVN"/>
+    <xs:attribute name="classCode" type="ActClass" use="optional" fixed="DOC"/>
+    <xs:attribute name="moodCode" type="ActMood" use="optional" fixed="EVN"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.QualityMeasureSet">
     <xs:sequence>
@@ -373,8 +328,7 @@
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
     <xs:attribute name="classCode" type="ActClassRoot" use="required"/>
-    <xs:attribute name="moodCode" type="ActMood" use="optional"
-      fixed="EVN"/>
+    <xs:attribute name="moodCode" type="ActMood" use="optional" fixed="EVN"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.RelatedDocument">
     <xs:sequence>
@@ -384,8 +338,7 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="typeCode" type="x_ActRelationshipDocument"
-      use="required"/>
+    <xs:attribute name="typeCode" type="x_ActRelationshipDocument" use="required"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.AbstractSection">
     <xs:sequence>
@@ -395,24 +348,20 @@
       <xs:element name="title" type="ED" minOccurs="0"/>
       <xs:element name="text" type="StrucDoc.Text" minOccurs="0"/>
       <xs:element name="languageCode" type="CE" minOccurs="0"/>
-      <xs:element name="author" type="POQM_MT000001UV.Author"
-        minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="author" type="POQM_MT000001UV.Author" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="classCode" type="ActClass" use="optional"
-      fixed="DOCSECT"/>
-    <xs:attribute name="moodCode" type="ActMood" use="optional"
-      fixed="EVN"/>
+    <xs:attribute name="classCode" type="ActClass" use="optional" fixed="DOCSECT"/>
+    <xs:attribute name="moodCode" type="ActMood" use="optional" fixed="EVN"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.Section">
     <xs:complexContent>
       <xs:extension base="POQM_MT000001UV.AbstractSection">
         <xs:sequence>
-          <xs:element name="entry" type="POQM_MT000001UV.Entry"
-            minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="component" type="POQM_MT000001UV.Component3"
-            minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="entry" type="POQM_MT000001UV.Entry" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="component" type="POQM_MT000001UV.Component3" minOccurs="0"
+            maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -422,10 +371,9 @@
     <xs:complexContent>
       <xs:extension base="POQM_MT000001UV.AbstractSection">
         <xs:sequence>
-          <xs:element name="entry" type="POQM_MT000001UV.Entry1"
-            minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="component" type="POQM_MT000001UV.Component3"
-            minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="entry" type="POQM_MT000001UV.Entry1" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="component" type="POQM_MT000001UV.Component3" minOccurs="0"
+            maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -433,11 +381,11 @@
   <xs:complexType name="POQM_MT000001UV.DataCriteriaSection">
     <xs:complexContent>
       <xs:extension base="POQM_MT000001UV.AbstractSection">
-        <xs:sequence>
-          <xs:element name="entry" type="POQM_MT000001UV.Entry2"
-            minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="component" type="POQM_MT000001UV.Component3"
-            minOccurs="0" maxOccurs="unbounded"/>
+        <xs:sequence> 
+          <xs:element name="definition" type="POQM_MT000002UV.NewDefinition" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="entry" type="POQM_MT000001UV.Entry2" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="component" type="POQM_MT000001UV.Component3" minOccurs="0"
+            maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -446,10 +394,9 @@
     <xs:complexContent>
       <xs:extension base="POQM_MT000001UV.AbstractSection">
         <xs:sequence>
-          <xs:element name="entry" type="POQM_MT000001UV.Entry"
-            minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="component" type="POQM_MT000001UV.Component3"
-            minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="entry" type="POQM_MT000001UV.Entry" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="component" type="POQM_MT000001UV.Component3" minOccurs="0"
+            maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -463,19 +410,16 @@
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="classCode" type="ActClass" use="optional"
-      fixed="OBS"/>
-    <xs:attribute name="moodCode" type="ActMood" use="optional"
-      fixed="EVN"/>
+    <xs:attribute name="classCode" type="ActClass" use="optional" fixed="OBS"/>
+    <xs:attribute name="moodCode" type="ActMood" use="optional" fixed="EVN"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.MeasureObservationSection">
     <xs:complexContent>
       <xs:extension base="POQM_MT000001UV.AbstractSection">
         <xs:sequence>
-          <xs:element name="entry" type="POQM_MT000001UV.Entry"
-            minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="component" type="POQM_MT000001UV.Component3"
-            minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="entry" type="POQM_MT000001UV.Entry" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="component" type="POQM_MT000001UV.Component3" minOccurs="0"
+            maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -483,13 +427,11 @@
   <xs:complexType name="POQM_MT000001UV.Subject">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>
-      <xs:element name="measureAttribute"
-        type="POQM_MT000001UV.MeasureAttribute"/>
+      <xs:element name="measureAttribute" type="POQM_MT000001UV.MeasureAttribute"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="typeCode" type="ActRelationshipType"
-      use="optional" fixed="SUBJ"/>
+    <xs:attribute name="typeCode" type="ActRelationshipType" use="optional" fixed="SUBJ"/>
   </xs:complexType>
   <xs:complexType name="POQM_MT000001UV.Verifier">
     <xs:sequence>
@@ -497,14 +439,11 @@
       <xs:element name="functionCode" type="CD" minOccurs="0"/>
       <xs:element name="time" type="TS" minOccurs="0"/>
       <xs:element name="signatureCode" type="CE" minOccurs="0"/>
-      <xs:element name="assignedPerson"
-        type="COCT_MT090107UV.AssignedPerson"/>
+      <xs:element name="assignedPerson" type="COCT_MT090107UV.AssignedPerson"/>
     </xs:sequence>
     <xs:attributeGroup ref="InfrastructureRootAttributes"/>
     <xs:attribute name="nullFlavor" type="NullFlavor" use="optional"/>
-    <xs:attribute name="typeCode" type="ParticipationType"
-      use="optional" fixed="VRF"/>
-    <xs:attribute name="contextControlCode" type="ContextControl"
-      use="optional" fixed="OP"/>
+    <xs:attribute name="typeCode" type="ParticipationType" use="optional" fixed="VRF"/>
+    <xs:attribute name="contextControlCode" type="ContextControl" use="optional" fixed="OP"/>
   </xs:complexType>
 </xs:schema>
