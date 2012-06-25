@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xalan="http://xml.apache.org/xalan"
   xmlns:v3="urn:hl7-org:v3" xmlns="urn:hl7-org:v3">
-  <xsl:output method="xml" indent="yes"/>
+  <xsl:output method="xml" standalone="yes" omit-xml-declaration="no" indent="yes" xalan:indent-amount="2"/>
   <!-- 
     Process an HQMF document and extract the essentials for
     translation to executable code 
+    
+    Changelog:
+        Keith W. Boone - 5/2012 - initial version
+        Jeff Klann - 6/2012 - fixes to mesh with my updated schema
+          Note that this is not thoroughly tested - it has been tested on the i2b2 HQMF version of NQF59
+           and on my larger composite query. 
+           There are places this translator probably still does not produce valid ihqmf. Needs work.
   -->
   <xsl:template match="/v3:QualityMeasureDocument">
-    <HQMFQuery>
+    <ihqmf>
       <!-- Pull Title and Description from appropriate parts of the document -->
       <title>
         <xsl:value-of select="v3:title"/>
@@ -19,12 +27,10 @@
       </description>
 
       <!-- Translate the measurePeriod -->
+      <!-- TODO-JGK: This seems like a nice place to instantiate widths into high/low -->
       <measurePeriod>
         <xsl:copy-of select="v3:controlVariable/v3:measurePeriod/v3:id"/>
-        <timeValue>
-          <xsl:copy-of select="v3:controlVariable/v3:measurePeriod/v3:value/@*"/>
-          <xsl:copy-of select="v3:controlVariable/v3:measurePeriod/v3:value/*"/>
-        </timeValue>
+        <xsl:copy-of select="v3:controlVariable/v3:measurePeriod/v3:value"/>     
       </measurePeriod>
 
       <!-- Insert criteria -->
@@ -43,7 +49,7 @@
       <xsl:apply-templates
         select="//v3:stratifierCriteria"
       />
-    </HQMFQuery>
+    </ihqmf>
   </xsl:template>
 
   <!-- Turn off default text matching rule -->
@@ -65,7 +71,7 @@
       and freeTextValue
     -->
     <xsl:if test="$primaryCode/@valueSet">
-      <valueSet valueSet="{$primaryCode/@valueSet}"/>
+      <code valueSet="{$primaryCode/@valueSet}"/>
     </xsl:if>
 
     <!-- effectiveTime is a copy -->
@@ -73,7 +79,7 @@
 
     <!-- If there was a code set in primaryCode, copy it -->
     <xsl:if test="$primaryCode/@code">
-      <codedValue code="{$primaryCode/@code}"
+      <code code="{$primaryCode/@code}"
         codeSystem="{$primaryCode/@codeSystem}"/>
     </xsl:if>
 
@@ -104,7 +110,7 @@
       <!-- This select is why the criteria template predicates
         use ancestor-or-self::*/v3:definition, because the definition
         isn't needed in excerpted child criteria (because the parent 
-        provides it).
+        provides it). TODO: Introduced bug to fix another - got rid of ancestor or self
         -->
       <xsl:apply-templates select="*"/>
     </filterCriteria>
@@ -136,71 +142,15 @@
   <!-- Demographics -->
   <xsl:template
     match="v3:observationCriteria[
-      ancestor-or-self::*/v3:definition/v3:*/v3:id/@extension = 'Demographics']">
-
-    <!-- map SNOMED CT codes to criteriaType values -->
-    <!-- TBD: Use an external map file for extensibility -->
-    <xsl:variable name="criteriaType">
-      <xsl:if test="v3:code/@codeSystem != '2.16.840.1.113883.6.96'">
-        <xsl:message terminate="yes"> Unrecognized Demographics Code
-          System. Code: <xsl:value-of select="v3:code/@code"/> Coding
-          System: <xsl:value-of select="v3:code/@codeSystem"/>
-        </xsl:message>
-      </xsl:if>
-      <xsl:choose>
-        <!-- This is all in the schema -->
-        <xsl:when test="v3:code/@code='424144002'">AGE</xsl:when>
-        <xsl:when test="v3:code/@code='263495000'">GENDER</xsl:when>
-        <xsl:when test="v3:code/@code='160538000'">RELIGION</xsl:when>
-        <xsl:when test="v3:code/@code='364699009'"
-          >ETHNICITY</xsl:when>
-        <xsl:when test="v3:code/@code='125680007'"
-          >MARITAL_STATUS</xsl:when>
-        <xsl:when test="v3:code/@code='428996008'">LANGUAGE</xsl:when>
-
-        <!-- These should be included -->
-        <xsl:when test="v3:code/@code='103579009'">Race</xsl:when>
-
-        <!-- Some of these might need to be included -->
-        <xsl:when test="v3:code/@code='184099003'"
-          >Birth_Date</xsl:when>
-        <xsl:when test="v3:code/@code='399753006'"
-          >Date_of_Death</xsl:when>
-        <xsl:when test="v3:code/@code='169812000'"
-          >Birth_Place</xsl:when>
-        <xsl:when test="v3:code/@code='184097001'">Address</xsl:when>
-        <xsl:when test="v3:code/@code='184102003'"
-          >Postal_Code</xsl:when>
-        <xsl:when test="v3:code/@code='433178008'">City</xsl:when>
-        <xsl:when test="v3:code/@code='N/A'">State</xsl:when>
-        <xsl:when test="v3:code/@code='416647007'">Country</xsl:when>
-        <xsl:when test="v3:code/@code='432407003'">County</xsl:when>
-        <xsl:when test="v3:code/@code='398099009'"
-          >Street_Address</xsl:when>
-        <xsl:otherwise>
-          <xsl:message terminate="no"> Unrecognized Demographics Code.
-            Code: <xsl:value-of select="v3:code/@code"/> Coding System:
-              <xsl:value-of select="v3:code/@codeSystem"/>
-          </xsl:message>
-          <!-- Allows for fallback to SNOMED Code -->
-          <xsl:value-of select="v3:code/@code"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
+      self::*/v3:definition/v3:*/v3:id/@extension = 'Demographics']">
 
     <DemographicsCriteria>
       <xsl:call-template name="dataCriteria">
-        <xsl:with-param name="primaryCode" select="v3:value"/>
+        <xsl:with-param name="primaryCode" select="v3:code"/>
       </xsl:call-template>
 
-      <criteriaType>
-        <xsl:value-of select="$criteriaType"/>
-      </criteriaType>
-
-      <xsl:if test="$criteriaType='AGE'">
-        <ageValue>
-          <xsl:copy-of select="v3:value/*"/>
-        </ageValue>
+      <xsl:if test="v3:value">
+        <xsl:copy-of select="v3:value"/>
       </xsl:if>
     </DemographicsCriteria>
   </xsl:template>
@@ -208,7 +158,7 @@
   <!-- Problems -->
   <xsl:template
     match="v3:observationCriteria[
-      ancestor-or-self::*/v3:definition/v3:*/v3:id/@extension = 'Problem']">
+      self::*/v3:definition/v3:*/v3:id/@extension = 'Problems']">
     <ProblemCriteria>
       <xsl:call-template name="dataCriteria">
         <xsl:with-param name="primaryCode" select="v3:value"/>
@@ -219,7 +169,7 @@
   <!-- Allergies -->
   <xsl:template
     match="v3:observationCriteria[ 
-      ancestor-or-self::*/v3:definition/v3:*/v3:id/@extension = 'Allergy']">
+      self::*/v3:definition/v3:*/v3:id/@extension = 'Allergies']">
     <AllergyCriteria>
       <xsl:call-template name="dataCriteria">
         <xsl:with-param name="primaryCode" select="v3:value"/>
@@ -230,18 +180,21 @@
   <!-- Encounters -->
   <xsl:template
     match="v3:encounterCriteria[
-    ancestor-or-self::*/v3:definition/v3:*/v3:id/@extension = 'Encounter']">
+    self::*/v3:definition/v3:*/v3:id/@extension = 'Encounters']">
     <EncounterCriteria>
       <xsl:call-template name="dataCriteria">
         <xsl:with-param name="primaryCode" select="v3:code"/>
       </xsl:call-template>
+      <xsl:if test="v3:value">
+        <xsl:copy-of select="v3:value"/>
+      </xsl:if>
     </EncounterCriteria>
   </xsl:template>
 
   <!-- Procedures -->
   <xsl:template
     match="v3:procedureCriteria[
-    ancestor-or-self::*/v3:definition/v3:*/v3:id/@extension = 'Procedure']">
+    self::*/v3:definition/v3:*/v3:id/@extension = 'Procedures']">
     <ProcedureCriteria>
       <xsl:call-template name="dataCriteria">
         <xsl:with-param name="primaryCode" select="v3:code"/>
@@ -259,8 +212,8 @@
   <!-- Medications -->
   <xsl:template
     match="v3:substanceAdministrationCriteria[
-    ancestor-or-self::*/v3:definition/v3:*/v3:id/@extension = 
-    'Medication']">
+    self::*/v3:definition/v3:*/v3:id/@extension = 
+    'Medications']">
     <MedicationCriteria>
       <xsl:if
         test="not(v3:participant/v3:roleParticipant[@classCode='THER']/v3:code)">
@@ -310,8 +263,8 @@
   <!-- TBD: Consider merging this template with substanceAdministration -->
   <xsl:template
     match="v3:supplyCriteria[
-    ancestor-or-self::*/v3:definition/v3:*/v3:id/@extension = 
-    'Medication']">
+    self::*/v3:definition/v3:*/v3:id/@extension = 
+    'Medications']">
     <MedicationCriteria>
       <xsl:if
         test="not(v3:participant/v3:roleParticipant[@classCode='THER']/v3:code)">
@@ -339,7 +292,7 @@
   <!-- TBD: Do we need to deal with supply for immunization? -->
   <xsl:template
     match="v3:substanceAdministrationCriteria[
-    ancestor-or-self::*/v3:definition/v3:*/v3:id/@extension = 'Immunization']">
+    self::*/v3:definition/v3:*/v3:id/@extension = 'Immunizations']">
     <ImmunizationCriteria>
       <xsl:call-template name="dataCriteria">
         <xsl:with-param name="primaryCode" select="v3:value"/>
@@ -356,20 +309,14 @@
 
   <xsl:template
     match="v3:observationCriteria[
-    ancestor-or-self::*/v3:definition/v3:*/v3:id/@extension = 'LabResults']">
+    self::*/v3:definition/v3:*/v3:id/@extension = 'Results']">
     <LabResultsCriteria>
       <xsl:call-template name="dataCriteria">
         <xsl:with-param name="primaryCode" select="v3:code"/>
       </xsl:call-template>
 
-      <!-- TBD: What do we do about coded results (e.g., micro) -->
-      <xsl:if test="v3:value[v3:low|v3:high]">
-        <resultValue>
-          <xsl:copy-of select="v3:value/@*"/>
-          <xsl:copy-of select="v3:value/*"/>
-        </resultValue>
-      </xsl:if>
-
+     <xsl:copy-of select="v3:value"/>
+ 
       <!-- TBD: Not sure what to put here -->
       <xsl:if test="false()">
         <resultStatus>st</resultStatus>
@@ -379,7 +326,7 @@
 
   <xsl:template
     match="v3:observationCriteria[
-    ancestor-or-self::*/v3:definition/v3:*/v3:id/@extension = 'VitalSign']">
+    self::*/v3:definition/v3:*/v3:id/@extension = 'Vitals']">
     <VitalSignCriteria>
       <xsl:call-template name="dataCriteria">
         <xsl:with-param name="primaryCode" select="v3:code"/>
@@ -400,7 +347,7 @@
     <populationCriteria>
       <xsl:copy-of select="v3:id"/>
       <xsl:call-template name="dataCriteriaCombiner">
-        <xsl:with-param name="operation">allTrue</xsl:with-param>
+        <xsl:with-param name="operation">AllTrue</xsl:with-param>
       </xsl:call-template>
     </populationCriteria>
   </xsl:template>
@@ -409,7 +356,7 @@
     <populationCriteria>
       <xsl:copy-of select="v3:id"/>
       <xsl:call-template name="dataCriteriaCombiner">
-        <xsl:with-param name="operation">atLeastOneTrue</xsl:with-param>
+        <xsl:with-param name="operation">AtLeastOneTrue</xsl:with-param>
       </xsl:call-template>
     </populationCriteria>
   </xsl:template>
@@ -417,7 +364,7 @@
     <stratifierCriteria>
       <xsl:copy-of select="v3:id"/>
       <xsl:call-template name="dataCriteriaCombiner">
-        <xsl:with-param name="operation">onlyOneTrue</xsl:with-param>
+        <xsl:with-param name="operation">OnlyOneTrue</xsl:with-param>
       </xsl:call-template>
     </stratifierCriteria>
   </xsl:template>
@@ -429,7 +376,7 @@
       (Change v3:id below to v3:id/@*)
     -->
     <dataCriteriaReference>
-      <xsl:copy-of select="v3:id"/>
+      <xsl:copy-of select="v3:id/@*"/>
     </dataCriteriaReference>
   </xsl:template>
   
@@ -438,7 +385,9 @@
     match="v3:allTrue|v3:allFalse|
        v3:atLeastOneTrue|v3:atLeastOneFalse|
        v3:onlyOneTrue|v3:onlyOneFalse">
-    <xsl:param name="operation" select="local-name(.)"/>
+    <xsl:param name="operation" select="concat(translate(substring(local-name(.),
+      1,1),'abcdefghijklmnopqrstuvwxyz',
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),substring(local-name(.),2,string-length(local-name(.))))"/>
     <dataCriteriaCombiner>
       <!-- TBD: Change initial case of dataCriteriaOperationType to
         match schema
