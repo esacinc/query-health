@@ -220,6 +220,12 @@
                     </date_to>
                 </constrain_by_date>                
             </xsl:when>
+            <xsl:when test="ancestor-or-self::hl7v3:DemographicsCriteria/hl7v3:code/@code='424144002'">
+                <xsl:message terminate="no">
+                    Default date constraints on ages need to be handled by adjusting the base age
+                    and are currently ignored.
+                </xsl:message>
+            </xsl:when>
             <xsl:otherwise>
                 <!-- Process measurePeriod -->
                 <constrain_by_date>
