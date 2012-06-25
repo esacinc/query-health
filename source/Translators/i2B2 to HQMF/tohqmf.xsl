@@ -12,6 +12,8 @@
              SHRINE, so the demo ontology might be a better choice for labs?
         Jeff Klann - 04/2/2012, 4/3/2012
            Bugfixes. Added some boilerplate to link to the ONT cell through a Java webservice call.
+        Jeff Klann - 6/20/2012
+        	First pass at integration is complete. The webservice URL to get term info is passed as as parameter "serviceurl", which defaults to localhost. Only the key request is sent, not the authentication info. The service URL's port is hardcoded to 8080 right now, which should be changed. Age codes still rely on the local concept dictionary because my lookup mechanism doesn't use fields which are searchable through the API. Probably a good way to do it is to have a service refresh all age codes occasionally and store a local copy.  
            
         The current supported ontology mish-mash:
          SHRINE Demographics-> Age, Race, Marital Status, Gender, Language
@@ -31,8 +33,7 @@
            - Add basecodes to the entire terminology, where an i2b2-specific OID replaces a coded value when none exists. 
               Update the XSLT to support this.
            - Validation against XML Schema still shows minor issues.
-           - Various sections marked TBD:
-           - Connect with the i2b2 Ontology cell         
+           - Various sections marked TBD:        
 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -42,17 +43,43 @@
   extension-element-prefixes="ont"
   xmlns="urn:hl7-org:v3" version="1.0">
   <xsl:import href="time.xsl"/>
+  <xsl:import href="url-encode.xsl"/>
   <xsl:output indent="yes" xalan:indent-amount="2"/>
   
-  <xalan:component prefix="ont">
+  <!-- The root URL for the webservice. If it is blank, runs locally on concepts.xml -->
+  <xsl:param name="serviceurl">http://localhost</xsl:param>
+  
+  <!--<xalan:component prefix="ont">
     <xalan:script lang="javaclass" src="xalan://edu.harvard.i2b2.eclipse.plugins.ontology.ws.OntServiceDriver"/>
-  </xalan:component>
+  </xalan:component>-->
   
   <!-- 
-    create a variable to access I2B2 Concepts.  In production
-    this would be accessed via a web service request
+    create a variable to access local I2B2 Concepts for testing
   -->
-  <xsl:variable name="concepts" select="document('concepts.xml')"/>
+  <xsl:variable name="concepts-test" select="document('concepts.xml')"/>
+  
+  
+  
+  <xsl:template name="replace-string">
+    <xsl:param name="text"/>
+    <xsl:param name="replace"/>
+    <xsl:param name="with"/>
+    <xsl:choose>
+      <xsl:when test="contains($text,$replace)">
+        <xsl:value-of select="substring-before($text,$replace)"/>
+        <xsl:value-of select="$with"/>
+        <xsl:call-template name="replace-string">
+          <xsl:with-param name="text"
+select="substring-after($text,$replace)"/>
+          <xsl:with-param name="replace" select="$replace"/>
+          <xsl:with-param name="with" select="$with"/>
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$text"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
   
   <!-- 
     a template for I2B2 concept lookup.
@@ -61,20 +88,25 @@
     <xsl:param name="item_key"/>
     <xsl:param name="tag_name"/> <!-- Will be either code or value --> 
     
-    <!-- locate the concept from the I2B2 ontology.  For now, this just pulls
-      from a document.  Later, it should pull the ontology XML out of a RESTful
-      API call that might look like this:
-      http://i2b2.org/ontology?key=ontologyKey
-      
-      When that API is implemented, concept should come from:
-      document(concat('http://i2b2.org/ontology?key=',current()/item_key))/concept
-    -->
-    <!-- This call suggests using the existing workspace ontology driver to link to the ONT cell in an i2b2 workbench environment. 
-      It is not fully tested yet. 
-      <xsl:variable name="concept" 
-         select="ont:getTermInfoQuick(&quot;$item_key&quot;)"/> -->
-    <xsl:variable name="concept"
-      select="$concepts//concept[key = normalize-space($item_key)]"/>
+    <!-- URLencode the item key -->
+    <xsl:variable name="item_key2">
+      <xsl:call-template name="url-encode">
+        <xsl:with-param name="str" select="normalize-space($item_key)"/>
+      </xsl:call-template>
+	</xsl:variable>
+	
+	  <!-- Locate the concept in the i2b2 ontology, either with the web service, or
+	    the local file if in test mode. -->
+    <xsl:variable name="concept-rtf">
+      <xsl:if test="not($serviceurl='')">
+        <xsl:copy-of select="document(concat($serviceurl,':8080/hqmf/getTermInfo?key=',normalize-space($item_key2)))//concept[key = normalize-space($item_key)]"/>
+      </xsl:if>
+      <xsl:if test="$serviceurl=''">
+        <xsl:copy-of select="$concepts-test//concept[key = normalize-space($item_key)]"/>
+      </xsl:if>
+    </xsl:variable>
+    <!-- Arbitrarily choose the first matching concept. -->
+    <xsl:variable name="concept" select="xalan:nodeset($concept-rtf)/concept[1]"/>
     
     <!-- extract the code from the I2B2 concept XML -->
     <xsl:variable name="code"
@@ -468,7 +500,7 @@
     </observationCriteria>
   -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\i2b2_DEMO\i2b2\Demographics')] | item[starts-with(item_key,'\\SHRINE\SHRINE\Demographics\')]">
+    match="item[starts-with(item_key,'\\i2b2_DEMO\i2b2\Demographics')] | item[starts-with(item_key,'\\I2B2\i2b2\Demographics')] | item[starts-with(item_key,'\\SHRINE\SHRINE\Demographics\')]">
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
     <xsl:param name="name"/>
@@ -647,7 +679,7 @@
     
   -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\i2b2_DIAG\i2b2\Diagnoses')] | item[starts-with(item_key,'\\SHRINE\SHRINE\Diagnoses\')]">
+    match="item[starts-with(item_key,'\\I2B2\i2b2\Diagnoses')] | item[starts-with(item_key,'\\i2b2_DIAG\i2b2\Diagnoses')] | item[starts-with(item_key,'\\SHRINE\SHRINE\Diagnoses\')]">
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
     <xsl:param name="name"/>   
@@ -708,7 +740,7 @@
   
   -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\i2b2_LABS\i2b2\Labtests')]">
+    match="item[starts-with(item_key,'\\I2B2\i2b2\Labtests')] | item[starts-with(item_key,'\\i2b2_LABS\i2b2\Labtests')]">
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
     <xsl:param name="name"/>
@@ -838,7 +870,7 @@
     
   -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\SHRINE\SHRINE\medications\')] | item[starts-with(item_key,'\\i2b2_MEDS\i2b2\Medications')]">
+    match="item[starts-with(item_key,'\\SHRINE\SHRINE\medications\')] | item[starts-with(item_key,'\\I2B2\i2b2\Medications')]">
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
     <xsl:param name="name"/>
@@ -899,7 +931,7 @@
     </observationCriteria>
       -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\i2b2_PROC\i2b2\Procedures')]">
+    match="item[starts-with(item_key,'\\I2B2\i2b2\Procedures')] | item[starts-with(item_key,'\\i2b2_PROC\i2b2\Procedures')]">
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
     <xsl:param name="name"/>
@@ -930,7 +962,7 @@
         We need to define what OIDs we're using for visit type. There is no guidance of figure out length of stay.
   -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\i2b2_VISIT\i2b2\Visit Details')]"> 
+    match="item[starts-with(item_key,'\\I2B2\i2b2\Visit Details')]"> 
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
     <xsl:param name="name"/>
@@ -1062,10 +1094,14 @@
         </precondition>
       </xsl:when>
       <!-- If there is only one item in the panel, no need to 
-        Or it with other items.
+        Or it with other items. TODO: I stuck this back in for now for ease of reverse translation
       -->
       <xsl:otherwise>
-        <xsl:apply-templates select="item" mode="criteria"/>
+        <precondition>
+          <atLeastOneTrue>
+            <xsl:apply-templates select="item" mode="criteria"/>
+          </atLeastOneTrue>
+        </precondition>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -1088,6 +1124,32 @@
     <xsl:variable name="elem-name">
       <!-- The name of the reference element is set based on the ontology item_key -->
       <xsl:choose>
+        <!-- i2b2 standard ontology references -->
+        <xsl:when
+          test="starts-with(item_key,'\\I2B2\i2b2\Demographics')">
+          <xsl:text>observationReference</xsl:text>
+        </xsl:when>
+        <xsl:when
+          test="starts-with(item_key,'\\I2B2\i2b2\Diagnoses')">
+          <xsl:text>observationReference</xsl:text>
+        </xsl:when>
+        <xsl:when
+          test="starts-with(item_key,'\\I2B2\i2b2\Labtests')">
+          <xsl:text>observationReference</xsl:text>
+        </xsl:when>
+        <xsl:when
+          test="starts-with(item_key,'\\I2B2\i2b2\Medications')">
+          <xsl:text>substanceAdministrationReference</xsl:text>
+        </xsl:when>
+        <xsl:when
+          test="starts-with(item_key,'\\I2B2\i2b2\Procedures')">
+          <xsl:text>procedureReference</xsl:text>
+        </xsl:when>
+        <xsl:when
+          test="starts-with(item_key,'\\I2B2\i2b2\Visit Details')">
+          <xsl:text>encounterReference</xsl:text>
+        </xsl:when>
+        
         <!-- i2b2 demo ontology references -->
         <xsl:when
           test="starts-with(item_key,'\\i2b2_DEMO\i2b2\Demographics')">
