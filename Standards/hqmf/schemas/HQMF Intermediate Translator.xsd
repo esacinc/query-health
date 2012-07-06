@@ -83,12 +83,12 @@
 
     <xs:simpleType name="DataCriteriaOperationType">
         <xs:restriction base="cs">
-            <xs:enumeration value="AllTrue"/>
-            <xs:enumeration value="AllFalse"/>
-            <xs:enumeration value="AtLeastOneTrue"/>
-            <xs:enumeration value="AtLeastOneFalse"/>
-            <xs:enumeration value="OnlyOneTrue"/>
-            <xs:enumeration value="OnlyOneFalse"/>
+            <xs:enumeration value="allTrue"/>
+            <xs:enumeration value="allFalse"/>
+            <xs:enumeration value="atLeastOneTrue"/>
+            <xs:enumeration value="atLeastOneFalse"/>
+            <xs:enumeration value="onlyOneTrue"/>
+            <xs:enumeration value="onlyOneFalse"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -137,6 +137,19 @@
             </xs:choice>
         </xs:sequence>
     </xs:complexType>
+    
+    <xs:complexType name="ConceptType">
+        <xs:attribute name="code" type="st"/>
+    </xs:complexType>
+    
+    <xs:complexType name="ValueSetType">
+        <xs:sequence>
+            <xs:element name="id" type="II"/>
+            <xs:element name="displayName" type="st" minOccurs="0"/>
+            <xs:element name="version" type="st" minOccurs="0"/>
+            <xs:element name="concept" type="ConceptType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
 
     <xs:complexType abstract="false" name="DataCriteriaType">
         <xs:sequence>
@@ -144,6 +157,7 @@
             <xs:element name="localVariableName" type="ST"/>
             <xs:element name="effectiveTime" type="IVL_TS" minOccurs="0"/>
             <xs:element name="code" type="CD" minOccurs="0"/>
+            <xs:element name="valueSet" type="ValueSetType" minOccurs="0"/>
             <xs:element name="freeTextCode" type="st" minOccurs="0"/>
             <xs:element name="filterCriteria" type="FilterCriteriaType" minOccurs="0"
                 maxOccurs="unbounded"/>
