@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ihqmf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xsi:schemaLocation="urn:hl7-org:v3 ../schemas/HQMF%20Intermediate.xsd"
+ xsi:schemaLocation="urn:hl7-org:v3 ../schemas/HQMF%20Intermediate%20Translator.xsd"
  xmlns="urn:hl7-org:v3">
     <title>NQF0059 Sample</title>
     <description>This is a sample query using the simplified HQMF</description>
@@ -202,23 +202,23 @@
     <populationCriteria>
         <id root="c75181d0-73eb-11de-8a39-0800200c9a66" extension="IPP"/>
         <dataCriteriaCombiner>
-            <criteriaOperation>AllTrue</criteriaOperation>
+            <criteriaOperation>allTrue</criteriaOperation>
             <dataCriteriaReference root="0" extension="ageBetween17and64"/>
         </dataCriteriaCombiner>
     </populationCriteria>
     <populationCriteria>
         <id root="c75181d0-73eb-11de-8a39-0800200c9a66" extension="DENOM"/>
         <dataCriteriaCombiner>
-            <criteriaOperation>AtLeastOneTrue</criteriaOperation>
+            <criteriaOperation>atLeastOneTrue</criteriaOperation>
             <dataCriteriaReference root="0" extension="DiabetesMedAdministered"/>
             <dataCriteriaReference root="0" extension="DiabetesMedIntended"/>
             <dataCriteriaReference root="0" extension="DiabetesMedSupplied"/>
             <dataCriteriaReference root="0" extension="DiabetesMedOrdered"/>
             <dataCriteriaCombiner>
-                <criteriaOperation>AllTrue</criteriaOperation>
+                <criteriaOperation>allTrue</criteriaOperation>
                 <dataCriteriaReference root="0" extension="HasDiabetes"/>
                 <dataCriteriaCombiner>
-                    <criteriaOperation>AtLeastOneTrue</criteriaOperation>
+                    <criteriaOperation>atLeastOneTrue</criteriaOperation>
                     <dataCriteriaReference root="0" extension="EDorInpatientEncounter"/>
                     <dataCriteriaReference root="0" extension="AmbulatoryEncounter"/>
                 </dataCriteriaCombiner>
@@ -228,7 +228,7 @@
     <populationCriteria>
         <id root="c75181d0-73eb-11de-8a39-0800200c9a66" extension="NUMER"/>
         <dataCriteriaCombiner>
-            <criteriaOperation>AllTrue</criteriaOperation>
+            <criteriaOperation>allTrue</criteriaOperation>
             <dataCriteriaReference root="0" extension="HbA1Cgt9"/>
         </dataCriteriaCombiner>
     </populationCriteria>
@@ -236,11 +236,11 @@
         <id root="c75181d0-73eb-11de-8a39-0800200c9a66"
             extension="DENEXCEP"/>
         <dataCriteriaCombiner>
-            <criteriaOperation>AtLeastOneTrue</criteriaOperation>
+            <criteriaOperation>atLeastOneTrue</criteriaOperation>
             <dataCriteriaReference root="0" extension="HasSteroidInducedDiabetes"/>
             <dataCriteriaReference root="0" extension="HasGestationalDiabetes"/>
             <dataCriteriaCombiner>
-                <criteriaOperation>AllTrue</criteriaOperation>
+                <criteriaOperation>allTrue</criteriaOperation>
                 <dataCriteriaReference root="0" extension="HasPolycysticOvaries"/>
                 <dataCriteriaReference root="0" extension="HasDiabetes"/>
             </dataCriteriaCombiner>

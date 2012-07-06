@@ -414,6 +414,7 @@
         type="POQM_MT000002UV.ProcedureDefinition"/>
       <xs:element name="supplyDefinition"
         type="POQM_MT000002UV.SupplyDefinition"/>
+      <xs:element name="valueSet" type="POQM_MT000002UV.ValueSet"/>
     </xs:choice>
   </xs:group>
 
@@ -2849,6 +2850,18 @@
       use="optional" fixed="INST"/>
   </xs:complexType>
 
+  <xs:complexType name="POQM_MT000002UV.ValueSet">
+    <xs:sequence>
+      <xs:group ref="InfrastructureRootElements"/>
+      <xs:element name="id" type="II" minOccurs="1"/>
+      <xs:element name="text" type="ED" minOccurs="0" />
+    </xs:sequence>
+    <xs:attributeGroup ref="InfrastructureRootAttributes"/>
+    <xs:attribute name="classCode" type="ActClass" fixed="OBS" use="optional"/>
+    <xs:attribute name="moodCode" type="ActMood" fixed="DEF"
+      use="optional"/>
+  </xs:complexType>
+  
   <xs:complexType name="POQM_MT000002UV.SourceOf2">
     <xs:sequence>
       <xs:group ref="InfrastructureRootElements"/>

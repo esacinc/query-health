@@ -90,25 +90,6 @@
           <id root="0" extension="RX"/>
         </supplyDefinition>
       </definition>
-      <definition>
-        <valueSet>
-          <id root='1.2.840.10008.6.1.308'/>
-          <text>
-            <reference value='https://example.com/RetrieveValueSet?id=1.2.840.10008.6.1.308'/> 
-            
-            <RetrieveValueSetResponse xmlns="urn:ihe:iti:svs:2008">
-              <ValueSet id="1.2.840.10008.6.1.308" displayName="Common Anatomic Regions Context ID 4031"
-                version="20061023">
-                <ConceptList xml:lang="en-US">
-                  <Concept code="T-D4000" displayName="Abdomen" codeSystem="2.16.840.1.113883.6.5"/>
-                  <Concept code="R-FAB57" displayName="Abdomen and Pelvis" codeSystem="2.16.840.1.113883.6.5"/>
-                </ConceptList>
-              </ValueSet>
-            </RetrieveValueSetResponse>
-            
-          </text>
-        </valueSet>
-      </definition>
 
       <!-- Define the measure parameters as observations in event mood -->
       <entry>
@@ -268,6 +249,51 @@
           </temporallyRelatedInformation>
         </encounterCriteria>
       </entry>
+      
+      <entry>
+        <localVariableName>NewEncounter</localVariableName>
+        <encounterCriteria>
+          <id root="0" extension="NewEncounter"/>
+          <code valueSet="2.16.840.1.113883.3.464.1.42"/>
+          <lengthOfStayQuantity value="20" unit="D"/>
+          <!-- EDorInpatientEncounterValueSet -->
+          <definition>
+            <encounterReference moodCode="DEF">
+              <id root="0" extension="Encounters"/>
+            </encounterReference>
+          </definition>
+          <temporallyRelatedInformation typeCode="SAS">
+            <pauseQuantity value="-1" unit="a"/>
+            <observationReference moodCode="EVN">
+              <id root="0" extension="MeasurePeriod"/>
+            </observationReference>
+          </temporallyRelatedInformation>
+        </encounterCriteria>
+      </entry>
+      
+      <entry>
+        <localVariableName>NewEncounterWithInclusive</localVariableName>
+        <encounterCriteria>
+          <id root="0" extension="NewEncounterWithInclusive"/>
+          <code valueSet="2.16.840.1.113883.3.464.1.42"/>
+          <lengthOfStayQuantity xsi:type="IVL_PQ">
+            <low value="20" unit="D" inclusive="true"/>
+          </lengthOfStayQuantity>
+          <!-- EDorInpatientEncounterValueSet -->
+          <definition>
+            <encounterReference moodCode="DEF">
+              <id root="0" extension="Encounters"/>
+            </encounterReference>
+          </definition>
+          <temporallyRelatedInformation typeCode="SAS">
+            <pauseQuantity value="-1" unit="a"/>
+            <observationReference moodCode="EVN">
+              <id root="0" extension="MeasurePeriod"/>
+            </observationReference>
+          </temporallyRelatedInformation>
+        </encounterCriteria>
+      </entry>
+      
       <entry>
         <localVariableName>AmbulatoryEncounter</localVariableName>
         <encounterCriteria>
@@ -470,7 +496,6 @@
   </component>
   <component>
     <populationCriteriaSection>
-      <id root="0" extension="Pop1"/>
       <code code="57026-7" codeSystem="2.16.840.1.113883.6.1"/>
       <title>Population Criteria Section</title>
       <text>This section describes the Initial Patient Population, Numerator, Denominator,

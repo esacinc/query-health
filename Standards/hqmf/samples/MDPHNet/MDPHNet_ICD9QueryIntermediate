@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ihqmf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="urn:hl7-org:v3 ../../schemas/HQMF%20Intermediate%20Translator.xsd">
+   <title>XML Test 01</title>
+   <description>XML Test 01</description>
+   <measurePeriod>
+      <id root="0" extension="MeasurePeriod"/>
+      <value>
+          
+         <low value="20090110"/>
+          
+         <high value="20120110"/>
+      
+      </value>
+   </measurePeriod>
+   <DemographicsCriteria>
+      <id root="0" extension="ageBetween15and75"/>
+      <localVariableName>ageBetween15and75</localVariableName>
+      <code code="424144002" codeSystem="2.16.840.1.113883.6.96"/>
+      <value xsi:type="IVL_PQ">
+            
+         <low value="15" unit="a" inclusive="true"/>
+            
+         <high value="75" unit="a" inclusive="true"/>
+          
+      </value>
+   </DemographicsCriteria>
+   <DemographicsCriteria>
+      <id root="0" extension="5YrStratifier"/>
+      <localVariableName>5YrStratifier</localVariableName>
+      <code code="424144002" codeSystem="2.16.840.1.113883.6.96"/>
+      <value xsi:type="IVL_PQ">
+                
+         <width value="5"/>     
+             
+      </value>
+   </DemographicsCriteria>
+   <DemographicsCriteria>
+      <id root="0" extension="genderMale"/>
+      <localVariableName>genderMale</localVariableName>
+      <code code="263495000" codeSystem="2.16.840.1.113883.6.96"/>
+      <value xsi:type="CD" codeSystem="2.16.840.1.113883.5.1" code="M"/>
+   </DemographicsCriteria>
+   <DemographicsCriteria>
+      <id root="0" extension="genderFemale"/>
+      <localVariableName>genderFemale</localVariableName>
+      <code code="263495000" codeSystem="2.16.840.1.113883.6.96"/>
+      <value xsi:type="CD" codeSystem="2.16.840.1.113883.5.1" code="F"/>
+   </DemographicsCriteria>
+   <DemographicsCriteria>
+      <id root="0" extension="raceCriteria"/>
+      <localVariableName>raceCriteria</localVariableName>
+      <code code="103579009" codeSystem="2.16.840.1.113883.6.96"/>   
+      <valueSet>
+         <id root='1.1.1.1.1.1.1'/>
+         <concept code="0"/>
+         <concept code="1"/>
+         <concept code="2"/>
+         <concept code="3"/>
+         <concept code="4"/>
+         <concept code="5"/>
+         <concept code="6"/>
+      </valueSet>
+      <value xsi:type="CD" valueSet="1.1.1.1.1.1.1"/>   
+   </DemographicsCriteria>
+   <EncounterCriteria>
+      <id root="0" extension="ICD9Diagnosis"/>
+      <localVariableName>ICD9Diagnosis</localVariableName>
+      <code valueSet="1.1.1.1.1.1.2"/>
+      <valueSet>
+         <id root='1.1.1.1.1.1.1'/>
+         <concept code="007.0"/>
+         <concept code="007.1"/>
+         <concept code="007.2"/>
+         <concept code="007.3"/>
+         <concept code="007.4"/>
+         <concept code="007.5"/>
+      </valueSet>
+   </EncounterCriteria>
+   <populationCriteria>
+      <id root="c75181d0-73eb-11de-8a39-0800200c9a66" extension="IPP"/>
+      <dataCriteriaCombiner>
+         <criteriaOperation>allTrue</criteriaOperation>
+         <dataCriteriaReference root="0" extension="ageBetween15and75"/>
+         <dataCriteriaReference root="0" extension="ICD9Diagnosis"/>
+         <dataCriteriaReference root="0" extension="raceCriteria"/>
+         <dataCriteriaCombiner>
+            <criteriaOperation>atLeastOneTrue</criteriaOperation>
+            <dataCriteriaReference root="0" extension="genderMale"/>
+            <dataCriteriaReference root="0" extension="genderFemale"/>
+         </dataCriteriaCombiner>
+      </dataCriteriaCombiner>
+   </populationCriteria>
+   <stratifierCriteria>
+      <id root="0" extension="CLASSIFIER1"/>
+         <dataCriteriaReference root="0" extension="5YrStratifier"/>
+         <dataCriteriaReference root="0" extension="genderMale"/>
+         <dataCriteriaReference root="0" extension="genderFemale"/>
+         <dataCriteriaReference root="0" extension="raceCriteria"/>
+   </stratifierCriteria>
+</ihqmf>
