@@ -14,7 +14,11 @@
            Bugfixes. Added some boilerplate to link to the ONT cell through a Java webservice call.
         Jeff Klann - 6/20/2012
         	First pass at integration is complete. The webservice URL to get term info is passed as as parameter "serviceurl", which defaults to localhost. Only the key request is sent, not the authentication info. The service URL's port is hardcoded to 8080 right now, which should be changed. Age codes still rely on the local concept dictionary because my lookup mechanism doesn't use fields which are searchable through the API. Probably a good way to do it is to have a service refresh all age codes occasionally and store a local copy.  
-           
+        Jeff Klann - 7/9/2012
+          Updates wrt integration. Now extracts security parameters from the i2b2 message and uses this to query the ONT cell.
+          Still has the problem with age range lookups
+          Now requires a full i2b2 query message (not just query definition) for security parameter lookup
+        
         The current supported ontology mish-mash:
          SHRINE Demographics-> Age, Race, Marital Status, Gender, Language
          SHRINE Medications (RxNorm ingredients)
@@ -47,7 +51,15 @@
   <xsl:output indent="yes" xalan:indent-amount="2"/>
   
   <!-- The root URL for the webservice. If it is blank, runs locally on concepts.xml -->
-  <xsl:param name="serviceurl">http://localhost</xsl:param>
+  <!-- If not running locally, extracts security parameters from the i2b2 message. -->
+  <xsl:param name="serviceurl">http://localhost:8080</xsl:param>
+  
+  <!-- The security parameters for concept lookup -->
+  <xsl:variable name="userdomain" select="//security/domain/text()"/>
+  <xsl:variable name="userproject" select="descendant::message_body/descendant::user/@group"/>
+  <xsl:variable name="username" select="//security/username/text()"/>
+  <xsl:variable name="userpassword"><xsl:if test="not(//security/password/@is_token='true')"><xsl:value-of select="//security/password/text()"/></xsl:if></xsl:variable>
+  <xsl:variable name="sessiontoken"><xsl:if test="//security/password/@is_token='true'"><xsl:value-of select="substring-after(//security/password/text(),'SessionKey:')"/></xsl:if></xsl:variable>
   
   <!--<xalan:component prefix="ont">
     <xalan:script lang="javaclass" src="xalan://edu.harvard.i2b2.eclipse.plugins.ontology.ws.OntServiceDriver"/>
@@ -96,10 +108,14 @@ select="substring-after($text,$replace)"/>
 	</xsl:variable>
 	
 	  <!-- Locate the concept in the i2b2 ontology, either with the web service, or
-	    the local file if in test mode. -->
+	  the local file if in test mode. -->
+    <xsl:variable name="url">
+      <xsl:if test="$sessiontoken=''"><xsl:value-of select="concat($serviceurl,'/hqmf/getTermInfo/',$userdomain,'/',$userproject,'/',$username,'/password/',$userpassword)"/></xsl:if>
+      <xsl:if test="not($sessiontoken='')"><xsl:value-of select="concat($serviceurl,'/hqmf/getTermInfo/',$userdomain,'/',$userproject,'/',$username,'/token/',$sessiontoken)"/></xsl:if>
+    </xsl:variable>
     <xsl:variable name="concept-rtf">
       <xsl:if test="not($serviceurl='')">
-        <xsl:copy-of select="document(concat($serviceurl,':8080/hqmf/getTermInfo?key=',normalize-space($item_key2)))//concept[key = normalize-space($item_key)]"/>
+        <xsl:copy-of select="document(concat($url,'?key=',normalize-space($item_key2)))//concept[key = normalize-space($item_key)]"/>
       </xsl:if>
       <xsl:if test="$serviceurl=''">
         <xsl:copy-of select="$concepts-test//concept[key = normalize-space($item_key)]"/>

@@ -13,7 +13,7 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-/** Jeff Klann - 6/2012
+/** Jeff Klann - 7/9/2012
  * 
  * A somewhat goofy error handler for Xalan transforms. Keeps a global log of 
  * warnings and errors and the last fatal error, for return and display. Keeps

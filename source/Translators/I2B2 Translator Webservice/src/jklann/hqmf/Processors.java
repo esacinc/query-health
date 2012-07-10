@@ -22,26 +22,20 @@ import com.sun.jersey.api.client.WebResource;
 public class Processors {
 	private static Processors instance = null;
 
-	public String baseURL;
 	protected Processors() throws Exception {
-		Properties myProps = new Properties();
-		FileInputStream MyInputStream = new FileInputStream("hqmf.properties");
-		myProps.load(MyInputStream);        
-		xslLoc = myProps.getProperty("xslloc"); 
-		ontLoc = myProps.getProperty("ontloc");
-		baseURL = myProps.getProperty("baseurl");
+		MyProps myProps = MyProps.getInstance();
 		
 		// Load XSL
-		System.out.println("XSL will be loaded from: " + xslLoc);
+		System.out.println("XSL will be loaded from: " + myProps.xslLoc);
 		tFactory = javax.xml.transform.TransformerFactory.newInstance();
 		tFactory.setErrorListener(new ProcessorErrorHandler());
 		reload();
 		
 		// Set up web requests to ONT
-		System.out.println("ONT requests from "+ontLoc);
+		System.out.println("ONT requests from "+myProps.ontLoc);
 		httpClient = Client.create();
-		getTermInfo = httpClient.resource(ontLoc+"/getTermInfo");
-		getCodeInfo = httpClient.resource(ontLoc+"/getCodeInfo");
+		getTermInfo = httpClient.resource(myProps.ontLoc+"/getTermInfo");
+		getCodeInfo = httpClient.resource(myProps.ontLoc+"/getCodeInfo");
 		header = new StringBuilder();
 		
 		header.append("<?xml version='1.0' encoding='UTF-8' standalone='yes'?>");
@@ -54,17 +48,19 @@ public class Processors {
 	}
 	public void reload() throws TransformerConfigurationException {
 		// i2b2->HQMF
-		hqmf = tFactory.newTransformer(new StreamSource(xslLoc+"/tohqmf.xsl"));
-		hqmf.setParameter("serviceurl", baseURL);
+		hqmf = tFactory.newTransformer(new StreamSource(MyProps.getInstance().xslLoc+"/tohqmf.xsl"));
+		hqmf.setParameter("serviceurl", MyProps.getInstance().baseURL);
 		hqmf.setErrorListener(new ProcessorErrorHandler());
 		
 		// HQMF->iHQMF
-		ihqmf = tFactory.newTransformer(new StreamSource(xslLoc+"/toihqmf.xsl"));
+		ihqmf = tFactory.newTransformer(new StreamSource(MyProps.getInstance().xslLoc+"/toihqmf.xsl"));
 		ihqmf.setErrorListener(new ProcessorErrorHandler());
 		
 		// iHQMF->i2b2
-		i2b2 = tFactory.newTransformer(new StreamSource(xslLoc+"/toi2b2.xsl"));
-		i2b2.setParameter("serviceurl", baseURL);
+		i2b2 = tFactory.newTransformer(new StreamSource(MyProps.getInstance().xslLoc+"/toi2b2.xsl"));
+		i2b2.setParameter("serviceurl", MyProps.getInstance().baseURL);
+		i2b2.setParameter("fullquery", MyProps.getInstance().fullI2B2);
+		i2b2.setParameter("rootkey", MyProps.getInstance().rootKey);
 		i2b2.setErrorListener(new ProcessorErrorHandler());
 	}
 	
@@ -98,13 +94,7 @@ public class Processors {
 	
 	javax.xml.transform.TransformerFactory tFactory;
 	public Transformer hqmf, i2b2, ihqmf;
-	public String xslLoc = null;
-	public String ontLoc = null;
 	public Client httpClient = null;
 	public WebResource getTermInfo = null, getCodeInfo = null;
-	
-	
 
-
-	
 }

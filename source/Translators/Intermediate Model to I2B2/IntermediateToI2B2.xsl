@@ -16,6 +16,9 @@
     	Fixed bug: multiple item-names showing up
     	Fixed bug: destination namespaces should be supressed
     	Fixed bug (but in a messy way): demographics values should be processed as codes
+    Jeff Klann 7/10/2012 - v0.21
+        Modified XSL to support varied ports and take either passwords or tokens.
+        Now passes authentication info to the ONT cell for terminology lookups.
           
     Todo: 
       EncounterCriteria AgeAtVisit doesn't work.
@@ -45,11 +48,12 @@
        I think this will all be determined by the server or by query health and doesn't need to be packaged in HQMF -->
     <xsl:param name="username">demo</xsl:param>
     <xsl:param name="sessiontoken"></xsl:param>
+    <xsl:param name="userpassword">demouser</xsl:param>
     <xsl:param name="userproject">Demo</xsl:param> <!-- Also this is the user's group -->
-    <xsl:param name="userdomain">HarvardDemo</xsl:param>
+    <xsl:param name="userdomain">i2b2demo</xsl:param> <!-- Public demoserver is HarvardDemo -->
     
     <!-- Other important options -->
-    <xsl:param name="serviceurl">http://localhost</xsl:param> <!-- The base URL of the webservice. TODO: Should allow full specification. Right now the rest of the URL is hardcoded :( -->
+    <xsl:param name="serviceurl">http://localhost:8080</xsl:param> <!-- The base URL and port of the webservice. -->
     <xsl:param name="fullquery">false</xsl:param> <!-- Set to true to produce all headers for the query -->
     <xsl:param name="rootkey">\\I2B2</xsl:param> <!-- Set which ontology hierarchy to search for reverse translation. -->
       <!-- Put the root key here, e.g. \\I2B2, \\I2B2_DEMO, \\SHRINE.
@@ -138,21 +142,26 @@
                            <item_is_synonym><xsl:value-of select="$i2b2-ageconcept/synonym_cd"/></item_is_synonym>
                         </xsl:when>
                         <xsl:otherwise>
+                            <xsl:variable name="url">
+                                <xsl:if test="$sessiontoken=''"><xsl:value-of select="concat($serviceurl,'/hqmf/getCodeInfo/',$userdomain,'/',$userproject,'/',$username,'/password/',$userpassword)"/></xsl:if>
+                                <xsl:if test="not($sessiontoken='')"><xsl:value-of select="concat($serviceurl,'/hqmf/getCodeInfo/',$userdomain,'/',$userproject,'/',$username,'/token/',$sessiontoken)"/></xsl:if>
+                            </xsl:variable>
                             <xsl:variable name="i2b2-concept-rtf"> <!-- This is an unfortunate but necessary way to put result-tree fragments backtogether. -->
-                                <xsl:if test="not($rootkey='\\')">
-                                    <xsl:copy-of select="document(concat($serviceurl,':8080/hqmf/getCodeInfo?key=',normalize-space($i2b2-code)))/descendant::concept"/>
-                                    <!-- TODO: Should not do both SHRINE and demo tree - too slow. --> 
-                                    <xsl:copy-of select="document(concat($serviceurl,':8080/hqmf/getCodeInfo?key=',normalize-space(concat('SHRINE%7C',$i2b2-code))))/descendant::concept"/>                                                                      
-                                </xsl:if>
-                                <xsl:if test="$rootkey='\\'">
-                                    <xsl:copy-of select="$concepts//concept[basecode=normalize-space($i2b2-code)]"/>
-                                    <!-- TODO: Should not do both SHRINE and demo tree - too slow. --> 
-                                    <xsl:copy-of select="$concepts//concept[basecode=normalize-space(concat('SHRINE|',$i2b2-code))]"/>                                                                      
-                                </xsl:if>
+                                <xsl:choose>
+                                    <xsl:when test="$rootkey='\\SHRINE'">
+                                        <xsl:copy-of select="document(concat($url,'?key=',normalize-space(concat('SHRINE%7C',$i2b2-code))))/descendant::concept"/>                                                                                                             
+                                    </xsl:when> 
+                                    <xsl:when test="$rootkey='\\'">
+                                        <xsl:copy-of select="$concepts//concept[basecode=normalize-space($i2b2-code)]"/>     
+                                        <xsl:copy-of select="$concepts//concept[basecode=normalize-space(concat('SHRINE|',$i2b2-code))]"/>                                                                                                             
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:copy-of select="document(concat($url,'?key=',normalize-space($i2b2-code)))/descendant::concept"/>                                       
+                                    </xsl:otherwise>
+                                </xsl:choose>
                             </xsl:variable>
                             <!-- TODO: I hard code looking for the first matching concept in the \\I2B2 tree... -->
                             <xsl:variable name="i2b2-concept" select="xalan:nodeset($i2b2-concept-rtf)/concept[starts-with(descendant::key,$rootkey)]"/> 
-                            <!-- Note: we arbitrarily choose the first matching concept... -->                          
                             <xsl:choose>
                                 <xsl:when test="$i2b2-concept!=''">                            
                                     <hlevel><xsl:value-of select="$i2b2-concept/level"/></hlevel>
@@ -305,14 +314,13 @@
 	        <ns6:request xmlns:ns4="http://www.i2b2.org/xsd/cell/crc/psm/1.1/" xmlns:ns7="http://www.i2b2.org/xsd/cell/ont/1.1/" xmlns:ns3="http://www.i2b2.org/xsd/cell/crc/pdo/1.1/" xmlns:ns5="http://www.i2b2.org/xsd/hive/plugin/" xmlns:ns2="http://www.i2b2.org/xsd/hive/pdo/1.1/" xmlns:ns6="http://www.i2b2.org/xsd/hive/msg/1.1/" xmlns:ns8="http://www.i2b2.org/xsd/cell/crc/psm/querydefinition/1.1/">
 	            <message_header>
 	                <security> <!-- May use <ticket/> instead of <domain/>, <username/> & <password/> -->
-	                	<devilsake/>
 	                    <domain><xsl:value-of select="$userdomain"/></domain>
 	                    <username><xsl:value-of select="$username"/></username>
 	                    <xsl:if test="$sessiontoken!=''">
 	                        <password token_ms_timeout="1800000" is_token="true">SessionKey:<xsl:value-of select="$sessiontoken"/></password> 
 	                    </xsl:if>
 	                    <xsl:if test="$sessiontoken=''">
-	                        <password token_ms_timeout="1800000" is_token="false">demouser</password> 
+	                        <password token_ms_timeout="1800000" is_token="false"><xsl:value-of select="$userpassword"/></password> 
 	                    </xsl:if>                    
 	                </security>
 	                <project_id><xsl:value-of select="$userproject"/></project_id>
