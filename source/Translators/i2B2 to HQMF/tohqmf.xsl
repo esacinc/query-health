@@ -18,6 +18,8 @@
           Updates wrt integration. Now extracts security parameters from the i2b2 message and uses this to query the ONT cell.
           Still has the problem with age range lookups
           Now requires a full i2b2 query message (not just query definition) for security parameter lookup
+        Jeff Klann 7/12/2012
+          \\SHRINE rootkey properly causes SHRINE| to be prepended
         
         The current supported ontology mish-mash:
          SHRINE Demographics-> Age, Race, Marital Status, Gender, Language
@@ -111,7 +113,7 @@ select="substring-after($text,$replace)"/>
 	  the local file if in test mode. -->
     <xsl:variable name="url">
       <xsl:if test="$sessiontoken=''"><xsl:value-of select="concat($serviceurl,'/hqmf/getTermInfo/',$userdomain,'/',$userproject,'/',$username,'/password/',$userpassword)"/></xsl:if>
-      <xsl:if test="not($sessiontoken='')"><xsl:value-of select="concat($serviceurl,'/hqmf/getTermInfo/',$userdomain,'/',$userproject,'/',$username,'/token/',$sessiontoken)"/></xsl:if>
+      <xsl:if test="not($sessiontoken='')"><xsl:value-of select="concat($serviceurl,'/hqmf/getTermInfo/',$userdomain,'/',$userproject,'/',$username,'/token/SessionKey:',$sessiontoken)"/></xsl:if>
     </xsl:variable>
     <xsl:variable name="concept-rtf">
       <xsl:if test="not($serviceurl='')">

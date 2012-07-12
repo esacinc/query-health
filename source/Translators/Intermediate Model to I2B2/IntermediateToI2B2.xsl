@@ -17,8 +17,12 @@
     	Fixed bug: destination namespaces should be supressed
     	Fixed bug (but in a messy way): demographics values should be processed as codes
     Jeff Klann 7/10/2012 - v0.21
-        Modified XSL to support varied ports and take either passwords or tokens.
+        Modified XSL to support varied ports and take either passwords or tokens.        
         Now passes authentication info to the ONT cell for terminology lookups.
+    Jeff Klann 7/12/2012
+        Weird typo prevented demographic code lookups.
+        Warning messages are now also output as XML comments.
+        \\SHRINE rootkey properly causes SHRINE| to be prepended
           
     Todo: 
       EncounterCriteria AgeAtVisit doesn't work.
@@ -79,7 +83,7 @@
                     <!-- TODO: This is a very long-winded way of solving a small problem. -->
                     <xsl:variable name="i2b2-precode-rtf">
                         <xsl:choose>
-                            <xsl:when test="hl7v3:code/@codeSystem=@codeSystem='2.16.840.1.113883.6.96' and not(hl7v3:code/@code='424144002') and ancestor-or-self::hl7v3:DemographicsCriteria">  
+                            <xsl:when test="hl7v3:code/@codeSystem='2.16.840.1.113883.6.96' and not(hl7v3:code/@code='424144002') and ancestor-or-self::hl7v3:DemographicsCriteria">  
                                 <hl7v3:code>
                                     <xsl:attribute name="code">
                                         <xsl:value-of select="hl7v3:value/@code"/>    
@@ -144,7 +148,7 @@
                         <xsl:otherwise>
                             <xsl:variable name="url">
                                 <xsl:if test="$sessiontoken=''"><xsl:value-of select="concat($serviceurl,'/hqmf/getCodeInfo/',$userdomain,'/',$userproject,'/',$username,'/password/',$userpassword)"/></xsl:if>
-                                <xsl:if test="not($sessiontoken='')"><xsl:value-of select="concat($serviceurl,'/hqmf/getCodeInfo/',$userdomain,'/',$userproject,'/',$username,'/token/',$sessiontoken)"/></xsl:if>
+                                <xsl:if test="not($sessiontoken='')"><xsl:value-of select="concat($serviceurl,'/hqmf/getCodeInfo/',$userdomain,'/',$userproject,'/',$username,'/token/SessionKey:',$sessiontoken)"/></xsl:if>
                             </xsl:variable>
                             <xsl:variable name="i2b2-concept-rtf"> <!-- This is an unfortunate but necessary way to put result-tree fragments backtogether. -->
                                 <xsl:choose>
@@ -173,6 +177,7 @@
                                     <item_is_synonym><xsl:value-of select="$i2b2-concept/synonym_cd"/></item_is_synonym>
                                 </xsl:when>
                                <xsl:otherwise>
+                                    <xsl:comment><xsl:value-of select="$i2b2-code"/> not found. :(</xsl:comment>
                                     <xsl:message terminate="no"><xsl:value-of select="$i2b2-code"/> not found. :(</xsl:message>
                                </xsl:otherwise>
                             </xsl:choose>
@@ -234,6 +239,8 @@
                     Default date constraints on ages need to be handled by adjusting the base age
                     and are currently ignored.
                 </xsl:message>
+                <xsl:comment>Default date constraints on ages need to be handled by adjusting the base age
+                    and are currently ignored.</xsl:comment>
             </xsl:when>
             <xsl:otherwise>
                 <!-- Process measurePeriod -->
@@ -407,7 +414,7 @@
         <xsl:for-each select="$timestuff/REF">
             <xsl:choose>    
                 <xsl:when test="hl7v3:dataCriteriaReference[@extension=current()]">
-                    <xsl:message>Good!</xsl:message>
+                    <xsl:message>Temporal constraint ok!</xsl:message>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:message terminate="yes">
