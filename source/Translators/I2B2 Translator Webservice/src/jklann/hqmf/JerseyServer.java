@@ -8,6 +8,10 @@ import org.glassfish.grizzly.http.server.HttpServer;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /** Jeff Klann - 7/9/2012
@@ -42,6 +46,9 @@ import java.net.URI;
      }
      
      public static void main(String[] args) throws IOException {
+    	 Handler fh = new FileHandler("jersey.log");
+    	 Logger.getLogger("jklann.hqmf").addHandler(fh);
+         Logger.getLogger("jklann.hqmf").setLevel(Level.ALL);
          httpServer = startServer();
          System.out.println(String.format("Jersey app started with WADL available at "
                  + "%sapplication.wadl",

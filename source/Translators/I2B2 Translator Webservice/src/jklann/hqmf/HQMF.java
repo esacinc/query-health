@@ -20,13 +20,15 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.Reader;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sun.jersey.api.Responses;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.uri.UriTemplate;
 import com.sun.jersey.spi.resource.Singleton;
 
-/** Jeff Klann - 7/9/2012 
+/** Jeff Klann - 7/23/2012 
  * My HQMF resources for Jersey. Handles execution of 
  * XSL translation as well as proxying GET-based ONT lookups to a cell specified
  * in the .properties file. Things to possibly do:
@@ -37,6 +39,8 @@ import com.sun.jersey.spi.resource.Singleton;
 @Singleton
 @Path("/hqmf")
 public class HQMF {
+	
+	private static Logger logger = Logger.getLogger("jklann.hqmf.HQMF");
 	
 	/** When deployed as a Jersey server, this tries to stop the server. Do not use if deployed as a servlet.
 	 * 
@@ -96,7 +100,7 @@ public class HQMF {
      */
     @GET @Path("/test")
     @Produces("text/xml")
-    public String doTest() throws Exception {
+    public String doTest() {
     	Processors p = null;
 		p = Processors.getInstance(); 
 		MyProps pr = MyProps.getInstance();
@@ -116,16 +120,18 @@ public class HQMF {
      */
     @GET @Path("/reload")
     @Produces("text/html")
-    public String reload() throws Exception {
+    public String reload() {
     	Processors p = Processors.getInstance();
     	p.reload();
-		return "XSLT was reloaded!";
+    	MyProps.getInstance().reload();
+		return "XSLT and hqmf.properties were reloaded!";
     	
     }
     
     /** An important method. Converts a POSTed i2b2 message to HQMF using live ONT code lookups.
      * The i2b2 XML must be a full request, not just a query definition, as authentication information for the ONT
-     * lookups are extracted from it. TODO: Preserve the authentication information.
+     * lookups are extracted from it. Now calls two transforms, one to add the basecodes and unravel folders, one
+     * to actually convert to HQMF. TODO: Preserve the authentication information.
      * 
      * @param input POST of i2b2 message
      * @return HQMF message
@@ -135,16 +141,23 @@ public class HQMF {
     @Path("/tohqmf") 
     @Consumes({MediaType.APPLICATION_XML,MediaType.TEXT_XML})
     @Produces("text/xml")
-    public String toHQMF(Reader input) throws Exception
+    public Response toHQMF(Reader input) 
     {
     	Processors p = null;
 		p = Processors.getInstance();
 		ByteArrayOutputStream result = new ByteArrayOutputStream();
     	StreamSource source = new StreamSource(input);
     	try {
-    		p.hqmf.transform(source,new StreamResult(result));
-    	} catch(TransformerException e) { return ProcessorErrorHandler.lastFatality; }
-		return result.toString();    	
+    		p.i2b2plus.transform(source,new StreamResult(result));
+    	} catch(TransformerException e) { return Response.status(ProcessorErrorHandler.lastFatalCode).entity(ProcessorErrorHandler.lastFatality).build(); }
+    	logger.log(Level.INFO,"i2b2plus message",result.toString());
+    	StreamSource s2 = new StreamSource(new ByteArrayInputStream(result.toByteArray()));
+		result = new ByteArrayOutputStream(); 
+    	try {
+    		p.hqmf.transform(s2,new StreamResult(result));
+    	} catch(TransformerException e) { return Response.status(ProcessorErrorHandler.lastFatalCode).entity(ProcessorErrorHandler.lastFatality).build(); }
+    	logger.log(Level.INFO,"hqmf message",result.toString());
+    	return Response.status(200).entity(result.toString()).build();   	
     }
     
     /** The other most important method. Takes a POSTED HQMF message and converts it to i2b2. Requires authentication
@@ -160,7 +173,7 @@ public class HQMF {
     @Path("/toi2b2/{id: .+}") 
     @Consumes({MediaType.APPLICATION_XML,MediaType.TEXT_XML})
     @Produces("text/xml")
-    public String toI2B2(@PathParam("id") String id,Reader input) throws Exception
+    public Response toI2B2(@PathParam("id") String id,Reader input) 
     {
     	Processors p = null;
 		p = Processors.getInstance();
@@ -171,7 +184,9 @@ public class HQMF {
     	StreamSource source = new StreamSource(input);
     	try {
     		p.ihqmf.transform(source,new StreamResult(result));
-    	} catch(TransformerException e) { return ProcessorErrorHandler.lastFatality; }
+    	} catch(TransformerException e) { return Response.status(ProcessorErrorHandler.lastFatalCode).entity(ProcessorErrorHandler.lastFatality).build(); }
+    	
+    	logger.log(Level.INFO,"ihqmf message",result.toString());
 		
     	// set ihqmf to xml auth params
 		p.i2b2.setParameter("username", m.get("username"));
@@ -187,8 +202,9 @@ public class HQMF {
 		result = new ByteArrayOutputStream(); 
 		try {
 			p.i2b2.transform(s2, new StreamResult(result));
-		} catch(TransformerException e) { return ProcessorErrorHandler.lastFatality; }
-		return result.toString();    	
+		} catch(TransformerException e) { return Response.status(ProcessorErrorHandler.lastFatalCode).entity(ProcessorErrorHandler.lastFatality).build(); }
+		logger.log(Level.INFO,"i2b2 message",result.toString());
+		return Response.status(200).entity(result.toString()).build();    	
     }
     
     /** Converts HQMF to iHQMF. This is automatically done in the toI2B2 service call so this is only for testing.
@@ -197,11 +213,11 @@ public class HQMF {
      * @return iHQMF message.
      * @throws Exception
      */
-    @POST 
+    /*@POST 
     @Path("/toihqmf") 
     @Consumes({MediaType.APPLICATION_XML,MediaType.TEXT_XML})
     @Produces("text/xml")
-    public String toIHQMF(Reader input) throws Exception
+    public String toIHQMF(Reader input) 
     {
     	Processors p = null;
 		p = Processors.getInstance();
@@ -213,6 +229,31 @@ public class HQMF {
     		p.ihqmf.transform(source,new StreamResult(result));
     	} catch(TransformerException e) { return ProcessorErrorHandler.lastFatality; }
 		return result.toString();    	
+    }*/
+ 
+    /** Given an i2b2 key, return the associated child nodes. Authentication info must be on the path.
+     * Takes the form /getChildren/{domain}/{project}/{username}/token/{sessionkey}?key={i2b2key}
+     * or /getTermInfo/{domain}/{project}/{username}/password/{password}?key={i2b2key}
+     * 
+     * @param id Auth info on the path
+     * @param key I2B2 key specified as a GET parameter.
+     * @return The associated children.
+     * @throws Exception
+     */
+    @Path("/getChildren/{id: .+}")
+    @GET
+    @Produces("text/xml")
+    public String getChildren(@DefaultValue("i2b2demo/Demo/demo/password/demouser") @PathParam("id") String id,
+    		@DefaultValue("\\\\I2B2\\i2b2\\Diagnoses\\Circulatory system (390-459)\\Acute Rheumatic fever (390-392)\\") @QueryParam("key") String key
+    		) {
+    	HashMap<String,String> m = parseParams(id);
+    	Processors p = Processors.getInstance();
+    	String request = p.generateRequest(m.get("username"), m.get("project"), m.get("domain"),m.get("key"),m.get("isToken").equals("true"), key,"getChildren");
+    	logger.log(Level.INFO,"getChildren request",request);
+    	ClientResponse response = p.getChildren.accept(MediaType.APPLICATION_XML,MediaType.TEXT_XML).type(MediaType.TEXT_XML).post(ClientResponse.class, request);
+    	String xmlResponse = response.getEntity(String.class);  	
+    	logger.log(Level.INFO,"getChildren response",xmlResponse);
+		return xmlResponse.toString();
     }
     
     /** Given an i2b2 key, return the associated code. Authentication info must be on the path.
@@ -229,16 +270,14 @@ public class HQMF {
     @Produces("text/xml")
     public String getTermInfo(@DefaultValue("i2b2demo/Demo/demo/password/demouser") @PathParam("id") String id,
     		@DefaultValue("\\\\I2B2\\i2b2\\Diagnoses\\Circulatory system (390-459)\\Acute Rheumatic fever (390-392)\\") @QueryParam("key") String key
-    		) throws Exception {
+    		) {
     	HashMap<String,String> m = parseParams(id);
     	Processors p = Processors.getInstance();
     	String request = p.generateRequest(m.get("username"), m.get("project"), m.get("domain"),m.get("key"),m.get("isToken").equals("true"), key,"getTermInfo");
-    	//System.out.println(request+"\n");
+    	logger.log(Level.INFO,"getTermInfo request for "+id+"?key="+key,request.toString());
     	ClientResponse response = p.getTermInfo.accept(MediaType.APPLICATION_XML,MediaType.TEXT_XML).type(MediaType.TEXT_XML).post(ClientResponse.class, request);
     	String xmlResponse = response.getEntity(String.class);
-    	
-    	//System.out.println(response.toString());
-    	//System.out.println(xmlResponse.toString());
+    	logger.log(Level.INFO,"getTermInfo response",xmlResponse);
 		return xmlResponse.toString();
     }
     
@@ -256,17 +295,15 @@ public class HQMF {
     @Produces("text/xml")
     public String getCodeInfo(@DefaultValue("i2b2demo/Demo/demo/password/demouser") @PathParam("id") String id,
     		@DefaultValue("ICD9:250") @QueryParam("key") String key
-    		) throws Exception { 	
+    		) { 	
     	HashMap<String,String> m = parseParams(id);
     	Processors p = Processors.getInstance();
     	String request = p.generateRequest(m.get("username"), m.get("project"), m.get("domain"),m.get("key"),m.get("isToken").equals("true"), key,"getCodeInfo");
-    	//System.out.println(request+"\n");
+    	logger.log(Level.INFO,"getCodeInfo request for "+id+"?key="+key,request.toString());
     	ClientResponse response = p.getCodeInfo.accept(MediaType.APPLICATION_XML,MediaType.TEXT_XML).type(MediaType.TEXT_XML).post(ClientResponse.class, request);
-    	String xmlResponse = response.getEntity(String.class);
-    	
-    	//System.out.println(response.toString());
-    	//System.out.println(xmlResponse.toString());
-		return xmlResponse.toString();
+    	String xmlResponse = response.getEntity(String.class);   	
+    	logger.log(Level.INFO,"getCodeInfo response",xmlResponse);
+		return xmlResponse;
     }
     
     private HashMap<String, String> parseParams(String id) {

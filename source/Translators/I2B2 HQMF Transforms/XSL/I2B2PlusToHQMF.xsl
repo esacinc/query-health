@@ -20,10 +20,23 @@
           Now requires a full i2b2 query message (not just query definition) for security parameter lookup
         Jeff Klann 7/12/2012
           \\SHRINE rootkey properly causes SHRINE| to be prepended
-        
+        Jeff Klann 7/16/2012
+          Errors are output as XML comments when either the concept can't be found or the user couldn't be authenticated.
+        Jeff Klann 7/23/2012
+           New preprocessing approach that expects a query_definition with basecodes so that folders can
+          be recursively expanded until basecodes are found. Run toi2b2plus.xsl on your i2b2 before sending it
+          here. The age handling was modified. Single-year ages now convert a basecode to an IVL_PQ. Ranges
+          still use Keith's method of decomposing the item name - this assumes the same age range bucket
+          exists on the destination system so might not be a permanent fix.
+           Changed measure period to 5 years (should eventually be user configurable)
+           Added NDC codes to the codesystem mapping.
+        Jeff Klann 7/30/2012
+          Added a stub for modifiers. Rejects all modifiers without a CEDD: basecode and generates a dummy element
+         for those.
+          
         The current supported ontology mish-mash:
          SHRINE Demographics-> Age, Race, Marital Status, Gender, Language
-         SHRINE Medications (RxNorm ingredients)
+         SHRINE Medications (RxNorm ingredients) or i2b2_demo meds (NDC codes)
          SHRINE or i2b2_demo procedures and diagnoses (ICD-9)
          i2b2_demo labs (LOINC)
         
@@ -35,8 +48,9 @@
            - Extensive testing and validation, including:
                 * What is the preferred SNOMED code for Language?
            - Encounters (partly implemented, but incorrectly)
-           - Race folders are untested, as are other folder-level concepts
-           - Add basecodes to the entire terminology, where an i2b2-specific OID replaces a coded value when none exists. 
+           - Zipcodes are unraveled by i2b2plus.xsl but probably shouldn't be when a state or city can
+              be specified instead. It is very slow.
+           - Add basecodes to the more of the terminology, where an i2b2-specific OID replaces a coded value when none exists. 
               Update the XSLT to support this.
            - Validation against XML Schema still shows minor issues.
            - Various sections marked TBD:        
@@ -51,29 +65,7 @@
   <xsl:import href="time.xsl"/>
   <xsl:import href="url-encode.xsl"/>
   <xsl:output indent="yes" xalan:indent-amount="2"/>
-  
-  <!-- The root URL for the webservice. If it is blank, runs locally on concepts.xml -->
-  <!-- If not running locally, extracts security parameters from the i2b2 message. -->
-  <xsl:param name="serviceurl">http://localhost:8080</xsl:param>
-  
-  <!-- The security parameters for concept lookup -->
-  <xsl:variable name="userdomain" select="//security/domain/text()"/>
-  <xsl:variable name="userproject" select="descendant::message_body/descendant::user/@group"/>
-  <xsl:variable name="username" select="//security/username/text()"/>
-  <xsl:variable name="userpassword"><xsl:if test="not(//security/password/@is_token='true')"><xsl:value-of select="//security/password/text()"/></xsl:if></xsl:variable>
-  <xsl:variable name="sessiontoken"><xsl:if test="//security/password/@is_token='true'"><xsl:value-of select="substring-after(//security/password/text(),'SessionKey:')"/></xsl:if></xsl:variable>
-  
-  <!--<xalan:component prefix="ont">
-    <xalan:script lang="javaclass" src="xalan://edu.harvard.i2b2.eclipse.plugins.ontology.ws.OntServiceDriver"/>
-  </xalan:component>-->
-  
-  <!-- 
-    create a variable to access local I2B2 Concepts for testing
-  -->
-  <xsl:variable name="concepts-test" select="document('concepts.xml')"/>
-  
-  
-  
+   
   <xsl:template name="replace-string">
     <xsl:param name="text"/>
     <xsl:param name="replace"/>
@@ -99,47 +91,23 @@ select="substring-after($text,$replace)"/>
     a template for I2B2 concept lookup.
   -->
   <xsl:template name="get-concept">
-    <xsl:param name="item_key"/>
+    <xsl:param name="item"/>
     <xsl:param name="tag_name"/> <!-- Will be either code or value --> 
-    
-    <!-- URLencode the item key -->
-    <xsl:variable name="item_key2">
-      <xsl:call-template name="url-encode">
-        <xsl:with-param name="str" select="normalize-space($item_key)"/>
-      </xsl:call-template>
-	</xsl:variable>
-	
-	  <!-- Locate the concept in the i2b2 ontology, either with the web service, or
-	  the local file if in test mode. -->
-    <xsl:variable name="url">
-      <xsl:if test="$sessiontoken=''"><xsl:value-of select="concat($serviceurl,'/hqmf/getTermInfo/',$userdomain,'/',$userproject,'/',$username,'/password/',$userpassword)"/></xsl:if>
-      <xsl:if test="not($sessiontoken='')"><xsl:value-of select="concat($serviceurl,'/hqmf/getTermInfo/',$userdomain,'/',$userproject,'/',$username,'/token/SessionKey:',$sessiontoken)"/></xsl:if>
-    </xsl:variable>
-    <xsl:variable name="concept-rtf">
-      <xsl:if test="not($serviceurl='')">
-        <xsl:copy-of select="document(concat($url,'?key=',normalize-space($item_key2)))//concept[key = normalize-space($item_key)]"/>
-      </xsl:if>
-      <xsl:if test="$serviceurl=''">
-        <xsl:copy-of select="$concepts-test//concept[key = normalize-space($item_key)]"/>
-      </xsl:if>
-    </xsl:variable>
-    <!-- Arbitrarily choose the first matching concept. -->
-    <xsl:variable name="concept" select="xalan:nodeset($concept-rtf)/concept[1]"/>
-    
+
     <!-- extract the code from the I2B2 concept XML -->
     <xsl:variable name="code"
-      select="substring-after($concept/basecode,':')"/>
+      select="substring-after($item/basecode,':')"/>
     
     <xsl:variable name="code-system"
-      select="substring-before($concept/basecode,':')"/>
+      select="substring-before($item/basecode,':')"/>
 
     <xsl:choose>
       <!-- if there is a basecode, output the code and system -->  
-      <xsl:when test="$concept/basecode">
+      <xsl:when test="$item/basecode">
         <xsl:element name="{$tag_name}">
           <xsl:attribute name="xsi:type">CD</xsl:attribute>
           <xsl:attribute name="code"><xsl:value-of select="$code"/></xsl:attribute>
-          <xsl:attribute name="displayName"><xsl:value-of select="$concept/name"/></xsl:attribute>
+          <xsl:attribute name="displayName"><xsl:value-of select="$item/item_name"/></xsl:attribute>
           <xsl:choose>
             <xsl:when test="substring($code-system,string-length($code-system)-3)='ICD9'">
               <xsl:choose>
@@ -181,6 +149,10 @@ select="substring-after($text,$replace)"/>
               <xsl:attribute name="codeSystem">2.16.840.1.113883.5.1</xsl:attribute>
               <xsl:attribute name="codeSystemName">Gender</xsl:attribute>
             </xsl:when>
+            <xsl:when test="substring($code-system,string-length($code-system)-2)='NDC'">
+              <xsl:attribute name="codeSystem">2.16.840.1.113883.6.69</xsl:attribute>
+              <xsl:attribute name="codeSystemName">NDC</xsl:attribute>
+            </xsl:when>
             <!-- Zipcode should be mapped to an address element really. See the commented-out code in Demographics. However zipcode is
               not currently in SHRINE -->
             <xsl:when test="substring($code-system,string-length($code-system)-6)='ZIPCODE'">
@@ -204,9 +176,10 @@ select="substring-after($text,$replace)"/>
         identifiers, but if there was such a value, this could be done rather easily.
       -->
       <xsl:otherwise>
+        <xsl:comment><xsl:value-of select="$item/item_key"/> was not found or it had no basecode.</xsl:comment>
         <xsl:element name="{$tag_name}">
           <xsl:attribute name="xsi:type">CD</xsl:attribute>
-          <xsl:attribute name="code"><xsl:value-of select="translate(normalize-space(item_key),' ','+')"/></xsl:attribute>
+          <xsl:attribute name="code"><xsl:value-of select="translate(normalize-space($item/item_key),' ','+')"/></xsl:attribute>
           <xsl:attribute name="codeSystem">2.16.840.1.113883.3.1619.5148.19.1</xsl:attribute>
         </xsl:element>
       </xsl:otherwise>
@@ -239,8 +212,8 @@ select="substring-after($text,$replace)"/>
       test="//result_output_list/result_output/@name != 'patient_count_xml'">
       <!-- if asking for something other than patient counts, terminate with
         an error -->
-      <xsl:message terminate="yes">Cannot map <xsl:value-of
-          select="//result_output_list/result_output/@name"/> to HQMF.
+      <xsl:message terminate="yes">(501) Cannot map <xsl:value-of
+          select="//result_output_list/result_output/@name"/> to HQMF - only patient count queries are supported.
       </xsl:message>
     </xsl:if>
     <!-- Create the quality measure document header with appropriate values -->
@@ -272,7 +245,7 @@ select="substring-after($text,$replace)"/>
         <measurePeriod>
           <id root="0" extension="StartDate"/>
           <value>
-            <width unit="a" value="1"/>
+            <width unit="a" value="5"/>
           </value>
         </measurePeriod>
       </controlVariable>
@@ -578,7 +551,7 @@ select="substring-after($text,$replace)"/>
           </xsl:when>
           <!-- TBD: Zip Codes mapped to State, City or Postal Code -->
           <xsl:otherwise>
-            <xsl:message terminate="yes"> Cannot Map <xsl:value-of
+            <xsl:message terminate="yes">(501) Cannot Map <xsl:value-of
                 select="$subtype"/> to HQMF Demographics </xsl:message>
           </xsl:otherwise>
         </xsl:choose>
@@ -597,6 +570,17 @@ select="substring-after($text,$replace)"/>
         <!-- If it's an age, map values -->
         <xsl:when test="$subtype='Age'">
           <xsl:choose>
+            <!-- New: Handle Age = X by basecode detection -->
+            <xsl:when test="basecode and substring-after(basecode,':')">
+              <xsl:variable name="age"
+                select="substring-after(basecode,':')"/>
+              <value xsi:type="IVL_PQ">
+                <low value="{normalize-space($age)}" inclusive="true"
+                  unit="a"/>
+                <high value="{normalize-space($age)+1}"
+                  inclusive="false" unit="a"/>
+              </value>
+            </xsl:when>
             <!-- Handle Age >= X -->
             <xsl:when test="contains(item_name,'gt;=')">
               <xsl:variable name="age"
@@ -632,11 +616,12 @@ select="substring-after($text,$replace)"/>
             </xsl:when>
             <xsl:otherwise>
               <!-- don't recognize age format -->
-              <xsl:message terminate="yes">Cannot Parse Age Range for
-                  <xsl:value-of select="item_key"/> to HQMF Demographics
+              <xsl:message terminate="yes">(400) Cannot Parse Age Range for
+                <xsl:value-of select="item_key"/> to HQMF Demographics
               </xsl:message>
             </xsl:otherwise>
-          </xsl:choose>
+          </xsl:choose>         
+
         </xsl:when>
         <!-- TBD: Map Religion codes -->
         <xsl:when test="$subtype ='Religion'">
@@ -653,7 +638,7 @@ select="substring-after($text,$replace)"/>
         <!-- Handle Gender, Marital Status, Race, Language -->
         <xsl:otherwise>
           <xsl:call-template name="get-concept">
-            <xsl:with-param name="item_key" select="current()/item_key"/>
+            <xsl:with-param name="item" select="current()"/>
             <xsl:with-param name="tag_name">value</xsl:with-param>
           </xsl:call-template>         
         </xsl:otherwise>
@@ -711,9 +696,10 @@ select="substring-after($text,$replace)"/>
         </effectiveTime>
       </xsl:if>
       <xsl:call-template name="get-concept">
-        <xsl:with-param name="item_key" select="current()/item_key"/>
+        <xsl:with-param name="item" select="current()"/>
         <xsl:with-param name="tag_name">value</xsl:with-param>
       </xsl:call-template> 
+      <xsl:apply-templates select="constrain_by_modifier"/>
       <definition>
         <observationReference moodCode="DEF">
           <id root="2.16.840.1.113883.3.1619.5148.1"
@@ -765,7 +751,7 @@ select="substring-after($text,$replace)"/>
     <observationCriteria>
       <id root="{$docOID}" extension="{$name}"/>
       <xsl:call-template name="get-concept">
-        <xsl:with-param name="item_key" select="current()/item_key"/>
+        <xsl:with-param name="item" select="current()"/>
         <xsl:with-param name="tag_name">code</xsl:with-param>
       </xsl:call-template>
       <xsl:if test="../panel_date_from|../panel_date_to">
@@ -775,6 +761,7 @@ select="substring-after($text,$replace)"/>
         </effectiveTime>
       </xsl:if>
       <xsl:apply-templates select="constrain_by_value"/>
+      <xsl:apply-templates select="constrain_by_modifier"/>
       <definition>
         <observationReference moodCode="DEF">
           <id root="2.16.840.1.113883.3.1619.5148.1" extension="Results"
@@ -805,6 +792,20 @@ select="substring-after($text,$replace)"/>
     </xsl:element>
   </xsl:template>
 
+  <!-- deal with CEDD modifier constraints -->
+  <xsl:template match="constrain_by_modifier[starts-with(basecode,'CEDD:')]">
+    <xsl:element name="{substring-after(basecode,':')}">
+      <xsl:attribute name="{substring-after(basecode,':')}">
+        <xsl:value-of select="constrain_by_value/value_constraint"/>
+      </xsl:attribute>
+    </xsl:element>
+  </xsl:template>
+  
+  <xsl:template match="constrain_by_modifier[not(starts-with(basecode,'CEDD:'))]">
+    <xsl:message terminate="yes">(501) Unsupported modifier code system: <xsl:value-of
+      select="basecode"/>  </xsl:message> 
+  </xsl:template>
+  
   <!-- deal with constrain_by_value on lab results -->
   <xsl:template
     match="constrain_by_value[value_type = 'NUMBER']">
@@ -852,7 +853,7 @@ select="substring-after($text,$replace)"/>
   <!-- Deal with non-numeric value tests by reporting an error -->
   <xsl:template
     match="constrain_by_value[value_type != 'NUMBER']">
-    <xsl:message terminate="yes"> Cannot Parse Value for <xsl:value-of
+    <xsl:message terminate="yes">(400) Cannot Parse Value for <xsl:value-of
         select="value_type"/> types </xsl:message>
   </xsl:template>
   
@@ -904,7 +905,7 @@ select="substring-after($text,$replace)"/>
       <participant typeCode="CSM">
         <roleParticipant classCode="THER">
             <xsl:call-template name="get-concept">
-              <xsl:with-param name="item_key" select="current()/item_key"/>
+              <xsl:with-param name="item" select="current()"/>
               <xsl:with-param name="tag_name">code</xsl:with-param>
             </xsl:call-template>     
         </roleParticipant>
@@ -963,9 +964,10 @@ select="substring-after($text,$replace)"/>
         </effectiveTime>
       </xsl:if>
       <xsl:call-template name="get-concept">
-        <xsl:with-param name="item_key" select="current()/item_key"/>
+        <xsl:with-param name="item" select="current()"/>
         <xsl:with-param name="tag_name">code</xsl:with-param>
       </xsl:call-template> 
+      <xsl:apply-templates select="constrain_by_modifier"/>
       <definition>
         <procedureReference moodCode="DEF">
           <id root="2.16.840.1.113883.3.1619.5148.1"
@@ -1017,8 +1019,17 @@ select="substring-after($text,$replace)"/>
       <xsl:choose>
         <!-- If it's an age, map values -->
         <xsl:when test="$subtype='Age at visit'">
-          <xsl:message><xsl:value-of select="item_key"/></xsl:message> 
           <xsl:choose>
+            <xsl:when test="basecode and substring-after(basecode,':')">
+              <xsl:variable name="age"
+                select="substring-after(basecode,':')"/>
+              <value xsi:type="IVL_PQ">
+                <low value="{normalize-space($age)}" inclusive="true"
+                  unit="a"/>
+                <high value="{normalize-space($age)+1}"
+                  inclusive="false" unit="a"/>
+              </value>
+            </xsl:when>
             <!-- Handle Age >= X -->
             <xsl:when test="contains(item_key,'gt;=')">
               <xsl:variable name="age"
@@ -1054,7 +1065,7 @@ select="substring-after($text,$replace)"/>
             </xsl:when>
             <xsl:otherwise>
               <!-- don't recognize age format -->
-              <xsl:message terminate="yes">Cannot Parse Age Range for
+              <xsl:message terminate="yes">(400) Cannot Parse Age Range for
                 <xsl:value-of select="item_key"/> to HQMF Demographics
               </xsl:message>
             </xsl:otherwise>
@@ -1081,7 +1092,7 @@ select="substring-after($text,$replace)"/>
     don't know how to handle it, report an error
   -->
   <xsl:template mode="bytype" match="item">
-    <xsl:message terminate="yes"> Cannot Map <xsl:value-of
+    <xsl:message terminate="yes">(501) Cannot Map <xsl:value-of
         select="item_key"/> to HQMF Criteria </xsl:message>
   </xsl:template>
 
@@ -1213,7 +1224,7 @@ select="substring-after($text,$replace)"/>
         </xsl:when>
         
         <xsl:otherwise>
-          <xsl:message terminate="yes"> Cannot Map <xsl:value-of
+          <xsl:message terminate="yes">(501) Cannot Map <xsl:value-of
             select="item_key"/> to HQMF Criteria </xsl:message>
           <xsl:text>UNSUPPORTED</xsl:text>
         </xsl:otherwise>

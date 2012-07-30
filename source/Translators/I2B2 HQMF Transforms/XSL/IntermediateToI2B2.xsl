@@ -23,7 +23,19 @@
         Weird typo prevented demographic code lookups.
         Warning messages are now also output as XML comments.
         \\SHRINE rootkey properly causes SHRINE| to be prepended
-          
+    Jeff Klann 7/16/2012
+        Now emits better error messages as embedded XML comments for unauthenticated user or not found code (includes URL now).
+        If an OID is found, it is now emitted as an I2B2 key to be consistent with the behavior of tohqmf.xsl. 
+          Note that it doesn't look up information on the key, so the resulting XML might not work. - UNTESTED!
+        Demographics criteria codes are now prepended with DEM| for all rootkeys that start with \\I2B2 or \\i2b2,
+          to better support the demo ontology
+    Jeff Klann 7/19/2012
+       Ripped out the old age handling code that allowed ranges but relied on the local concepts file.
+       New version prefers an IVL_PQ of 1 year but looks things up in the actual ontology cell. 
+       A special hack generates an item_key for age ranges but presently does not use the ontology cell
+         (it probably ought to use get_name or a partial key match) and cannot handle ranges that aren't 
+         directly in i2b2
+        
     Todo: 
       EncounterCriteria AgeAtVisit doesn't work.
       Sections not mentioned above are untested.
@@ -57,11 +69,16 @@
     <xsl:param name="userdomain">i2b2demo</xsl:param> <!-- Public demoserver is HarvardDemo -->
     
     <!-- Other important options -->
-    <xsl:param name="serviceurl">http://localhost:8080</xsl:param> <!-- The base URL and port of the webservice. -->
+    <xsl:param name="serviceurl">http://ec2-23-20-41-242.compute-1.amazonaws.com:9090/jersey</xsl:param>
+    <!--<xsl:param name="serviceurl">http://localhost:8080</xsl:param>--> <!-- The base URL and port of the webservice. -->
     <xsl:param name="fullquery">false</xsl:param> <!-- Set to true to produce all headers for the query -->
     <xsl:param name="rootkey">\\I2B2</xsl:param> <!-- Set which ontology hierarchy to search for reverse translation. -->
       <!-- Put the root key here, e.g. \\I2B2, \\I2B2_DEMO, \\SHRINE.
-         The root key of \\ is special and forces use of the local concepts.xml instead of live terminology lookups. -->
+         The root key of \\ is special and forces use of the local concepts.xml instead of live terminology lookups. 
+         \\SHRINE also causes SHRINE| to be prepended in getTermInfo. This is used for filtering except 
+         when reconstructing ages. -->
+    <xsl:param name="subkey-age">Age</xsl:param> 
+        <!-- The subkey to search for that indicates ages -->
     
     <!-- Concepts. Now hooks into ontology cell, except for ages. -->
     <xsl:variable name="concepts" select="document('concepts.xml')"/>
@@ -93,6 +110,42 @@
                                     </xsl:attribute>                                   
                                 </hl7v3:code>                               
                             </xsl:when>
+                            <!-- Create the i2b2 code element for age ranges. Single years are converted to a code lookup. Ranges are converted to a range name for name lookup. -->
+                            <xsl:when test="hl7v3:code/@codeSystem='2.16.840.1.113883.6.96' and hl7v3:code/@code='424144002' and (ancestor-or-self::hl7v3:DemographicsCriteria or ancestor-or-self::hl7v3:EncounterCriteria)">
+                                <xsl:if test="not(hl7v3:value/@xsi:type='IVL_PQ' or hl7v3:value/hl7v3:low or hl7v3:value/hl7v3:high or hl7v3:value/hl7v3:low/@unit='a' or hl7v3:value/hl7v3:high/@unit='a')">
+                                    <xsl:message terminate="yes">(501) Age constraints of BETWEEN only supported!</xsl:message>
+                                </xsl:if>
+                                <xsl:choose>
+                                    <!-- One year range: code lookup -->
+                                    <xsl:when test="hl7v3:value/hl7v3:low/@value+1=hl7v3:value/hl7v3:high/@value and hl7v3:value/hl7v3:high/@unit='a' and hl7v3:value/hl7v3:low/@unit='a'">
+                                        <xsl:if test="not(hl7v3:value/hl7v3:low/@inclusive='true') or not(hl7v3:value/hl7v3:high/@inclusive='false')">
+                                            <xsl:message terminate="yes">(501) Single year age ranges must be inclusive to non-inclusive!</xsl:message>
+                                        </xsl:if>
+                                        <hl7v3:code>
+                                            <xsl:attribute name="code">
+                                                <xsl:value-of select="hl7v3:value/hl7v3:low/@value"/>    
+                                            </xsl:attribute>
+                                            <xsl:attribute name="codeSystem">AGE</xsl:attribute>                                
+                                        </hl7v3:code>                                       
+                                    </xsl:when> 
+                                    <!-- Multi-year ranges -->
+                                    <xsl:otherwise>
+                                        <xsl:variable name="agerange">
+                                            <xsl:if test="hl7v3:value/hl7v3:low/@inclusive='false'"><xsl:value-of select="hl7v3:value/hl7v3:low/@value +1"/></xsl:if>
+                                            <xsl:if test="hl7v3:value/hl7v3:low/@inclusive='true'"><xsl:value-of select="hl7v3:value/hl7v3:low/@value"/></xsl:if>
+                                            <xsl:text>-</xsl:text>
+                                            <xsl:if test="hl7v3:value/hl7v3:high/@inclusive='false'"><xsl:value-of select="hl7v3:value/hl7v3:high/@value -1"/></xsl:if>
+                                            <xsl:if test="hl7v3:value/hl7v3:high/@inclusive='true'"><xsl:value-of select="hl7v3:value/hl7v3:high/@value"/></xsl:if>
+                                        </xsl:variable>
+                                        <hl7v3:code>
+                                            <xsl:attribute name="code">
+                                                <xsl:value-of select="$agerange"/>    
+                                            </xsl:attribute>
+                                            <xsl:attribute name="codeSystem">AGERANGE</xsl:attribute>                                
+                                        </hl7v3:code>                                          
+                                    </xsl:otherwise>
+                                </xsl:choose>                               
+                            </xsl:when>
                             <xsl:otherwise>
                                 <hl7v3:code>
                                     <xsl:attribute name="code">
@@ -108,6 +161,7 @@
                     <xsl:variable name="i2b2-precode" select="xalan:nodeset($i2b2-precode-rtf)/hl7v3:code"/>
                     <!-- Translate HQMF code to I2B2 basecode -->
                     <xsl:variable name="i2b2-code">
+                        <xsl:if test="(ancestor-or-self::hl7v3:DemographicsCriteria or ancestor-or-self::hl7v3:EncounterCriteria) and starts-with(translate($rootkey, 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'\\I2B2')">DEM|</xsl:if>
                         <xsl:choose>
                             <xsl:when test="$i2b2-precode/@codeSystem='2.16.840.1.113883.6.96'">SNOMED</xsl:when>
                             <xsl:when test="$i2b2-precode/@codeSystem='2.16.840.1.113883.6.104'">ICD9</xsl:when>
@@ -118,56 +172,57 @@
                             <xsl:when test="$i2b2-precode/@codeSystem='2.16.840.1.113883.6.238'">RACE</xsl:when>
                             <xsl:when test="$i2b2-precode/@codeSystem='2.16.840.1.113883.5.2'">MARITAL</xsl:when>
                             <xsl:when test="$i2b2-precode/@codeSystem='2.16.840.1.113883.5.1'">SEX</xsl:when>
-                            <xsl:when test="$i2b2-precode/@codeSystem='1.0.639.1'">LANGUAGE</xsl:when>
+                            <xsl:when test="$i2b2-precode/@codeSystem='1.0.639.1'">LANGUAGE</xsl:when> 
+                            <xsl:when test="$i2b2-precode/@codeSystem='AGE'">AGE</xsl:when>
+                            <xsl:when test="$i2b2-precode/@codeSystem='AGERANGE'">AGERANGE</xsl:when>
                             <xsl:otherwise>OID</xsl:otherwise>
                         </xsl:choose>:<xsl:value-of select="$i2b2-precode/@code"/>
                     </xsl:variable>
-                    <xsl:choose>
-                        <xsl:when test="$i2b2-code='SNOMED:424144002'"> <!-- Special handling for ages TODO: Uses the prewritten concepts file. -->
-                           <!-- TODO: Check inclusiveness constraints. -->
-                           <xsl:if test="not(hl7v3:value/@xsi:type='IVL_PQ' or hl7v3:value/hl7v3:low or hl7v3:value/hl7v3:high or hl7v3:value/hl7v3:low/@unit='a' or hl7v3:value/hl7v3:high/@unit='a')">
-                               <xsl:message terminate="yes">Age constraints of BETWEEN only supported!</xsl:message>
-                           </xsl:if>
-                           <xsl:variable name="agerange">
-                               <xsl:if test="hl7v3:value/hl7v3:low/@inclusive='false'"><xsl:value-of select="hl7v3:value/hl7v3:low/@value +1"/></xsl:if>
-                               <xsl:if test="hl7v3:value/hl7v3:low/@inclusive='true'"><xsl:value-of select="hl7v3:value/hl7v3:low/@value"/></xsl:if>
-                               <xsl:text>-</xsl:text>
-                               <xsl:if test="hl7v3:value/hl7v3:high/@inclusive='false'"><xsl:value-of select="hl7v3:value/hl7v3:high/@value -1"/></xsl:if>
-                               <xsl:if test="hl7v3:value/hl7v3:high/@inclusive='true'"><xsl:value-of select="hl7v3:value/hl7v3:high/@value"/></xsl:if>
-                           </xsl:variable>
-                           <xsl:variable name="i2b2-ageconcept" select="$concepts//concept[columnname='birth_date' and operator='BETWEEN' and contains(key,$agerange)]"/>
-                           <!-- TODO: Should be harmonized with the above code to not be repetitive. -->
-                           <hlevel><xsl:value-of select="$i2b2-ageconcept/level"/></hlevel>
-                           <item_name><xsl:value-of select="$i2b2-ageconcept/name"/></item_name>
-                           <item_key><xsl:value-of select="$i2b2-ageconcept/key"/></item_key>
-                           <tooltip><xsl:value-of select="$i2b2-ageconcept/tooltip"/></tooltip>
-                           <class>ENC</class> <!-- TODO: I'm not sure what this means. -->
-                           <item_icon><xsl:value-of select="$i2b2-ageconcept/visualattributes"/></item_icon>
-                           <item_is_synonym><xsl:value-of select="$i2b2-ageconcept/synonym_cd"/></item_is_synonym>
+                    <xsl:choose>                        
+                        <xsl:when test="starts-with($i2b2-code,'OID:') and not($rootkey='\\')">
+                            <xsl:comment>Trying to reuse the unconverted I2B2 key: <xsl:value-of select="$i2b2-precode/@code"/></xsl:comment>
+                            <item_name><xsl:value-of select="$i2b2-precode/@code"/></item_name>
+                            <item_key><xsl:value-of select="$i2b2-precode/@code"/></item_key>
+                            <class>ENC</class> <!-- TODO: I'm not sure what this means. -->
                         </xsl:when>
                         <xsl:otherwise>
+                            <xsl:variable name="urlservice">
+                                <xsl:choose>
+                                    <xsl:when test="contains($i2b2-code,'AGERANGE:')">getTermInfo</xsl:when>
+                                    <xsl:otherwise>getCodeInfo</xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:variable>
                             <xsl:variable name="url">
-                                <xsl:if test="$sessiontoken=''"><xsl:value-of select="concat($serviceurl,'/hqmf/getCodeInfo/',$userdomain,'/',$userproject,'/',$username,'/password/',$userpassword)"/></xsl:if>
-                                <xsl:if test="not($sessiontoken='')"><xsl:value-of select="concat($serviceurl,'/hqmf/getCodeInfo/',$userdomain,'/',$userproject,'/',$username,'/token/SessionKey:',$sessiontoken)"/></xsl:if>
+                                <xsl:if test="$sessiontoken=''"><xsl:value-of select="concat($serviceurl,'/hqmf/',$urlservice,'/',$userdomain,'/',$userproject,'/',$username,'/password/',$userpassword)"/></xsl:if>
+                                <xsl:if test="not($sessiontoken='')"><xsl:value-of select="concat($serviceurl,'/hqmf/',$urlservice,'/',$userdomain,'/',$userproject,'/',$username,'/token/SessionKey:',$sessiontoken)"/></xsl:if>
                             </xsl:variable>
                             <xsl:variable name="i2b2-concept-rtf"> <!-- This is an unfortunate but necessary way to put result-tree fragments backtogether. -->
                                 <xsl:choose>
-                                    <xsl:when test="$rootkey='\\SHRINE'">
-                                        <xsl:copy-of select="document(concat($url,'?key=',normalize-space(concat('SHRINE%7C',$i2b2-code))))/descendant::concept"/>                                                                                                             
+                                    <xsl:when test="$rootkey='\\SHRINE' and not(contains($i2b2-code,'AGERANGE:'))">
+                                        <xsl:copy-of select="document(concat($url,'?key=',normalize-space(concat('SHRINE%7C',$i2b2-code))))"/>                                                                                                             
                                     </xsl:when> 
-                                    <xsl:when test="$rootkey='\\'">
+                                    <xsl:when test="$rootkey='\\'">                                      
                                         <xsl:copy-of select="$concepts//concept[basecode=normalize-space($i2b2-code)]"/>     
                                         <xsl:copy-of select="$concepts//concept[basecode=normalize-space(concat('SHRINE|',$i2b2-code))]"/>                                                                                                             
                                     </xsl:when>
+                                    <xsl:when test="contains($i2b2-code,'AGERANGE:') and not($rootkey='\\')">
+                                        <xsl:comment>Found age range bucket, special handling: <xsl:value-of select="$i2b2-precode/@code"/></xsl:comment>                                        
+                                        <xsl:copy-of select="document(concat($url,'?key=%5C%5C',substring($rootkey,3),'%5C%25',$subkey-age,'%5C',$i2b2-precode/@code,'%20years%20old%5C'))"/>                                       
+                                    </xsl:when>
                                     <xsl:otherwise>
-                                        <xsl:copy-of select="document(concat($url,'?key=',normalize-space($i2b2-code)))/descendant::concept"/>                                       
+                                        <xsl:copy-of select="document(concat($url,'?key=',normalize-space($i2b2-code)))"/>                                       
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </xsl:variable>
                             <!-- TODO: I hard code looking for the first matching concept in the \\I2B2 tree... -->
-                            <xsl:variable name="i2b2-concept" select="xalan:nodeset($i2b2-concept-rtf)/concept[starts-with(descendant::key,$rootkey)]"/> 
+                            <xsl:variable name="i2b2-concepts" select="xalan:nodeset($i2b2-concept-rtf)"/>
+                            <xsl:if test="not($i2b2-concepts//status/@type='DONE')">
+                                <xsl:comment><xsl:value-of select="$i2b2-concepts//status/@type"/>: <xsl:value-of select="$i2b2-concepts//status"/> with URL <xsl:value-of select="concat($url,' and code',$i2b2-code)"/></xsl:comment>
+                            </xsl:if>
+                            <xsl:variable name="i2b2-concept" select="$i2b2-concepts/descendant::concept[starts-with(descendant::key,$rootkey)][1]"/>
+ 
                             <xsl:choose>
-                                <xsl:when test="$i2b2-concept!=''">                            
+                                <xsl:when test="count($i2b2-concept)>0">                            
                                     <hlevel><xsl:value-of select="$i2b2-concept/level"/></hlevel>
                                     <item_name><xsl:value-of select="$i2b2-concept/name"/></item_name>
                                     <item_key><xsl:value-of select="$i2b2-concept/key"/></item_key>
@@ -178,7 +233,8 @@
                                 </xsl:when>
                                <xsl:otherwise>
                                     <xsl:comment><xsl:value-of select="$i2b2-code"/> not found. :(</xsl:comment>
-                                    <xsl:message terminate="no"><xsl:value-of select="$i2b2-code"/> not found. :(</xsl:message>
+                                    <xsl:comment>URL: <xsl:value-of select="$url"/> with rootkey <xsl:value-of select="$rootkey"/></xsl:comment>
+                                   <xsl:message terminate="yes">(400) <xsl:value-of select="$i2b2-code"/> not found; URL: <xsl:value-of select="$url"/> with rootkey <xsl:value-of select="$rootkey"/></xsl:message>
                                </xsl:otherwise>
                             </xsl:choose>
                         </xsl:otherwise>
@@ -287,13 +343,13 @@
                             </value_operator> 
                         </xsl:when>
                         <xsl:when test="hl7v3:value/hl7v3:low and hl7v3:value/hl7v3:high"> <!-- BETWEEN -->
-                            <xsl:if test="hl7v3:value/hl7v3:low/@unit != hl7v3:value/hl7v3:high/@unit"><xsl:message terminate="yes">Units do not agree in interval!</xsl:message></xsl:if>
+                            <xsl:if test="hl7v3:value/hl7v3:low/@unit != hl7v3:value/hl7v3:high/@unit"><xsl:message terminate="yes">(400) Units do not agree in interval!</xsl:message></xsl:if>
                             <value_unit_of_measure><xsl:value-of select="hl7v3:value/hl7v3:high/@unit"/></value_unit_of_measure>
                             <value_constraint><xsl:value-of select="hl7v3:value/hl7v3:low/@value"/> and <xsl:value-of select="hl7v3:value/hl7v3:high/@value"/></value_constraint>
                             <value_operator>BETWEEN</value_operator> <!-- TODO: Not checking inclusiveness pattern is supported -->
                         </xsl:when>
                         <xsl:otherwise> 
-                            <xsl:message terminate="yes">Unsupported constraint type!</xsl:message>
+                            <xsl:message terminate="yes">(501) Unsupported constraint type!</xsl:message>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:when>
@@ -306,10 +362,10 @@
                     </constrain_by_value>
                 </xsl:when>
                 <xsl:when test="count(hl7v3:value)=0">
-                    <xsl:message>Warning: element <xsl:value-of select="hl7v3:localVariableName"/> can take a value constraint but doesn't have one...</xsl:message>
+                    <xsl:message>Note: element <xsl:value-of select="hl7v3:localVariableName"/> can take a value constraint but doesn't have one...</xsl:message>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:message terminate="yes">Unsupported result value type: <xsl:value-of select="hl7v3:value/@xsi:type"/></xsl:message>
+                    <xsl:message terminate="yes">(501) Unsupported result value type: <xsl:value-of select="hl7v3:value/@xsi:type"/></xsl:message>
                 </xsl:otherwise>
             </xsl:choose>
         </constrain_by_value>
@@ -370,10 +426,10 @@
     
     <xsl:template match="hl7v3:populationCriteria">
         <xsl:if  test="count(hl7v3:dataCriteriaCombiner) != 1">
-            <xsl:message terminate="yes">Non-i2b2 dataCriteriaCombiner structure - too many outer combiners (<xsl:value-of select="count(dataCriteriaCombiner)"/>)!</xsl:message>
+            <xsl:message terminate="yes">(501) Non-i2b2 dataCriteriaCombiner structure - too many outer combiners (<xsl:value-of select="count(dataCriteriaCombiner)"/>)!</xsl:message>
         </xsl:if>
         <xsl:if  test="hl7v3:dataCriteriaCombiner[1]/hl7v3:criteriaOperation != 'AllTrue'">
-            <xsl:message terminate="yes">Non-i2b2 dataCriteriaCombiner structure - outer combiner must be AllTrue (not <xsl:value-of select="hl7v3:dataCriteriaCombiner[1]/hl7v3:criteriaOperation"/>)!</xsl:message>
+            <xsl:message terminate="yes">(501) Non-i2b2 dataCriteriaCombiner structure - outer combiner must be AllTrue (not <xsl:value-of select="hl7v3:dataCriteriaCombiner[1]/hl7v3:criteriaOperation"/>)!</xsl:message>
         </xsl:if>
         <xsl:apply-templates select="hl7v3:dataCriteriaCombiner/hl7v3:dataCriteriaCombiner"/>            
     </xsl:template>
@@ -381,7 +437,7 @@
     <!-- Panel -->
     <xsl:template match="hl7v3:dataCriteriaCombiner/hl7v3:dataCriteriaCombiner">
         <xsl:if test="hl7v3:criteriaOperation!='AtLeastOneTrue' and hl7v3:criteriaOperation!='AllFalse'">
-            <xsl:message terminate="yes">Non-i2b2 dataCriteriaCombiner structure - inner combiners must be AtLeastOneTrue or AllFalse! (not <xsl:value-of select="hl7v3:criteraOperation"/>)</xsl:message>
+            <xsl:message terminate="yes">(501) Non-i2b2 dataCriteriaCombiner structure - inner combiners must be AtLeastOneTrue or AllFalse! (not <xsl:value-of select="hl7v3:criteraOperation"/>)</xsl:message>
         </xsl:if>
         
         <!-- Handle filter and global time criteria. -->
@@ -400,7 +456,7 @@
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:message terminate="yes">
-                                i2b2 requires all filterCriteria within a panel to be the same!
+                                (501) i2b2 requires all filterCriteria within a panel to be the same!
                             </xsl:message>
                         </xsl:otherwise>
                     </xsl:choose>
@@ -418,7 +474,7 @@
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:message terminate="yes">
-                        Cannot process time constraint - referencing across panels!
+                        (501) Cannot process time constraint - referencing across panels!
                     </xsl:message>
                 </xsl:otherwise>
             </xsl:choose>
@@ -453,7 +509,7 @@
                     <REF><xsl:value-of select="./hl7v3:timeRelationship/hl7v3:dataCriteriaTimeReference/@extension"/></REF>                    
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:message terminate="yes">Illegal panel-wide time relationship; only same encounter is supported.</xsl:message>
+                    <xsl:message terminate="yes">(501) Illegal panel-wide time relationship; only same encounter is supported.</xsl:message>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:if>
@@ -464,7 +520,7 @@
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:message terminate="yes">
-                        The only filterCriteria supported are minimum repeat numbers!
+                        (501) The only filterCriteria supported are minimum repeat numbers!
                     </xsl:message>
                 </xsl:otherwise>
             </xsl:choose>
@@ -475,46 +531,46 @@
     <xsl:template mode="modifiers" match="hl7v3:MedicationCriteria">
         <xsl:if test="./hl7v3:medicationState != 'EVN'">
             <xsl:message terminate="yes">
-                Only medication events are supported, not <xsl:value-of select="./hl7v3:medicationState"/>
+                (501) Only medication events are supported, not <xsl:value-of select="./hl7v3:medicationState"/>
             </xsl:message>
         </xsl:if>
         <!-- TODO: SUPPORT constrain_by_modifier -->
         <xsl:if test="./hl7v3:routeCode|./hl7v3:medicationRateQuantity|./hl7v3:medicationDoseQuantity">
             <xsl:message terminate="yes"> <!-- Todo: THESE I ACTUALLY NEED TO SUPPORT -->
-                Medication modifiers are not yet supported. 
+                (501) Medication modifiers are not yet supported. 
             </xsl:message>
         </xsl:if>
     </xsl:template>
     <xsl:template mode="modifiers" match="hl7v3:ProcedureCriteria">
         <xsl:if test="./hl7v3:value">
             <xsl:message terminate="yes">
-                Values are illegal for procedures!
+                (400) Values are illegal for procedures!
             </xsl:message>
         </xsl:if>
         <!-- TODO: SUPPORT constrain_by_modifier -->
         <xsl:if test="./hl7v3:status|./hl7v3:procedureBodySite"> <!-- Todo: get rid of these? -->
             <xsl:message terminate="yes"> 
-                Procedure modifiers are not yet supported. 
+                (501) Procedure modifiers are not yet supported. 
             </xsl:message>
         </xsl:if>
     </xsl:template>
     <xsl:template mode="modifiers" match="hl7v3:DemographicsCriteria|hl7v3:VitalSignsCriteria|hl7v3:LabResultsCriteria">
         <xsl:if test="./hl7v3:status">
             <xsl:message terminate="yes">
-                Status is illegal for demographics and vitals!
+                (400) Status is illegal for demographics and vitals!
             </xsl:message>
         </xsl:if>
     </xsl:template>
     <xsl:template mode="modifiers" match="hl7v3:ImmunizationCriteria">
         <xsl:if test="./hl7v3:category">
             <xsl:message terminate="yes"> <!-- todo: get rid of this? -->
-                Not sure what category is in immunization criteria???
+                (500) Not sure what category is in immunization criteria???
             </xsl:message>
         </xsl:if>
         <!-- TODO: SUPPORT constrain_by_modifier -->
         <xsl:if test="./hl7v3:reaction"> <!-- todo get rid of this? -->
             <xsl:message terminate="yes"> 
-                Immunization modifiers are not yet supported. 
+                (501) Immunization modifiers are not yet supported. 
             </xsl:message>
         </xsl:if>
     </xsl:template>
@@ -523,7 +579,7 @@
     
     
     <!-- Template for non-result criteria -->
-    <xsl:template mode="item" match="hl7v3:AllergyCriteria|hl7v3:ProblemCriteria|hl7v3:DemographicsCriteria">
+    <xsl:template mode="item" match="hl7v3:EncounterCriteria|hl7v3:AllergyCriteria|hl7v3:ProblemCriteria|hl7v3:DemographicsCriteria">
         <item>
             <xsl:call-template name="get-concept"/>
             <xsl:call-template name="constrain_by_date"/>
@@ -532,7 +588,7 @@
     </xsl:template>
     
     <!-- Template for result criteria -->
-    <xsl:template mode="item" match="hl7v3:ProcedureCriteria|hl7v3:EncounterCriteria|hl7v3:MedicationCriteria|hl7v3:LabResultsCriteria|hl7v3:VitalSignCriteria">
+    <xsl:template mode="item" match="hl7v3:ProcedureCriteria|hl7v3:MedicationCriteria|hl7v3:LabResultsCriteria|hl7v3:VitalSignCriteria">
         <item>
             <xsl:call-template name="get-concept"/>
             <xsl:call-template name="contrain_by_value"/>

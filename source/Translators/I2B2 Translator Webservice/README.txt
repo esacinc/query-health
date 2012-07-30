@@ -7,3 +7,4 @@ If deploying as JBOSS, compile the code and place it in a directory {jboss}/serv
 asm-3.1.jar		jersey-core-1.12.jar	jersey-servlet-1.12.jar
 jersey-client-1.12.jar	jersey-server-1.12.jar	jsr311-api-1.1.1.jar
 
+Finally, be sure to download the I2B2 HQMF Transforms XSL directory into a location specified in your hqmf.properties.
