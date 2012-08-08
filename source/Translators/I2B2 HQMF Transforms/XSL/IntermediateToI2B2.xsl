@@ -35,6 +35,8 @@
        A special hack generates an item_key for age ranges but presently does not use the ontology cell
          (it probably ought to use get_name or a partial key match) and cannot handle ranges that aren't 
          directly in i2b2
+    Jeff Klann 8/4/2012
+       Added a hack to support CEDD while it still has SHRINE| basecodes. 
         
     Todo: 
       EncounterCriteria AgeAtVisit doesn't work.
@@ -200,6 +202,11 @@
                                 <xsl:choose>
                                     <xsl:when test="$rootkey='\\SHRINE' and not(contains($i2b2-code,'AGERANGE:'))">
                                         <xsl:copy-of select="document(concat($url,'?key=',normalize-space(concat('SHRINE%7C',$i2b2-code))))"/>                                                                                                             
+                                    </xsl:when> 
+                                    <!-- TODO: This is a hack until MBuck removes SHRINE| from basecodes -->
+                                    <xsl:when test="$rootkey='\\CEDD' and not(contains($i2b2-code,'AGERANGE:'))">
+                                        <xsl:copy-of select="document(concat($url,'?key=',normalize-space(concat('SHRINE%7C',$i2b2-code))))"/>                                                                                                             
+                                        <xsl:copy-of select="document(concat($url,'?key=',normalize-space($i2b2-code)))"/>
                                     </xsl:when> 
                                     <xsl:when test="$rootkey='\\'">                                      
                                         <xsl:copy-of select="$concepts//concept[basecode=normalize-space($i2b2-code)]"/>     
