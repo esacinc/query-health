@@ -37,6 +37,8 @@
           Added scaffolding for CEDD section and demographic type detection. Really this logic should be refactored, though.
           Simplified key information extraction in the panel template. A precursor to the refactoring I want to do.
           Set the default measurePeriod to 200 years
+        Jeff Klann 8/9/2012
+          Added external configuration support for basecode->codeSystem conversion.
           
         The current supported ontology mish-mash:
          SHRINE Demographics-> Age, Race, Marital Status, Gender, Language
@@ -65,14 +67,20 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:xalan="http://xml.apache.org/xalan"
   xmlns:str="http://exslt.org/strings"
+  xmlns:dyn="http://exslt.org/dynamic"
   xmlns:java="http://xml.apache.org/xslt/java"
+  xmlns:mc="urn:jklann:hqmf:metaConfig"
   xmlns:ont="xalan://edu.harvard.i2b2.eclipse.plugins.ontology.ws.OntServiceDriver"
   extension-element-prefixes="ont"
+  exclude-result-prefixes="mc"
   xmlns="urn:hl7-org:v3" version="1.0">
   <xsl:import href="time.xsl"/>
   <xsl:import href="url-encode.xsl"/>
   <xsl:output indent="yes" xalan:indent-amount="2"/>
    
+  <!-- Load the metaconfig. -->
+  <xsl:variable name="metaconfig" select="document('translatorMetaConfig.xml')"/>
+  
   <xsl:template name="replace-string">
     <xsl:param name="text"/>
     <xsl:param name="replace"/>
@@ -111,66 +119,33 @@ select="substring-after($text,$replace)"/>
     <xsl:choose>
       <!-- if there is a basecode, output the code and system -->  
       <xsl:when test="$item/basecode">
+        
+        <!-- Extract the code system from the config file -->
+        <xsl:variable name="metacodesys-rtf">
+          <xsl:for-each select="$metaconfig/mc:metaConfig/mc:codeSystems/mc:item[@basecode=$code-system]">
+            <xsl:choose>
+              <xsl:when test="not(attribute::test)">
+                <xsl:copy-of select="current()"/>
+              </xsl:when>            
+              <xsl:when test="attribute::test">
+                <xsl:if test="dyn:evaluate(attribute::test)">
+                  <xsl:copy-of select="current()"/>
+                </xsl:if>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:for-each>
+        </xsl:variable>
+        <xsl:variable name="metacodesys" select="xalan:nodeset($metacodesys-rtf)"/>
+        <xsl:if test="not($metacodesys/mc:item)"><xsl:message terminate="yes">
+          Undefined code system <xsl:value-of select="$code-system"/>
+        </xsl:message></xsl:if>
+        
         <xsl:element name="{$tag_name}">
           <xsl:attribute name="xsi:type">CD</xsl:attribute>
           <xsl:attribute name="code"><xsl:value-of select="$code"/></xsl:attribute>
           <xsl:attribute name="displayName"><xsl:value-of select="$item/item_name"/></xsl:attribute>
-          <xsl:choose>
-            <xsl:when test="substring($code-system,string-length($code-system)-3)='ICD9'">
-              <xsl:choose>
-                <!-- ICD-9s can be procedures (.104) or dx (.103), detected by a two vs. three digit code -->
-                <xsl:when test="string-length($code)=2 or string-length(substring-before($code,'.'))=2"> 
-                  <xsl:attribute name="codeSystem">2.16.840.1.113883.6.104</xsl:attribute>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:attribute name="codeSystem">2.16.840.1.113883.6.103</xsl:attribute>
-                </xsl:otherwise>
-              </xsl:choose>
-              <xsl:attribute name="codeSystemName">ICD-9-CM</xsl:attribute>
-            </xsl:when>
-            <xsl:when test="substring($code-system,string-length($code-system)-4)='LOINC'">
-              <xsl:attribute name="codeSystem">2.16.840.1.113883.6.1</xsl:attribute>
-              <xsl:attribute name="codeSystemName">LOINC</xsl:attribute>
-            </xsl:when>
-            <xsl:when test="substring($code-system,string-length($code-system)-5)='RXNORM'">
-              <xsl:attribute name="codeSystem">2.16.840.1.113883.6.88</xsl:attribute>
-              <xsl:attribute name="codeSystemName">RxNorm</xsl:attribute>
-            </xsl:when>
-            <xsl:when test="substring($code-system,string-length($code-system)-7)='PHSCDRGC'">
-              <xsl:attribute name="codeSystem">2.16.840.1.113883.12.416</xsl:attribute>
-              <xsl:attribute name="codeSystemName">DRG</xsl:attribute>
-            </xsl:when>
-            <xsl:when test="substring($code-system,string-length($code-system)-3)='RACE'">
-              <xsl:attribute name="codeSystem">2.16.840.1.113883.6.238</xsl:attribute>
-              <xsl:attribute name="codeSystemName">Race</xsl:attribute>
-            </xsl:when>
-            <xsl:when test="substring($code-system,string-length($code-system)-6)='MARITAL'">
-              <xsl:attribute name="codeSystem">2.16.840.1.113883.5.2</xsl:attribute>
-              <xsl:attribute name="codeSystemName">MaritalStatus</xsl:attribute>
-            </xsl:when>
-            <xsl:when test="substring($code-system,string-length($code-system)-7)='LANGUAGE'">
-              <xsl:attribute name="codeSystem">1.0.639.1</xsl:attribute>
-              <xsl:attribute name="codeSystemName">Language</xsl:attribute>
-            </xsl:when>
-            <xsl:when test="substring($code-system,string-length($code-system)-2)='SEX'">
-              <xsl:attribute name="codeSystem">2.16.840.1.113883.5.1</xsl:attribute>
-              <xsl:attribute name="codeSystemName">Gender</xsl:attribute>
-            </xsl:when>
-            <xsl:when test="substring($code-system,string-length($code-system)-2)='NDC'">
-              <xsl:attribute name="codeSystem">2.16.840.1.113883.6.69</xsl:attribute>
-              <xsl:attribute name="codeSystemName">NDC</xsl:attribute>
-            </xsl:when>
-            <!-- Zipcode should be mapped to an address element really. See the commented-out code in Demographics. However zipcode is
-              not currently in SHRINE -->
-            <xsl:when test="substring($code-system,string-length($code-system)-6)='ZIPCODE'">
-              <xsl:attribute name="codeSystem">2.16.840.1.113883.6.231</xsl:attribute>
-              <xsl:attribute name="codeSystemName">Zipcode</xsl:attribute>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:attribute name="codeSystem">unknown</xsl:attribute>
-              <xsl:attribute name="codeSystemName">unknown</xsl:attribute>
-            </xsl:otherwise>
-          </xsl:choose>
+          <xsl:attribute name="codeSystem"><xsl:value-of select="$metacodesys/mc:item/@codeSystem"/></xsl:attribute>
+          <xsl:attribute name="codeSystemName"><xsl:value-of select="$metacodesys/mc:item/@codeSystemName"/></xsl:attribute>
         </xsl:element>
       </xsl:when>
       <!-- otherswise, there is no Root concept, so we change this (For now)

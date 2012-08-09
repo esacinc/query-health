@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!-- Configuration of codeSystems and demographicCodes for the translators. demographicCodes is not currently used.
+   codeSystems is a many-to-many mapping of codeSystems to basecodes. The code in test is run on basecode to
+   codeSystem conversion, and test-reverse is run on the reverse conversion. This code is executed verbatim and 
+   so requires intimate knowledge of stylesheet variables. Better design someday!
+   
+   Jeff Klann, PhD - 8/9/12 
+     Initial version
+   -->
+<metaConfig xmlns="urn:jklann:hqmf:metaConfig">
+    <demographicCodes>
+        <item displayName="Current Chronological Age" code="424144002"
+            test="$subtype='Age'"/>
+        <item displayName="Gender" code="263495000"
+            test="$subtype ='Gender' or $subtype='gender_code'"/>
+        <item displayName="Race" code="103579009"
+            test="$subtype ='Race' or $subtype='race_code'"/>
+        <item displayName="Marital Status" code="125680007"
+            test="$subtype ='Marital Status' or $subtype='maritalStatus_code'"/>
+        <item displayName="Language" code="102902016"
+            test="$subtype ='Language' or $subtype='language_code'"/>
+        <item displayName="Religious Preference" code="160538000"
+            test="$subtype ='Religion' or $subtype='religiousAffiliation_code'"/>
+    </demographicCodes>
+    <codeSystems>
+        <!-- Not explicitly listed: CCDA11, CEDD, LOCAL, OID -->
+
+        <!-- Below are listed in Appendix D in CCDA 1.1, p. 562 -->
+        <item codeSystemName="LOINC" codeSystem="2.16.840.1.113883.6.1" basecode="LOINC"/>
+        <item codeSystemName="ICD-9-CM Procedures" codeSystem="2.16.840.1.113883.6.104" basecode="ICD9"
+            test="string-length($code)=2 or string-length(substring-before($code,'.'))=2"/>
+        <item codeSystemName="ICD-9-CM Diagnoses" codeSystem="2.16.840.1.113883.6.103" basecode="ICD9"
+            test="string-length($code)>2"/>
+        <item codeSystemName="CPT-4" codeSystem="2.16.840.1.113883.6.12" basecode="CPT"/> 
+        <item codeSystemName="MaritalStatus" codeSystem="2.16.840.1.113883.5.2" basecode="MARITAL"/>
+        <!-- Zipcode should be mapped to an address element really. See the commented-out code in Demographics. However zipcode is
+            not currently in SHRINE -->
+        <item codeSystemName="Zipcode" codeSystem="2.16.840.1.113883.6.231" basecode="ZIPCODE"/> 
+        <item codeSystemName="Postal Code" codeSystem="2.16.840.1.113883.6.231" basecode="POSTALCODE"/> 
+        <item codeSystemName="Race and Ethnicity" codeSystem="2.16.840.1.113883.6.238" basecode="RACE"/>
+        <item codeSystemName="Religious Affiliation" codeSystem="2.16.840.1.113883.5.1076" basecode="RELIGION"/> 
+        <item codeSystemName="NDF-RT" codeSystem="2.16.840.1.113883.3.26.1.5" basecode="NDFRT"/>
+        <item codeSystemName="RxNorm" codeSystem="2.16.840.1.113883.6.88" basecode="RXNORM"/>        
+        <item codeSystemName="SNOMED" codeSystem="2.16.840.1.113883.6.96" basecode="SNOMED"
+            test-reverse="not(contains($rootkey,'CEDD'))"/>
+        <item codeSystemName="SNOMED" codeSystem="2.16.840.1.113883.6.96" basecode="SNO"
+            test-reverse="contains($rootkey,'CEDD')"/>
+        
+        <!-- Below are code systems not specifically mentioned in CCDA 1.1 -->
+
+        <!-- The Australian Modifier American English edition of ICD-10, supported by NLM. --> 
+        <item codeSystemName="ICD-10-AMAE" codeSystem="2.16.840.1.113883.6.135.1" basecode="ICD10"/>   
+        <!-- Diagnosis related groups -->
+        <item codeSystemName="DRG" codeSystem="2.16.840.1.113883.12.416" basecode="PHSCDRGC"/>         
+        <item codeSystemName="NDC" codeSystem="2.16.840.1.113883.6.69" basecode="NDC"/> 
+        <!-- HL7 Administrative Gender -->
+        <item codeSystemName="Gender" codeSystem="2.16.840.1.113883.5.1" basecode="SEX"
+            test-reverse="not(contains($rootkey,'CEDD'))"/>
+        <item codeSystemName="Gender" codeSystem="2.16.840.1.113883.5.1" basecode="GENDER"
+            test-reverse="contains($rootkey,'CEDD')"/>
+        <!-- ISO 639-1 Language codes -->
+        <item codeSystemName="Language" codeSystem="1.0.639.1" basecode="LANGUAGE"/> 
+        
+        <!-- These are translator-specific special cases. Do not change. -->
+        <item codeSystem="AGE" basecode="AGE"/>
+        <item codeSystem="AGERANGE" basecode="AGERANGE"/>
+    </codeSystems>
+</metaConfig>

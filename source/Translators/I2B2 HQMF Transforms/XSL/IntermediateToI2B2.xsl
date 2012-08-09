@@ -37,6 +37,8 @@
          directly in i2b2
     Jeff Klann 8/4/2012
        Added a hack to support CEDD while it still has SHRINE| basecodes. 
+    Jeff Klann 8/9/2012
+       Added external configuration support for codeSystem->basecode conversion.
         
     Todo: 
       EncounterCriteria AgeAtVisit doesn't work.
@@ -51,7 +53,9 @@
     xmlns:xalan="http://xml.apache.org/xalan"
     xmlns:java="http://xml.apache.org/xslt/java"
     xmlns:hl7v3="urn:hl7-org:v3"
-    exclude-result-prefixes="xsi xalan java hl7v3"    
+    xmlns:mc="urn:jklann:hqmf:metaConfig"
+    xmlns:dyn="http://exslt.org/dynamic"
+    exclude-result-prefixes="xsi xalan java hl7v3 mc"    
     version="1.0">
     <xsl:import href="time.xsl"/>
     
@@ -84,6 +88,9 @@
     
     <!-- Concepts. Now hooks into ontology cell, except for ages. -->
     <xsl:variable name="concepts" select="document('concepts.xml')"/>
+    
+    <!-- Load the metaconfig. -->
+    <xsl:variable name="metaconfig" select="document('translatorMetaConfig.xml')"/>
     
     <!-- Have references to dataCriteria readily available. -->
     <xsl:key name="dataCriteria" match="/hl7v3:ihqmf/*/hl7v3:id" use="@extension"/>
@@ -161,24 +168,31 @@
                         </xsl:choose>
                     </xsl:variable>
                     <xsl:variable name="i2b2-precode" select="xalan:nodeset($i2b2-precode-rtf)/hl7v3:code"/>
+                    <!-- Extract the code system from the config file -->
+                    <xsl:variable name="metacodesys-rtf">
+                        <xsl:for-each select="$metaconfig/mc:metaConfig/mc:codeSystems/mc:item[@codeSystem=$i2b2-precode/@codeSystem]">
+                            <xsl:choose>
+                                <xsl:when test="not(attribute::test-reverse)">
+                                    <xsl:copy-of select="current()"/>
+                                </xsl:when>            
+                                <xsl:when test="attribute::test-reverse">
+                                    <xsl:if test="dyn:evaluate(attribute::test-reverse)">
+                                        <xsl:copy-of select="current()"/>
+                                    </xsl:if>
+                                </xsl:when>
+                            </xsl:choose>
+                        </xsl:for-each>
+                    </xsl:variable>
+                    <xsl:variable name="metacodesys" select="xalan:nodeset($metacodesys-rtf)"/>
+                    <xsl:if test="not($metacodesys/mc:item)"><xsl:message terminate="yes">
+                        Undefined code system <xsl:value-of select="$i2b2-precode/@codeSystem"/>
+                    </xsl:message></xsl:if>
+         
+                    
                     <!-- Translate HQMF code to I2B2 basecode -->
                     <xsl:variable name="i2b2-code">
                         <xsl:if test="(ancestor-or-self::hl7v3:DemographicsCriteria or ancestor-or-self::hl7v3:EncounterCriteria) and starts-with(translate($rootkey, 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'\\I2B2')">DEM|</xsl:if>
-                        <xsl:choose>
-                            <xsl:when test="$i2b2-precode/@codeSystem='2.16.840.1.113883.6.96'">SNOMED</xsl:when>
-                            <xsl:when test="$i2b2-precode/@codeSystem='2.16.840.1.113883.6.104'">ICD9</xsl:when>
-                            <xsl:when test="$i2b2-precode/@codeSystem='2.16.840.1.113883.6.103'">ICD9</xsl:when>
-                            <xsl:when test="$i2b2-precode/@codeSystem='2.16.840.1.113883.6.1'">LOINC</xsl:when>
-                            <xsl:when test="$i2b2-precode/@codeSystem='2.16.840.1.113883.6.88'">RXNORM</xsl:when>
-                            <xsl:when test="$i2b2-precode/@codeSystem='2.16.840.1.113883.12.416'">PHSCDRGC</xsl:when>
-                            <xsl:when test="$i2b2-precode/@codeSystem='2.16.840.1.113883.6.238'">RACE</xsl:when>
-                            <xsl:when test="$i2b2-precode/@codeSystem='2.16.840.1.113883.5.2'">MARITAL</xsl:when>
-                            <xsl:when test="$i2b2-precode/@codeSystem='2.16.840.1.113883.5.1'">SEX</xsl:when>
-                            <xsl:when test="$i2b2-precode/@codeSystem='1.0.639.1'">LANGUAGE</xsl:when> 
-                            <xsl:when test="$i2b2-precode/@codeSystem='AGE'">AGE</xsl:when>
-                            <xsl:when test="$i2b2-precode/@codeSystem='AGERANGE'">AGERANGE</xsl:when>
-                            <xsl:otherwise>OID</xsl:otherwise>
-                        </xsl:choose>:<xsl:value-of select="$i2b2-precode/@code"/>
+                        <xsl:value-of select="$metacodesys/mc:item/@basecode"/>:<xsl:value-of select="$i2b2-precode/@code"/>
                     </xsl:variable>
                     <xsl:choose>                        
                         <xsl:when test="starts-with($i2b2-code,'OID:') and not($rootkey='\\')">
