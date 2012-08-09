@@ -14,6 +14,8 @@
           Note that this is not thoroughly tested - it has been tested on the i2b2 HQMF version of NQF59
            and on my larger composite query. 
            There are places this translator probably still does not produce valid ihqmf. Needs work.
+        Jeff Klann - 8/8/2012 - bugfix, somehow wasn't carrying dataCriteriaCombiner operations over.
+          The revised translator will supersede this bugfix.
   -->
   <xsl:template match="/v3:QualityMeasureDocument">
     <ihqmf>
@@ -347,7 +349,7 @@
     <populationCriteria>
       <xsl:copy-of select="v3:id"/>
       <xsl:call-template name="dataCriteriaCombiner">
-        <xsl:with-param name="operation">allTrue</xsl:with-param>
+        <xsl:with-param name="operation">AllTrue</xsl:with-param>
       </xsl:call-template>
     </populationCriteria>
   </xsl:template>
@@ -356,7 +358,7 @@
     <populationCriteria>
       <xsl:copy-of select="v3:id"/>
       <xsl:call-template name="dataCriteriaCombiner">
-        <xsl:with-param name="operation">atLeastOneTrue</xsl:with-param>
+        <xsl:with-param name="operation">AtLeastOneTrue</xsl:with-param>
       </xsl:call-template>
     </populationCriteria>
   </xsl:template>
@@ -364,7 +366,7 @@
     <stratifierCriteria>
       <xsl:copy-of select="v3:id"/>
       <xsl:call-template name="dataCriteriaCombiner">
-        <xsl:with-param name="operation">onlyOneTrue</xsl:with-param>
+        <xsl:with-param name="operation">OnlyOneTrue</xsl:with-param>
       </xsl:call-template>
     </stratifierCriteria>
   </xsl:template>
@@ -385,16 +387,16 @@
     match="v3:allTrue|v3:allFalse|
        v3:atLeastOneTrue|v3:atLeastOneFalse|
        v3:onlyOneTrue|v3:onlyOneFalse">
-    <xsl:param name="operation"/>
-    <!--
+    <!--<xsl:param name="operation"/>
+    
     <xsl:param name="operation" select="concat(translate(substring(local-name(.),
       1,1),'abcdefghijklmnopqrstuvwxyz',
-      'abcdefghijklmnopqrstuvwxyz'),substring(local-name(.),2,string-length(local-name(.))))"/>
+      'abcdefghijklmnopqrstuvwxyz'),substring(local-name(.),2,string-length(local-name(.))))"/> -->
    
     <xsl:param name="operation" select="concat(translate(substring(local-name(.),
       1,1),'abcdefghijklmnopqrstuvwxyz',
       'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),substring(local-name(.),2,string-length(local-name(.))))"/>
-      -->
+
     <dataCriteriaCombiner>
       <!-- TBD: Change initial case of dataCriteriaOperationType to
         match schema

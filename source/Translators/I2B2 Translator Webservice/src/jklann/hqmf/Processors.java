@@ -53,7 +53,7 @@ public class Processors {
 		
 		// i2b2->i2b2+ [i2b2 with basecodes]
 		try {
-			i2b2plus = tFactory.newTransformer(new StreamSource(MyProps.getInstance().xslLoc+"/toi2b2plus.xsl"));
+			i2b2plus = tFactory.newTransformer(new StreamSource(MyProps.getInstance().xslLoc+"/I2B2ToI2B2Plus.xsl"));
 			i2b2plus.setParameter("serviceurl", MyProps.getInstance().baseURL);
 			i2b2plus.setParameter("subkey-age", MyProps.getInstance().subkeyAge);
 			i2b2plus.setErrorListener(new ProcessorErrorHandler());
@@ -63,7 +63,7 @@ public class Processors {
 		
 		// i2b2+->HQMF
 		try {
-			hqmf = tFactory.newTransformer(new StreamSource(MyProps.getInstance().xslLoc+"/tohqmf.xsl"));
+			hqmf = tFactory.newTransformer(new StreamSource(MyProps.getInstance().xslLoc+"/I2B2PlusToHQMF.xsl"));
 			hqmf.setErrorListener(new ProcessorErrorHandler());
 		} catch (TransformerConfigurationException e) {
 			Logger.getLogger("jklann.hqmf.Processors").log(Level.SEVERE,"Could not load tohqmf.xsl! "+e.getMessageAndLocation());
@@ -71,7 +71,7 @@ public class Processors {
 			
 		// HQMF->iHQMF
 		try{
-			ihqmf = tFactory.newTransformer(new StreamSource(MyProps.getInstance().xslLoc+"/toihqmf.xsl"));
+			ihqmf = tFactory.newTransformer(new StreamSource(MyProps.getInstance().xslLoc+"/HQMFtoIntermediate.xsl"));
 			ihqmf.setErrorListener(new ProcessorErrorHandler());
 		} catch (TransformerConfigurationException e) {
 			Logger.getLogger("jklann.hqmf.Processors").log(Level.SEVERE,"Could not load toihqmf.xsl! "+e.getMessageAndLocation());
@@ -79,7 +79,7 @@ public class Processors {
 		
 		// iHQMF->i2b2
 		try{
-			i2b2 = tFactory.newTransformer(new StreamSource(MyProps.getInstance().xslLoc+"/toi2b2.xsl"));
+			i2b2 = tFactory.newTransformer(new StreamSource(MyProps.getInstance().xslLoc+"/IntermediateToI2B2.xsl"));
 			i2b2.setParameter("serviceurl", MyProps.getInstance().baseURL);
 			i2b2.setParameter("fullquery", MyProps.getInstance().fullI2B2);
 			i2b2.setParameter("rootkey", MyProps.getInstance().rootKey);

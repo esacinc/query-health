@@ -33,12 +33,18 @@
         Jeff Klann 7/30/2012
           Added a stub for modifiers. Rejects all modifiers without a CEDD: basecode and generates a dummy element
          for those.
+        Jeff Klann 8/8/2012
+          Added scaffolding for CEDD section and demographic type detection. Really this logic should be refactored, though.
+          Simplified key information extraction in the panel template. A precursor to the refactoring I want to do.
+          Set the default measurePeriod to 200 years
           
         The current supported ontology mish-mash:
          SHRINE Demographics-> Age, Race, Marital Status, Gender, Language
          SHRINE Medications (RxNorm ingredients) or i2b2_demo meds (NDC codes)
          SHRINE or i2b2_demo procedures and diagnoses (ICD-9)
          i2b2_demo labs (LOINC)
+         CEDD: parts of condition, encounter, result, procedure, medication, and patient information might work,
+           but modifiers do not.
         
         A CEDD-compliant Query Health ontology should be finalized and missing sections (esp. unsupported demographics and encounter details)
         should be added. In particular, the RxNorm medication tree might not be optimal because it uses RxNorm ingredients, but the i2b2_demo
@@ -58,6 +64,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:xalan="http://xml.apache.org/xalan"
+  xmlns:str="http://exslt.org/strings"
   xmlns:java="http://xml.apache.org/xslt/java"
   xmlns:ont="xalan://edu.harvard.i2b2.eclipse.plugins.ontology.ws.OntServiceDriver"
   extension-element-prefixes="ont"
@@ -245,7 +252,7 @@ select="substring-after($text,$replace)"/>
         <measurePeriod>
           <id root="0" extension="StartDate"/>
           <value>
-            <width unit="a" value="5"/>
+            <width unit="a" value="200"/>
           </value>
         </measurePeriod>
       </controlVariable>
@@ -433,21 +440,12 @@ select="substring-after($text,$replace)"/>
         <xsl:value-of select="$name"/>
       </localVariableName>
       <!-- Extract various parts of the ontology from item_key -->
-      <xsl:variable name="key">
-        <xsl:choose>
-          <xsl:when test="substring(item_key,3,6)='SHRINE'">
-            <xsl:value-of select="substring-after(normalize-space(item_key),'SHRINE\SHRINE\')"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select="substring-after(normalize-space(item_key),'\i2b2\')"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:variable>
-      <xsl:variable name="type"
-        select="substring-before($key,&quot;\&quot;)"/>
-      <xsl:variable name="subtype"
-        select="substring-before(substring-after($key,&quot;\&quot;),&quot;\&quot;)"/>
+      <xsl:variable name="split_item_key" select="str:split(substring-after(normalize-space(item_key),'\\'),'\')"/>
       
+      <xsl:variable name="key" select="substring-after(normalize-space(item_key),concat('\',$split_item_key[2],'\'))"/>
+      <xsl:variable name="type" select="$split_item_key[3]/text()"/>
+      <xsl:variable name="subtype" select="$split_item_key[4]/text()"/>
+
       <!-- call on ontology specific templates with the ontology parts and 
         name of the entry as parameters -->
       <xsl:apply-templates select="." mode="bytype">
@@ -491,7 +489,7 @@ select="substring-after($text,$replace)"/>
     </observationCriteria>
   -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\i2b2_DEMO\i2b2\Demographics')] | item[starts-with(item_key,'\\I2B2\i2b2\Demographics')] | item[starts-with(item_key,'\\SHRINE\SHRINE\Demographics\')]">
+    match="item[contains(item_key,'\Demographics')] | item[contains(item_key,'\patientInformation')]">
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
     <xsl:param name="name"/>
@@ -522,28 +520,28 @@ select="substring-after($text,$replace)"/>
             </xsl:attribute>
             <xsl:attribute name="code">424144002</xsl:attribute>
           </xsl:when>
-          <xsl:when test="$subtype ='Gender'">
+          <xsl:when test="$subtype ='Gender' or $subtype='gender_code'">
             <xsl:attribute name="displayName">Gender</xsl:attribute>
             <xsl:attribute name="code">263495000</xsl:attribute>
           </xsl:when>
-          <xsl:when test="$subtype ='Race'">
+          <xsl:when test="$subtype ='Race' or $subtype='race_code'">
             <xsl:attribute name="displayName">Race</xsl:attribute>
             <xsl:attribute name="code">103579009</xsl:attribute>
           </xsl:when>
-          <xsl:when test="$subtype ='Marital Status'">
+          <xsl:when test="$subtype ='Marital Status' or $subtype='maritalStatus_code'">
             <xsl:attribute name="displayName">
               <xsl:text>Marital Status</xsl:text>
             </xsl:attribute>
             <xsl:attribute name="code">125680007</xsl:attribute>
           </xsl:when>
-          <xsl:when test="$subtype ='Language'">
+          <xsl:when test="$subtype ='Language' or $subtype='language_code'">
             <!-- TBD: Keith's guide does not specify a preferred SNOMED code for language, but the CEDD v.01 specification states that language is a supported element. -->
             <xsl:attribute name="displayName">
               <xsl:text>Language</xsl:text>
             </xsl:attribute>
             <xsl:attribute name="code">102902016</xsl:attribute>
           </xsl:when>
-          <xsl:when test="$subtype ='Religion'">
+          <xsl:when test="$subtype ='Religion' or $subtype='religiousAffiliation_code'">
             <xsl:attribute name="displayName">
               <xsl:text>Religious Preference</xsl:text>
             </xsl:attribute>
@@ -682,7 +680,7 @@ select="substring-after($text,$replace)"/>
     
   -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\I2B2\i2b2\Diagnoses')] | item[starts-with(item_key,'\\i2b2_DIAG\i2b2\Diagnoses')] | item[starts-with(item_key,'\\SHRINE\SHRINE\Diagnoses\')]">
+    match="item[contains(item_key,'\Diagnoses')] | item[contains(item_key,'\condition')] ">
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
     <xsl:param name="name"/>   
@@ -744,7 +742,7 @@ select="substring-after($text,$replace)"/>
   
   -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\I2B2\i2b2\Labtests')] | item[starts-with(item_key,'\\i2b2_LABS\i2b2\Labtests')]">
+    match="item[contains(item_key,'\Labtests')] | item[contains(item_key,'\result')]">
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
     <xsl:param name="name"/>
@@ -889,7 +887,7 @@ select="substring-after($text,$replace)"/>
     
   -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\SHRINE\SHRINE\medications\')] | item[starts-with(item_key,'\\I2B2\i2b2\Medications')]">
+    match="item[contains(item_key,'\medications\')] | item[contains(item_key,'\Medications')] | item[contains(item_key,'\medication')]">
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
     <xsl:param name="name"/>
@@ -950,7 +948,7 @@ select="substring-after($text,$replace)"/>
     </observationCriteria>
       -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\I2B2\i2b2\Procedures')] | item[starts-with(item_key,'\\i2b2_PROC\i2b2\Procedures')]">
+    match="item[contains(item_key,'\Procedures')] | item[contains(item_key,'\procedure')]">
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
     <xsl:param name="name"/>
@@ -982,7 +980,7 @@ select="substring-after($text,$replace)"/>
         We need to define what OIDs we're using for visit type. There is no guidance of figure out length of stay.
   -->
   <xsl:template mode="bytype"
-    match="item[starts-with(item_key,'\\I2B2\i2b2\Visit Details')]"> 
+    match="item[contains(item_key,'\Visit Details')] | item[contains(item_key,'\encounter')]"> 
     <xsl:param name="type"/>
     <xsl:param name="subtype"/>
     <xsl:param name="name"/>
@@ -1153,6 +1151,28 @@ select="substring-after($text,$replace)"/>
     <xsl:variable name="elem-name">
       <!-- The name of the reference element is set based on the ontology item_key -->
       <xsl:choose>
+        <!-- CEDD ontology references -->
+        <xsl:when
+          test="starts-with(item_key,'\\CEDD\')">
+          <xsl:choose>
+              <xsl:when
+                    test="starts-with(item_key,'\\CEDD\CEDD\medication')">
+                    <xsl:text>substanceAdministrationReference</xsl:text>
+                  </xsl:when>
+                  <xsl:when
+                    test="starts-with(item_key,'\\CEDD\CEDD\procedure')">
+                    <xsl:text>procedureReference</xsl:text>
+                  </xsl:when>
+                  <xsl:when
+                    test="starts-with(item_key,'\\CEDD\CEDD\encounter')">
+                    <xsl:text>encounterReference</xsl:text>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:text>observationReference</xsl:text>
+                  </xsl:otherwise>
+          </xsl:choose>
+        </xsl:when>
+        
         <!-- i2b2 standard ontology references -->
         <xsl:when
           test="starts-with(item_key,'\\I2B2\i2b2\Demographics')">
