@@ -962,92 +962,103 @@ select="substring-after($text,$replace)"/>
     
     <encounterCriteria>
       <id root="{$docOID}" extension="{$name}"/>
-      <code code=""  
-        displayName="DummyName">
-          <xsl:choose>
-            <xsl:when test="$subtype='Age at visit'">
-              <xsl:attribute name="displayName">
-                <xsl:text>Age at Visit</xsl:text>
-              </xsl:attribute>
-              <xsl:attribute name="code">424144002</xsl:attribute>
-              <xsl:attribute name="codeSystem">2.16.840.1.113883.6.96</xsl:attribute>
-              <xsl:attribute name="codeSystemName">SNOMED CT</xsl:attribute>
-            </xsl:when>
-            <xsl:when test="$subtype ='Length of stay'">
-              <xsl:attribute name="displayName">Length of stay</xsl:attribute>
-              <!-- There is no guidance on how to code a length of stay -->
-            </xsl:when>
-            <xsl:when test="$subtype ='Visit type'">
-              <xsl:attribute name="displayName">Visit Type</xsl:attribute>
-              <xsl:attribute name="valueSet"><!-- This will be a visit type oid, either hedis or i2b2 --></xsl:attribute>
-            </xsl:when>
-          </xsl:choose>
-          <xsl:if test="../panel_date_from|../panel_date_to">
-            <effectiveTime>
-              <xsl:apply-templates
-                select="../panel_date_from|../panel_date_to"/>
-            </effectiveTime>
-          </xsl:if>
-      </code>
       <xsl:choose>
-        <!-- If it's an age, map values -->
-        <xsl:when test="$subtype='Age at visit'">
-          <xsl:choose>
-            <xsl:when test="basecode and substring-after(basecode,':')">
-              <xsl:variable name="age"
-                select="substring-after(basecode,':')"/>
-              <value xsi:type="IVL_PQ">
-                <low value="{normalize-space($age)}" inclusive="true"
-                  unit="a"/>
-                <high value="{normalize-space($age)+1}"
-                  inclusive="false" unit="a"/>
-              </value>
-            </xsl:when>
-            <!-- Handle Age >= X -->
-            <xsl:when test="contains(item_key,'gt;=')">
-              <xsl:variable name="age"
-                select="substring-before(substring-after(item_key,'= '),' ')"/>
-              <value xsi:type="IVL_PQ">
-                <low value="{normalize-space($age)}" inclusive="true"
-                  unit="a"/>
-              </value>
-            </xsl:when>
-            <!-- Handle Age = X -->
-            <xsl:when test="contains(item_key,'=')">
-              <xsl:variable name="age"
-                select="substring-before(substring-after(item_key,'= '),' ')"/>
-              <value xsi:type="IVL_PQ">
-                <low value="{normalize-space($age)}" inclusive="true"
-                  unit="a"/>
-                <high value="{normalize-space($age)+1}"
-                  inclusive="false" unit="a"/>
-              </value>
-            </xsl:when>
-            <!-- process age ranges -->
-            <xsl:when test="contains(item_key,'-')">
-              <xsl:variable name="agelow"
-                select="substring-after(substring-before(item_key,'-'),'Age at visit\')"/>
-              <xsl:variable name="agehigh"
-                select="substring-before(substring-after(item_key,'-'),' ')"/>
-              <value xsi:type="IVL_PQ">
-                <low value="{normalize-space($agelow)}" inclusive="true"
-                  unit="a"/>
-                <high value="{normalize-space($agehigh)+1}"
-                  inclusive="false" unit="a"/>
-              </value>
-            </xsl:when>
-            <xsl:otherwise>
-              <!-- don't recognize age format -->
-              <xsl:message terminate="yes">(400) Cannot Parse Age Range for
-                <xsl:value-of select="item_key"/> to HQMF Demographics
-              </xsl:message>
-            </xsl:otherwise>
-          </xsl:choose>
+        <!-- TODO: Temporary fix for non age and length codes. Really this whole template should be refactored. -->
+        <xsl:when test="not($subtype='Age at visit' or $subtype ='Length of stay')">
+          <xsl:call-template name="get-concept">
+            <xsl:with-param name="item" select="current()"/>
+            <xsl:with-param name="tag_name">code</xsl:with-param>
+          </xsl:call-template> 
         </xsl:when>
-        <!-- TBD: Map Length-of-stay codes -->
-        <xsl:when test="$subtype ='Length of stay'">
-          <value xsi:type="CD" value=""/>
-        </xsl:when>
+        <xsl:otherwise>
+        <code code=""  
+          displayName="DummyName">
+            <xsl:choose>
+              <xsl:when test="$subtype='Age at visit'">
+                <xsl:attribute name="displayName">
+                  <xsl:text>Age at Visit</xsl:text>
+                </xsl:attribute>
+                <xsl:attribute name="code">424144002</xsl:attribute>
+                <xsl:attribute name="codeSystem">2.16.840.1.113883.6.96</xsl:attribute>
+                <xsl:attribute name="codeSystemName">SNOMED CT</xsl:attribute>
+              </xsl:when>
+              <xsl:when test="$subtype ='Length of stay'">
+                <xsl:attribute name="displayName">Length of stay</xsl:attribute>
+                <!-- There is no guidance on how to code a length of stay -->
+              </xsl:when>
+              <xsl:when test="$subtype ='Visit type'">
+                <xsl:attribute name="displayName">Visit Type</xsl:attribute>
+                <xsl:attribute name="valueSet"><!-- This will be a visit type oid, either hedis or i2b2 --></xsl:attribute>
+              </xsl:when>
+            </xsl:choose>
+            <xsl:if test="../panel_date_from|../panel_date_to">
+              <effectiveTime>
+                <xsl:apply-templates
+                  select="../panel_date_from|../panel_date_to"/>
+              </effectiveTime>
+            </xsl:if>
+        </code>
+        <xsl:choose>
+          <!-- If it's an age, map values -->
+          <xsl:when test="$subtype='Age at visit'">
+            <xsl:choose>
+              <xsl:when test="basecode and substring-after(basecode,':')">
+                <xsl:variable name="age"
+                  select="substring-after(basecode,':')"/>
+                <value xsi:type="IVL_PQ">
+                  <low value="{normalize-space($age)}" inclusive="true"
+                    unit="a"/>
+                  <high value="{normalize-space($age)+1}"
+                    inclusive="false" unit="a"/>
+                </value>
+              </xsl:when>
+              <!-- Handle Age >= X -->
+              <xsl:when test="contains(item_key,'gt;=')">
+                <xsl:variable name="age"
+                  select="substring-before(substring-after(item_key,'= '),' ')"/>
+                <value xsi:type="IVL_PQ">
+                  <low value="{normalize-space($age)}" inclusive="true"
+                    unit="a"/>
+                </value>
+              </xsl:when>
+              <!-- Handle Age = X -->
+              <xsl:when test="contains(item_key,'=')">
+                <xsl:variable name="age"
+                  select="substring-before(substring-after(item_key,'= '),' ')"/>
+                <value xsi:type="IVL_PQ">
+                  <low value="{normalize-space($age)}" inclusive="true"
+                    unit="a"/>
+                  <high value="{normalize-space($age)+1}"
+                    inclusive="false" unit="a"/>
+                </value>
+              </xsl:when>
+              <!-- process age ranges -->
+              <xsl:when test="contains(item_key,'-')">
+                <xsl:variable name="agelow"
+                  select="substring-after(substring-before(item_key,'-'),'Age at visit\')"/>
+                <xsl:variable name="agehigh"
+                  select="substring-before(substring-after(item_key,'-'),' ')"/>
+                <value xsi:type="IVL_PQ">
+                  <low value="{normalize-space($agelow)}" inclusive="true"
+                    unit="a"/>
+                  <high value="{normalize-space($agehigh)+1}"
+                    inclusive="false" unit="a"/>
+                </value>
+              </xsl:when>
+              <xsl:otherwise>
+                <!-- don't recognize age format -->
+                <xsl:message terminate="yes">(400) Cannot Parse Age Range for
+                  <xsl:value-of select="item_key"/> to HQMF Demographics
+                </xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:when>
+          <!-- TBD: Map Length-of-stay codes -->
+          <xsl:when test="$subtype ='Length of stay'">
+            <value xsi:type="CD" value=""/>
+          </xsl:when>
+        </xsl:choose>
+        </xsl:otherwise>
       </xsl:choose>
       <definition>
         <observationReference moodCode="DEF">
