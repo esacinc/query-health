@@ -12,31 +12,39 @@
        Now looks up basecodes on modifiers also (but does not recurse into children). Uses getTermInfo for 
       simplicity. This assumes a one-to-one mapping between modifier key and basecode and could break in a later
       version of i2b2.
+    Jeff Klann, PhD - 9/27/12
+       Eliminated the dependence on definining a subkey for age buckets. Now just grabs this info from the metaconfig.
+       Fixed a bug where constraint information was not propagated on recursive expansion and basecodes were not looked up
+         on modifiers in this situation.
        
     Todo: should not choose first matching concept for a key, should choose first matching concept with a
      basecode if any exist. However, the likelihood of duplicate keys makes this a minor issue.
+     
+    Todo: basecodes probably ought to be cached because they're looked up many times in the case of a modifier on a recursive expansion.
 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xalan="http://xml.apache.org/xalan"
     xmlns:java="http://xml.apache.org/xslt/java"
     xmlns:ont="xalan://edu.harvard.i2b2.eclipse.plugins.ontology.ws.OntServiceDriver"
+    xmlns:str="http://exslt.org/strings"
+    xmlns:mc="urn:jklann:hqmf:metaConfig"
     extension-element-prefixes="ont"
     version="1.0"
-    exclude-result-prefixes="xsi xalan java">
+    exclude-result-prefixes="xsi xalan java mc str">
     <xsl:import href="time.xsl"/>
     <xsl:import href="url-encode.xsl"/>
     <xsl:output indent="yes" xalan:indent-amount="2"/>
     <xsl:strip-space elements="*"/>
-    
+      
     <!-- The root URL for the webservice. If it is blank, runs locally on concepts.xml -->
     <!-- If not running locally, extracts security parameters from the i2b2 message. -->
     <!--<xsl:param name="serviceurl">http://ec2-23-20-41-242.compute-1.amazonaws.com:9090/jersey</xsl:param>-->
     <xsl:param name="serviceurl">http://localhost:8080</xsl:param>
     
-    <!-- The subkey to search for that indicates ages -->
-    <xsl:param name="subkey-age">Age</xsl:param> 
-    
+    <!-- Load the metaconfig. -->
+    <xsl:variable name="metaconfig" select="document('translatorMetaConfig.xml')"/>
+      
     <!-- The security parameters for concept lookup -->
     <xsl:variable name="userdomain" select="//security/domain/text()"/>
     <xsl:variable name="userproject" select="descendant::message_body/descendant::user/@group"/>
@@ -112,6 +120,11 @@
     
     <!-- This template modifies items -->
     <xsl:template match="item" mode="process">   
+      <!-- Extract various parts of the ontology from item_key -->
+      <xsl:variable name="split_item_key" select="str:split(substring-after(normalize-space(item_key),'\\'),'\')"/>    
+      <xsl:variable name="subtype_split" select="str:split($split_item_key[4]/text(),'_')"/>
+      <xsl:variable name="subtype" select="$subtype_split[1]/text()"/>
+      
         <xsl:choose>
            <!-- Verify the item key is sane. Otherwise i2b2 seems to get stuck forever. -->
            <xsl:when test="not(starts-with(item_key,'\\'))">
@@ -135,7 +148,8 @@
                    </item>               
                </xsl:when>
                <!-- Special handling for age ranges -->
-               <xsl:when test="contains(item_key,concat('\',$subkey-age,'\')) and (not(xalan:nodeset($myconcept)/basecode) or substring-after(xalan:nodeset($myconcept)/basecode,':')='')"> 
+             <xsl:when test="$metaconfig/mc:metaConfig/mc:demographicCodes/mc:item[@i2b2_subtype=$subtype][1]/@code='424144002' 
+                 and (not(xalan:nodeset($myconcept)/basecode) or substring-after(xalan:nodeset($myconcept)/basecode,':')='')">
                    <xsl:comment>AGE RANGE DETECTED - LEAVING ALONE</xsl:comment>
                    <item>
                        <xsl:apply-templates mode="process"/>
@@ -144,7 +158,8 @@
                <xsl:otherwise>
                    <xsl:comment>NO BASECODE - ADDING CHILDREN</xsl:comment> 
                    <xsl:call-template name="get-children">
-                       <xsl:with-param name="item_key" select="item_key"/>
+                       <xsl:with-param name="item-orig" select="current()"/>
+                       <xsl:with-param name="key-current" select="item_key"/>
                    </xsl:call-template>
                </xsl:otherwise>
            </xsl:choose>
@@ -156,12 +171,13 @@
         a template for I2B2 children lookup.
     -->
     <xsl:template name="get-children">
-        <xsl:param name="item_key"/>
+        <xsl:param name="item-orig"/>
+        <xsl:param name="key-current"></xsl:param>
         
         <!-- URLencode the item key -->
         <xsl:variable name="item_key2">
             <xsl:call-template name="url-encode">
-                <xsl:with-param name="str" select="normalize-space($item_key)"/>
+                <xsl:with-param name="str" select="normalize-space($key-current)"/>
             </xsl:call-template>
         </xsl:variable>
         
@@ -180,9 +196,9 @@
             <xsl:message terminate="yes">(400) <xsl:value-of select="$concepts//status/@type"/>: <xsl:value-of select="$concepts//status"/> for URL <xsl:value-of select="concat($getChildrenUrl,'?key=',normalize-space($item_key2))"/></xsl:message>
         </xsl:if>
         <xsl:if test="count($concepts//concept)=0">
-            <xsl:message terminate="yes">(400) <xsl:value-of select="$item_key"/> has no children and no basecode!</xsl:message>
+            <xsl:message terminate="yes">(400) <xsl:value-of select="$key-current"/> has no children and no basecode!</xsl:message>
         </xsl:if>
-        
+            
         <!-- Insert the key, basecode and name into the query definition -->
         <xsl:for-each select="$concepts//concept">
             <xsl:choose>
@@ -191,12 +207,15 @@
                         <basecode><xsl:value-of select="basecode"/></basecode>
                         <item_name><xsl:value-of select="name"/></item_name>
                         <item_key><xsl:value-of select="key"/></item_key>
+                        <xsl:copy-of select="$item-orig/constrain_by_value"/>
+                        <xsl:apply-templates select="$item-orig/constrain_by_modifier" mode="process"/>             
                     </item>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:message terminate="no">Recursing on <xsl:value-of select="key"/></xsl:message>
                     <xsl:call-template name="get-children">
-                        <xsl:with-param name="item_key" select="key"></xsl:with-param>
+                        <xsl:with-param name="item-orig" select="$item-orig"></xsl:with-param> 
+                        <xsl:with-param name="key-current" select="key"></xsl:with-param>
                     </xsl:call-template>
                 </xsl:otherwise>
             </xsl:choose>           

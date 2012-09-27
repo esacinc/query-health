@@ -75,10 +75,10 @@
     <xsl:param name="userdomain">i2b2demo</xsl:param> <!-- Public demoserver is HarvardDemo -->
     
     <!-- Other important options -->
-    <xsl:param name="serviceurl">http://ec2-23-20-41-242.compute-1.amazonaws.com:9090/jersey</xsl:param>
-    <!--<xsl:param name="serviceurl">http://localhost:8080</xsl:param>--> <!-- The base URL and port of the webservice. -->
+    <!--<xsl:param name="serviceurl">http://ec2-23-20-41-242.compute-1.amazonaws.com:9090/jersey</xsl:param> -->
+    <xsl:param name="serviceurl">http://localhost:8080</xsl:param> <!-- The base URL and port of the webservice. -->
     <xsl:param name="fullquery">false</xsl:param> <!-- Set to true to produce all headers for the query -->
-    <xsl:param name="rootkey">\\I2B2</xsl:param> <!-- Set which ontology hierarchy to search for reverse translation. -->
+    <xsl:param name="rootkey">\\CEDD</xsl:param> <!-- Set which ontology hierarchy to search for reverse translation. -->
       <!-- Put the root key here, e.g. \\I2B2, \\I2B2_DEMO, \\SHRINE.
          The root key of \\ is special and forces use of the local concepts.xml instead of live terminology lookups. 
          \\SHRINE also causes SHRINE| to be prepended in getTermInfo. This is used for filtering except 
@@ -598,6 +598,15 @@
     <!-- This template seems to be needed for nodes without a template, or garbage is sometimes output. -->
     <xsl:template mode="modifiers" match="*"></xsl:template>
     
+    <!-- Overhauled version criteria template -->
+    <xsl:template mode="item" match="hl7v3:*[hl7v3:criteriaType]">
+      <item>
+        <xsl:call-template name="get-concept"/>
+        <xsl:call-template name="contrain_by_value"/>
+        <xsl:call-template name="constrain_by_date"/>
+        <xsl:apply-templates mode="modifiers" select="."/>
+      </item>    
+    </xsl:template>
     
     <!-- Template for non-result criteria -->
     <xsl:template mode="item" match="hl7v3:EncounterCriteria|hl7v3:AllergyCriteria|hl7v3:ProblemCriteria|hl7v3:DemographicsCriteria">
