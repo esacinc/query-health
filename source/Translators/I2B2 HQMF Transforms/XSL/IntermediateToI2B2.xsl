@@ -44,6 +44,8 @@
        Old code got cleaned up, new code needs to be refactored, but many new features are supported: anonymous text, anonymous codes, modifiers, result flags, providers, vitals, social history, and more!
        Also subkey-age no longer needs to be specified. All you need are rootkey, fullquery, and serviceurl.
        Now requires a mutt version of ihqmf as input, with the old version of ihqmf for everythng except dataCriteria, which should be copied verbatim but with a criteriaType added.
+    Jeff Klann 10/2/2012
+       Updated to come in line with bugixes in the HQMF transform, really just that value is in the node body.
         
     Todo: 
       EncounterCriteria AgeAtVisit doesn't work.
@@ -184,7 +186,7 @@
           <xsl:variable name="value-constraint">
             <constrain_by_value>
               <value_operator>LIKE[contains]</value_operator>
-              <value_constraint><xsl:value-of select="concat(current()/@value,current()/@code,text(),hl7v3:name/text(),current()/@extension)"/></value_constraint> <!-- This is a bit of a hack too. -->
+              <value_constraint><xsl:value-of select="concat(current()/@code,text(),hl7v3:name/text(),current()/@extension)"/></value_constraint> <!-- This is a bit of a hack too. -->
               <value_unit_of_measure></value_unit_of_measure>
               <value_type>TEXT</value_type>
             </constrain_by_value>
@@ -354,7 +356,7 @@
           </xsl:if>
           <constrain_by_value>
             <value_operator>LIKE[contains]</value_operator>
-            <value_constraint><xsl:value-of select="concat(current()/@value,current()/@code)"/></value_constraint>
+            <value_constraint><xsl:value-of select="concat(current()/text(),current()/@code)"/></value_constraint>
             <value_unit_of_measure></value_unit_of_measure>
             <value_type>TEXT</value_type>
           </constrain_by_value>

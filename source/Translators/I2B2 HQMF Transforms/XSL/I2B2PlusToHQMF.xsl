@@ -43,6 +43,9 @@
           A very significant rewrite that retools most of the data criteria sections to allow for easier updates and moves
          a lot into the external configuration file. Some modifiers are now supported as well as anonymous codes and text.
          The large overhaul now supports a large portion of basic CEDD. See below.
+        Jeff Klann, PhD 10/2/2012
+          Bugfixes. Extra xsi:type appearing; Got rid of erroneous use of originalText; <value> now has its value in the node text 
+          Remaining (pre-ballot) schema-validity issues: value constraints without a unit shouldn't have an empty unit, interpretationCode should be CE, code should always appear before value (doesn't with problem modifiers)
           
         The current supported ontologies:
          SHRINE:
@@ -76,7 +79,7 @@
   xmlns:mc="urn:jklann:hqmf:metaConfig"
   xmlns:ont="xalan://edu.harvard.i2b2.eclipse.plugins.ontology.ws.OntServiceDriver"
   extension-element-prefixes="ont"
-  exclude-result-prefixes="mc dyn java str xalan ont xsi"
+  exclude-result-prefixes="mc dyn java str xalan ont"
   xmlns="urn:hl7-org:v3" version="1.0">
   <xsl:import href="time.xsl"/>
   <xsl:import href="url-encode.xsl"/>
@@ -661,8 +664,8 @@
             <xsl:value-of select="count($text_value)"/></xsl:message></xsl:if>
           <xsl:element name="{$tag_name}">
             <xsl:attribute name="xsi:type">ST</xsl:attribute>
-            <xsl:attribute name="value"><xsl:value-of select="$text_value[1]/value_constraint/text()"/></xsl:attribute>
-            <xsl:attribute name="displayName"><xsl:value-of select="item_name"/></xsl:attribute>
+            <xsl:value-of select="$text_value[1]/value_constraint/text()"/>
+            <!-- Illegal for ST types <xsl:attribute name="displayName"><xsl:value-of select="item_name"/></xsl:attribute> -->
           </xsl:element>
         </xsl:when>
         <!-- Coded element without a coding system when subtype_type=code or value and basecode=CEDD -->
@@ -675,7 +678,6 @@
             <xsl:attribute name="code"><xsl:value-of select="$text_value[1]/value_constraint/text()"/></xsl:attribute>
             <xsl:attribute name="displayName"><xsl:value-of select="item_name"/></xsl:attribute>
             <xsl:attribute name="nullFlavor">UNK</xsl:attribute>
-            <xsl:attribute name="originalText"><xsl:value-of select="basecode"/></xsl:attribute>
           </xsl:element>
         </xsl:when>  
         <!-- SPECIAL CASE: provider id (basecode CEDD:HealthcareProviderID) -->
@@ -818,9 +820,11 @@
       <xsl:choose>
         <xsl:when test="value_operator = 'EQ'">
           <xsl:attribute name="xsi:type">PQ</xsl:attribute>
-          <xsl:attribute name="unit">
-            <xsl:value-of select="$unit"/>
-          </xsl:attribute>
+          <xsl:if test="$unit!=''">
+            <xsl:attribute name="unit">
+              <xsl:value-of select="$unit"/>
+            </xsl:attribute>
+          </xsl:if>
           <xsl:attribute name="value">
             <xsl:value-of select="value_constraint"/>
           </xsl:attribute>
