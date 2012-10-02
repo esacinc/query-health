@@ -430,7 +430,7 @@
              </participant>
            </xsl:when>
            <!-- Special case formatting for healthcare provider (also, see above, relies on basecode to properly code provider name vs. code -->
-           <xsl:when test="$metacriteria/@special='provider'">
+           <xsl:when test="$metacriteria/@special='qualifiedEntityParticipant'">
              <participant typeCode="PRF">
                <qualifiedEntityParticipant classCode="PHYS">
                  <xsl:call-template name="get-concept"/>
@@ -795,7 +795,7 @@
     
     <xsl:choose>
       <!-- Special case formatting for healthcare provider (also, see above, relies on basecode to properly code provider name vs. code -->
-      <xsl:when test="$metamodifier/@special='provider'">
+      <xsl:when test="$metamodifier/@special='qualifiedEntityParticipant'">
         <participant typeCode="PRF">
           <qualifiedEntityParticipant classCode="PHYS">
             <xsl:call-template name="get-concept"/>

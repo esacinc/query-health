@@ -2,7 +2,8 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:xalan="http://xml.apache.org/xalan"
-  xmlns:v3="urn:hl7-org:v3" xmlns="urn:hl7-org:v3">
+  xmlns:v3="urn:hl7-org:v3" xmlns="urn:hl7-org:v3"
+  exclude-result-prefixes="xsi xalan">
   <xsl:output method="xml" standalone="yes" omit-xml-declaration="no" indent="yes" xalan:indent-amount="2"/>
   <!-- 
     Process an HQMF document and extract the essentials for
@@ -16,6 +17,12 @@
            There are places this translator probably still does not produce valid ihqmf. Needs work.
         Jeff Klann - 8/8/2012 - bugfix, somehow wasn't carrying dataCriteriaCombiner operations over.
           The revised translator will supersede this bugfix.
+        Jeff Klann - 9/27/12 - NOTE THIS IS NOT THE SAME AS THE DRAJER LLC VERSION. This version is being maintained for compatibility with
+          existing transforms and the current ballot. Once r2 is approved, we should review to what degree the intermediate format
+          provides benefit other than increasing readibility. This version is a HACK that keeps the header, measure period,
+          population criteria, temporal relationship, and excerpt code from Keith's original version. Otherwise it just straight up copies
+          the data criteria so it can be properly processed in the reverse transform. This was needed to quickly support all the neat new
+          features in CEDD and mesh with the XML config file.
   -->
   <xsl:template match="/v3:QualityMeasureDocument">
     <ihqmf>
@@ -37,7 +44,7 @@
 
       <!-- Insert criteria -->
       <xsl:apply-templates
-        select="v3:component/v3:dataCriteriaSection/v3:entry/v3:*[v3:definition]"/>
+        select="v3:component/v3:dataCriteriaSection/v3:entry/v3:*[v3:definition]" mode="dataCriteria"/>
 
       <!-- Then pull population and stratifier criteria together -->
       <xsl:apply-templates
@@ -57,46 +64,29 @@
   <!-- Turn off default text matching rule -->
   <xsl:template match="text()"/>
 
-  <!-- Perform the basic filling in for each data criteria
-    Caller must pass the source of the primary code in the primaryCode
-    parameter.
-    -->
-  <xsl:template name="dataCriteria">
-    <xsl:param name="primaryCode"/>
-    <!-- id and localVariableName are copies -->
-    <xsl:copy-of select="v3:id"/>
-    <xsl:copy-of select="../v3:localVariableName"/>
-
-    <!-- 
-      If there was a value set in primaryCode, copy it
-      TBD: This should be in same sequence with codedValue 
-      and freeTextValue
-    -->
-    <xsl:if test="$primaryCode/@valueSet">
-      <code valueSet="{$primaryCode/@valueSet}"/>
-    </xsl:if>
-
-    <!-- effectiveTime is a copy -->
-    <xsl:copy-of select="v3:effectiveTime"/>
-
-    <!-- If there was a code set in primaryCode, copy it -->
-    <xsl:if test="$primaryCode/@code">
-      <code code="{$primaryCode/@code}"
-        codeSystem="{$primaryCode/@codeSystem}"/>
-    </xsl:if>
-
-    <!-- If there was a free text value, get it -->
-    <xsl:if test="$primaryCode/v3:originalText/text()">
-      <freeTextValue>
-        <xsl:value-of select="$primaryCode/v3:orginalText/text()"/>
-      </freeTextValue>
-    </xsl:if>
-    <xsl:apply-templates select="v3:excerpt"/>
-    <xsl:apply-templates select="v3:temporallyRelatedInformation"/>
+  <!-- The intermediate model has many problems. To reduce code rewriting, we reuse its population,header,controlVariable,excerpt,and timeRelationship
+  simplifications and simply copy the criteria definitions. -->
+  <xsl:template match="*" mode="dataCriteria" >
+    <xsl:element name="{local-name(.)}">
+      <xsl:copy-of select="../v3:localVariableName"/>
+      <xsl:apply-templates mode="copy"/>
+    </xsl:element>
   </xsl:template>
 
+  <xsl:template match="v3:definition" mode="copy">
+    <xsl:element name="criteriaType"><xsl:value-of select="current()/v3:*[1]/v3:id/@extension"/></xsl:element>
+  </xsl:template>
+  
+  <xsl:template match="@*|node()" mode="copy">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()" mode="copy"/>
+    </xsl:copy>
+  </xsl:template>
+
+  <!-- JGK: Keeping Keith's code for excerpts, temporallyRelatedInformation, and IPP because I'd already coded it. -->
+
   <!-- Handle excerpts as filters -->
-  <xsl:template match="v3:excerpt">
+  <xsl:template match="v3:excerpt" mode="copy">
     <filterCriteria>
       <xsl:if test="v3:subsetCode">
         <filterCode>
@@ -114,12 +104,12 @@
         isn't needed in excerpted child criteria (because the parent 
         provides it). TODO: Introduced bug to fix another - got rid of ancestor or self
         -->
-      <xsl:apply-templates select="*"/>
+      <!-- Child criteria will not be allowed in the next release: <xsl:apply-templates select="*"/> -->
     </filterCriteria>
   </xsl:template>
 
   <!-- Map temporallyRelatedInformation to timeRelationship -->
-  <xsl:template match="v3:temporallyRelatedInformation">
+  <xsl:template match="v3:temporallyRelatedInformation" mode="copy">
     <timeRelationship>
       <timeRelationshipCode>
         <xsl:value-of select="@typeCode"/>
@@ -139,208 +129,6 @@
         </xsl:if>
       </measurePeriodTimeReference>
     </timeRelationship>
-  </xsl:template>
-
-  <!-- Demographics -->
-  <xsl:template
-    match="v3:observationCriteria[
-      self::*/v3:definition/v3:*/v3:id/@extension = 'Demographics']">
-
-    <DemographicsCriteria>
-      <xsl:call-template name="dataCriteria">
-        <xsl:with-param name="primaryCode" select="v3:code"/>
-      </xsl:call-template>
-
-      <xsl:if test="v3:value">
-        <xsl:copy-of select="v3:value"/>
-      </xsl:if>
-    </DemographicsCriteria>
-  </xsl:template>
-
-  <!-- Problems -->
-  <xsl:template
-    match="v3:observationCriteria[
-      self::*/v3:definition/v3:*/v3:id/@extension = 'Problems']">
-    <ProblemCriteria>
-      <xsl:call-template name="dataCriteria">
-        <xsl:with-param name="primaryCode" select="v3:value"/>
-      </xsl:call-template>
-    </ProblemCriteria>
-  </xsl:template>
-
-  <!-- Allergies -->
-  <xsl:template
-    match="v3:observationCriteria[ 
-      self::*/v3:definition/v3:*/v3:id/@extension = 'Allergies']">
-    <AllergyCriteria>
-      <xsl:call-template name="dataCriteria">
-        <xsl:with-param name="primaryCode" select="v3:value"/>
-      </xsl:call-template>
-    </AllergyCriteria>
-  </xsl:template>
-
-  <!-- Encounters -->
-  <xsl:template
-    match="v3:encounterCriteria[
-    self::*/v3:definition/v3:*/v3:id/@extension = 'Encounters']">
-    <EncounterCriteria>
-      <xsl:call-template name="dataCriteria">
-        <xsl:with-param name="primaryCode" select="v3:code"/>
-      </xsl:call-template>
-      <xsl:if test="v3:value">
-        <xsl:copy-of select="v3:value"/>
-      </xsl:if>
-    </EncounterCriteria>
-  </xsl:template>
-
-  <!-- Procedures -->
-  <xsl:template
-    match="v3:procedureCriteria[
-    self::*/v3:definition/v3:*/v3:id/@extension = 'Procedures']">
-    <ProcedureCriteria>
-      <xsl:call-template name="dataCriteria">
-        <xsl:with-param name="primaryCode" select="v3:code"/>
-      </xsl:call-template>
-      <!-- TBD: Not sure what value to put here -->
-      <xsl:if test="false()">
-        <procedureStatus code="{@moodCode}"/>
-      </xsl:if>
-      <xsl:if test="v3:targetSiteCode/@code">
-        <procedureBodySite code="{v3:targetSiteCode/@code}"/>
-      </xsl:if>
-    </ProcedureCriteria>
-  </xsl:template>
-
-  <!-- Medications -->
-  <xsl:template
-    match="v3:substanceAdministrationCriteria[
-    self::*/v3:definition/v3:*/v3:id/@extension = 
-    'Medications']">
-    <MedicationCriteria>
-      <xsl:if
-        test="not(v3:participant/v3:roleParticipant[@classCode='THER']/v3:code)">
-        <!-- TBD: Does it make sense to have a medication criteria without
-          a code? -->
-        <xsl:message terminate="no"> No Medication code found for
-          medication criteria //substanceAdministrationCriteria[
-            <xsl:value-of
-            select="1+ count(preceding::v3:substanceAdministrationCriteria)"
-          /> ] </xsl:message>
-      </xsl:if>
-      <xsl:call-template name="dataCriteria">
-        <xsl:with-param name="primaryCode"
-          select="v3:participant/v3:roleParticipant[@classCode='THER']/v3:code"
-        />
-      </xsl:call-template>
-      <medicationState>
-        <xsl:value-of select="@moodCode"/>
-        <!-- deal with default if processed w/o schema -->
-        <xsl:if test="string(@moodCode)=''">EVN</xsl:if>
-      </medicationState>
-      <xsl:if test="v3:routeCode/@code">
-        <routeCode>
-          <xsl:value-of select="v3:routeCode/@code"/>
-        </routeCode>
-      </xsl:if>
-
-      <!-- TBD: These two would be easier if the names were simply
-        rateQuantity and doseQuantity
-        -->
-      <xsl:if test="v3:rateQuantity">
-        <medicationRateQuantity>
-          <xsl:copy-of select="v3:rateQuantity/@*"/>
-          <xsl:copy-of select="v3:rateQuantity/*"/>
-        </medicationRateQuantity>
-      </xsl:if>
-      <xsl:if test="v3:doseQuantity">
-        <medicationDoseQuantity>
-          <xsl:copy-of select="v3:doseQuantity/@*"/>
-          <xsl:copy-of select="v3:doseQuantity/*"/>
-        </medicationDoseQuantity>
-      </xsl:if>
-    </MedicationCriteria>
-  </xsl:template>
-  
-  <!-- Medications (Supply) -->
-  <!-- TBD: Consider merging this template with substanceAdministration -->
-  <xsl:template
-    match="v3:supplyCriteria[
-    self::*/v3:definition/v3:*/v3:id/@extension = 
-    'Medications']">
-    <MedicationCriteria>
-      <xsl:if
-        test="not(v3:participant/v3:roleParticipant[@classCode='THER']/v3:code)">
-        <!-- TBD: Does it make sense to have a medication criteria without
-          a code? -->
-        <xsl:message terminate="no"> No Medication code found for
-          medication criteria //supplyCriteria[
-          <xsl:value-of
-            select="1+ count(preceding::v3:supplyCriteria)"
-          /> ] </xsl:message>
-      </xsl:if>
-      <xsl:call-template name="dataCriteria">
-        <xsl:with-param name="primaryCode"
-          select="v3:participant/v3:roleParticipant[@classCode='THER']/v3:code"
-        />
-      </xsl:call-template>
-      <medicationState>
-        <xsl:value-of select="@moodCode"/>
-      </medicationState>
-      <!-- We will not know dose or rate if supply -->
-    </MedicationCriteria>
-  </xsl:template>
-  
-  <!-- Immunzations -->
-  <!-- TBD: Do we need to deal with supply for immunization? -->
-  <xsl:template
-    match="v3:substanceAdministrationCriteria[
-    self::*/v3:definition/v3:*/v3:id/@extension = 'Immunizations']">
-    <ImmunizationCriteria>
-      <xsl:call-template name="dataCriteria">
-        <xsl:with-param name="primaryCode" select="v3:value"/>
-      </xsl:call-template>
-      <!-- TBD: Not sure what to put here -->
-      <xsl:if test="false()">
-        <reaction>st</reaction>
-      </xsl:if>
-      <xsl:if test="false()">
-        <category>st</category>
-      </xsl:if>
-    </ImmunizationCriteria>
-  </xsl:template>
-
-  <xsl:template
-    match="v3:observationCriteria[
-    self::*/v3:definition/v3:*/v3:id/@extension = 'Results']">
-    <LabResultsCriteria>
-      <xsl:call-template name="dataCriteria">
-        <xsl:with-param name="primaryCode" select="v3:code"/>
-      </xsl:call-template>
-
-     <xsl:copy-of select="v3:value"/>
- 
-      <!-- TBD: Not sure what to put here -->
-      <xsl:if test="false()">
-        <resultStatus>st</resultStatus>
-      </xsl:if>
-    </LabResultsCriteria>
-  </xsl:template>
-
-  <xsl:template
-    match="v3:observationCriteria[
-    self::*/v3:definition/v3:*/v3:id/@extension = 'Vitals']">
-    <VitalSignCriteria>
-      <xsl:call-template name="dataCriteria">
-        <xsl:with-param name="primaryCode" select="v3:code"/>
-      </xsl:call-template>
-
-      <xsl:if test="false()">
-        <vitalSignType>st</vitalSignType>
-      </xsl:if>
-      <xsl:if test="false()">
-        <vitalSignValue>st</vitalSignValue>
-      </xsl:if>
-    </VitalSignCriteria>
   </xsl:template>
   
   <!-- TBD: Still need to deal with this -->
