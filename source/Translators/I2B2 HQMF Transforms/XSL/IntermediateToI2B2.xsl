@@ -46,6 +46,7 @@
        Now requires a mutt version of ihqmf as input, with the old version of ihqmf for everythng except dataCriteria, which should be copied verbatim but with a criteriaType added.
     Jeff Klann 10/2/2012
        Updated to come in line with bugixes in the HQMF transform, really just that value is in the node body.
+       effectiveTime was causing an error to be thrown.
         
     Todo: 
       EncounterCriteria AgeAtVisit doesn't work.
@@ -178,7 +179,8 @@
              looking for situations where the demographic code is undefined in the config file. Also demographic values with a string type (like postalcode) require the code to be repeated. -->
         <xsl:when test="local-name()='code' and $metacriteria/@extension='Demographics' and not(count(xalan:nodeset($metademo)/mc:item)=0 or xalan:nodeset($metademo)/mc:item/@dataType='ST')"/>
         <xsl:when test="local-name()='participant'"/> <!-- We also ignore the top level participant element, it gets unpacked in a later template. (Note that this is strange organization.) -->
-
+        <xsl:when test="local-name()='effectiveTime'"/>
+        
         <!-- Todo:  cases where key needs to be rebuilt, cases where we want the demographic code reinserted TODO: bug social history modifiers stopped working!!-->
  
         <!-- Special case, provider participants -->

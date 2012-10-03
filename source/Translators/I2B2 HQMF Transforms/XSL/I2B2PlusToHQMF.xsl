@@ -44,6 +44,7 @@
          a lot into the external configuration file. Some modifiers are now supported as well as anonymous codes and text.
          The large overhaul now supports a large portion of basic CEDD. See below.
         Jeff Klann, PhD 10/2/2012
+          SHRINE| basecodes were no longer, supported, it seems like for awhile.
           Bugfixes. Extra xsi:type appearing; Got rid of erroneous use of originalText; <value> now has its value in the node text 
           Remaining (pre-ballot) schema-validity issues: value constraints without a unit shouldn't have an empty unit, interpretationCode should be CE, code should always appear before value (doesn't with problem modifiers)
           
@@ -546,7 +547,7 @@
     
     <!-- extract the code from the I2B2 concept XML -->
     <xsl:variable name="code" select="substring-after(basecode,':')"/>    
-    <xsl:variable name="code-system" select="substring-before(basecode,':')"/>
+    <xsl:variable name="code-system" select="substring-before(concat(substring-after(basecode[contains(.,'|')],'|'),basecode[not(contains(.,'|'))]),':')"/>
     
     <!-- extract the criteria mapping from the metaconfig -->
     <xsl:variable name="metacriteria"
