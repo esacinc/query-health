@@ -47,12 +47,15 @@
     Jeff Klann 10/2/2012
        Updated to come in line with bugixes in the HQMF transform, really just that value is in the node body.
        effectiveTime was causing an error to be thrown.
+    Jeff Klann 10/21/2012
+       Added support for value sets and person date of birth (actually all demographic criteria with type IVL_TS).
         
     Todo: 
-      EncounterCriteria AgeAtVisit doesn't work.
-      Sections not mentioned above are untested.
+      EncounterCriteria AgeAtVisit.
+      Many special cases have a lot of special case code - could use an organizational refresh
       Finish timeRelationships to the measurePeriod (right now just copies the measurePeriod)
-      Constrain by modifiers (esp. medication route and dose)
+      Most modifiers not supported
+      More details in spreadsheet and other materials.
       Misc todos
 -->
 
@@ -157,12 +160,18 @@
       <xsl:variable name="subtype-rtf">
         <xsl:choose>
           <!--<xsl:when test="count(xalan:nodeset($metademo)/mc:item)=0"></xsl:when>-->
-          <!-- CEDD ends its subtypes with _[nodename] -->
+          <!-- CEDD ends its subtypes with _[nodename]
+               TODO: this _[nodename] was intended to make Translation easier, but it currently ends up requiring a lot of special cases. I should rethink this with MBuck. -->
           <xsl:when test="$rootkey='\\CEDD'">
             <xsl:choose>
+              <!-- Special case: subtypes labeled as noExtension in the config file. -->
               <xsl:when test="xalan:nodeset($metademo)/mc:item/@noExtension"><xsl:value-of select="xalan:nodeset($metademo)/mc:item/@i2b2_subtype"/></xsl:when>
+              <!-- Special case: non-demographic, non-CD elements are _text -->
               <xsl:when test="(count(xalan:nodeset($metademo)/mc:item)=0) and not(@xsi:type='CD')"><xsl:value-of select="concat(xalan:nodeset($metademo)/mc:item/@i2b2_subtype,'_text')"/></xsl:when>
+              <!-- Special case (this is a weird one) when the criteria definition's primary data type matches this element, it's _code -->
               <xsl:when test="$metacriteria/@tag_name=local-name() and (@xsi:type='CD' or @xsi:type='ST')"><xsl:value-of select="concat(xalan:nodeset($metademo)/mc:item/@i2b2_subtype,'_code')"/></xsl:when>
+              <!-- If we're processing the code element of a demographic, we must be referring to it's _value element. (For non-CD types that have codes relevant to i2b2.) -->
+              <xsl:when test="(count(xalan:nodeset($metademo)/mc:item)>0) and not(local-name='code')"><xsl:value-of select="concat(xalan:nodeset($metademo)/mc:item/@i2b2_subtype,'_value')"/></xsl:when>
               <xsl:otherwise><xsl:value-of select="concat(xalan:nodeset($metademo)/mc:item/@i2b2_subtype,'_',local-name())"/></xsl:otherwise>
             </xsl:choose>
           </xsl:when>
@@ -176,8 +185,9 @@
       
       <xsl:choose>
         <!-- We ignore the code element in demographics, it's only useful in rebuilding the I2B2 key. Exception is when I'm using the demographic template for not-quite-demographic things like social history, so we catch those by
-             looking for situations where the demographic code is undefined in the config file. Also demographic values with a string type (like postalcode) require the code to be repeated. -->
-        <xsl:when test="local-name()='code' and $metacriteria/@extension='Demographics' and not(count(xalan:nodeset($metademo)/mc:item)=0 or xalan:nodeset($metademo)/mc:item/@dataType='ST')"/>
+             looking for situations where the demographic code is undefined in the config file. Also demographic values with a string or IVL_TS type (like postalcode or date of birth) require the code to be repeated.
+              TODO: Technically should do this for IVL_PQ as well but I use not very portable translation code that requires it be ignored here. -->
+        <xsl:when test="local-name()='code' and $metacriteria/@extension='Demographics' and not(count(xalan:nodeset($metademo)/mc:item)=0 or xalan:nodeset($metademo)/mc:item/@dataType='ST' or xalan:nodeset($metademo)/mc:item/@dataType='IVL_TS')"/>
         <xsl:when test="local-name()='participant'"/> <!-- We also ignore the top level participant element, it gets unpacked in a later template. (Note that this is strange organization.) -->
         <xsl:when test="local-name()='effectiveTime'"/>
         
@@ -267,7 +277,7 @@
         
         <!-- Handle demographic CDs that aren't directly in the terminology
              TODO: Redundancy with freetext and provider templates. -->
-        <xsl:when test="local-name()='code' and $metacriteria/@extension='Demographics' and xalan:nodeset($metademo)/mc:item/@dataType='ST'">
+        <xsl:when test="local-name()='code' and $metacriteria/@extension='Demographics' and (xalan:nodeset($metademo)/mc:item/@dataType='ST' or xalan:nodeset($metademo)/mc:item/@dataType='IVL_TS')">
           <xsl:variable name="key-name" select="concat('%5C%5C',substring($rootkey,3),'%5C%25', $type,'%5C%25', $subtype)"/>  
           <!-- Call getTermInfo -->
           <xsl:variable name="terminfo-rtf">
@@ -287,8 +297,8 @@
           <item_is_synonym><xsl:value-of select="$terminfo/synonym_cd"/></item_is_synonym>              
         </xsl:when>
         
-        <!-- Handle CDs with code systems  -->
-        <xsl:when test="(current()/@xsi:type='CD' or local-name()='code') and current()/@codeSystem">
+        <!-- Handle CDs with code systems or value sets  -->
+        <xsl:when test="(current()/@xsi:type='CD' or local-name()='code') and (current()/@codeSystem or current()/@valueSet)">
           <xsl:variable name="codeinfo-rtf"><xsl:call-template name="getCodeInfo"><xsl:with-param name="type" select="$type"></xsl:with-param></xsl:call-template></xsl:variable>
           <xsl:variable name="codeinfo" select="xalan:nodeset($codeinfo-rtf)/concept"/>   
           <xsl:choose>
@@ -309,8 +319,8 @@
               <item_is_synonym><xsl:value-of select="$codeinfo/synonym_cd"/></item_is_synonym>              
             </xsl:otherwise>
           </xsl:choose>
-
         </xsl:when>
+       
         <!-- Handle freetext entry -->
         <xsl:when test="current()/@xsi:type='ST' or ((current()/@xsi:type='CD' or local-name()='code') and not(current()/@codeSystem))">
           
@@ -424,13 +434,14 @@
         </xsl:for-each>
       </xsl:variable>
       <xsl:variable name="metacodesys" select="xalan:nodeset($metacodesys-rtf)"/>
-      <xsl:if test="not($metacodesys/mc:item)"><xsl:message terminate="yes">(501) Undefined code system <xsl:value-of select="$i2b2-precode/@codeSystem"/>
+      <xsl:if test="not($metacodesys/mc:item) and not($i2b2-precode/@valueSet)"><xsl:message terminate="yes">(501) Undefined code system <xsl:value-of select="$i2b2-precode/@codeSystem"/>
       </xsl:message></xsl:if>
             
       <!-- Translate HQMF code to I2B2 basecode -->
       <xsl:variable name="i2b2-code">
         <xsl:if test="(ancestor-or-self::hl7v3:DemographicsCriteria or ancestor-or-self::hl7v3:EncounterCriteria) and starts-with(translate($rootkey, 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'\\I2B2')">DEM|</xsl:if>
-        <xsl:value-of select="$metacodesys/mc:item/@basecode"/>:<xsl:value-of select="$i2b2-precode/@code"/>
+        <xsl:if test="$i2b2-precode/@codeSystem"><xsl:value-of select="$metacodesys/mc:item/@basecode"/>:<xsl:value-of select="$i2b2-precode/@code"/></xsl:if>
+        <xsl:if test="$i2b2-precode/@valueSet">OID:<xsl:value-of select="$i2b2-precode/@valueSet"/></xsl:if>
       </xsl:variable>                        
 
       <!-- Lookup the i2b2 code info from the ONT cell -->

@@ -47,7 +47,9 @@
           SHRINE| basecodes were no longer, supported, it seems like for awhile.
           Bugfixes. Extra xsi:type appearing; Got rid of erroneous use of originalText; <value> now has its value in the node text 
           Remaining (pre-ballot) schema-validity issues: value constraints without a unit shouldn't have an empty unit, interpretationCode should be CE, code should always appear before value (doesn't with problem modifiers)
-          
+        Jeff Klann, PhD 10/21/2012
+          Added support for OID -> valueSets. 
+        
         The current supported ontologies:
          SHRINE:
            Demographics (Age, Race, Marital Status, Gender, Language), Medications (RxNorm ingredients), Procedures, Diagnoses (ICD-9)
@@ -680,7 +682,15 @@
             <xsl:attribute name="displayName"><xsl:value-of select="item_name"/></xsl:attribute>
             <xsl:attribute name="nullFlavor">UNK</xsl:attribute>
           </xsl:element>
-        </xsl:when>  
+        </xsl:when> 
+        <!-- Coded element when subtype_type=code basecode=OID -->
+        <xsl:when test="($subtype_type='code' or $subtype_type='value') and $code-system='OID'">
+          <xsl:element name="{$tag_name}">
+            <xsl:attribute name="xsi:type">CD</xsl:attribute>
+            <xsl:attribute name="valueSet"><xsl:value-of select="$code"/></xsl:attribute>
+            <xsl:attribute name="displayName"><xsl:value-of select="item_name"/></xsl:attribute>
+          </xsl:element>
+        </xsl:when>         
         <!-- SPECIAL CASE: provider id (basecode CEDD:HealthcareProviderID) -->
         <xsl:when test="basecode='CEDD:HealthcareProviderID'">
           <xsl:variable name="text_value" select="constrain_by_value[value_type='TEXT']"/>
