@@ -16,6 +16,8 @@
        Eliminated the dependence on definining a subkey for age buckets. Now just grabs this info from the metaconfig.
        Fixed a bug where constraint information was not propagated on recursive expansion and basecodes were not looked up
          on modifiers in this situation.
+    Jeff Klann, PhD - 10/21/12
+       Small bugfix: now treats CEDD basecodes as if there were no basecode
        
     Todo: should not choose first matching concept for a key, should choose first matching concept with a
      basecode if any exist. However, the likelihood of duplicate keys makes this a minor issue.
@@ -141,7 +143,7 @@
            
            <xsl:choose>
                <!-- We must check for both a missing basecode and an empty code portion of the basecode, because e.g. SHRINE age folders have these empty. -->
-               <xsl:when test="xalan:nodeset($myconcept)/basecode and not(substring-after(xalan:nodeset($myconcept)/basecode,':')='')">
+               <xsl:when test="xalan:nodeset($myconcept)/basecode and not(substring-after(xalan:nodeset($myconcept)/basecode,':')='' or starts-with(xalan:nodeset($myconcept)/basecode,'CEDD:'))">
                    <item>
                        <xsl:apply-templates mode="process"/>
                        <xsl:copy-of select="$myconcept"/>
@@ -202,7 +204,7 @@
         <!-- Insert the key, basecode and name into the query definition -->
         <xsl:for-each select="$concepts//concept">
             <xsl:choose>
-                <xsl:when test="basecode and not(substring-after(basecode,':')='')">
+                <xsl:when test="basecode and not(substring-after(basecode,':')='' or starts-with(basecode,'CEDD:'))">
                     <item>  
                         <basecode><xsl:value-of select="basecode"/></basecode>
                         <item_name><xsl:value-of select="name"/></item_name>
