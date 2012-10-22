@@ -18,6 +18,8 @@
          on modifiers in this situation.
     Jeff Klann, PhD - 10/21/12
        Small bugfix: now treats CEDD basecodes as if there were no basecode
+    Jeff Klann, PhD - 10/22/12
+       Small bugfix: containers are always unrolled, even if they have a basecode
        
     Todo: should not choose first matching concept for a key, should choose first matching concept with a
      basecode if any exist. However, the likelihood of duplicate keys makes this a minor issue.
@@ -204,7 +206,7 @@
         <!-- Insert the key, basecode and name into the query definition -->
         <xsl:for-each select="$concepts//concept">
             <xsl:choose>
-                <xsl:when test="basecode and not(substring-after(basecode,':')='' or starts-with(basecode,'CEDD:'))">
+                <xsl:when test="basecode and not(substring-after(basecode,':')='' or starts-with(basecode,'CEDD:') or starts-with(visualattributes,'CA'))">
                     <item>  
                         <basecode><xsl:value-of select="basecode"/></basecode>
                         <item_name><xsl:value-of select="name"/></item_name>
