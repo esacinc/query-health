@@ -20,6 +20,8 @@
        Small bugfix: now treats CEDD basecodes as if there were no basecode
     Jeff Klann, PhD - 10/22/12
        Small bugfix: containers are always unrolled, even if they have a basecode
+    Jeff Klann, PhD - 10/22/12
+       Small bugfix: CEDD basecodes with constrain_by_value (freetext searches) are no longer ignored.
        
     Todo: should not choose first matching concept for a key, should choose first matching concept with a
      basecode if any exist. However, the likelihood of duplicate keys makes this a minor issue.
@@ -145,7 +147,8 @@
            
            <xsl:choose>
                <!-- We must check for both a missing basecode and an empty code portion of the basecode, because e.g. SHRINE age folders have these empty. -->
-               <xsl:when test="xalan:nodeset($myconcept)/basecode and not(substring-after(xalan:nodeset($myconcept)/basecode,':')='' or starts-with(xalan:nodeset($myconcept)/basecode,'CEDD:'))">
+               <!-- CEDD basecodes that aren't freetext searches are treated as no basecode. -->
+               <xsl:when test="xalan:nodeset($myconcept)/basecode and not(substring-after(xalan:nodeset($myconcept)/basecode,':')='' or (starts-with(xalan:nodeset($myconcept)/basecode,'CEDD:') and not(constrain_by_value)))">
                    <item>
                        <xsl:apply-templates mode="process"/>
                        <xsl:copy-of select="$myconcept"/>
