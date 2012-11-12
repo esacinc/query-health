@@ -49,7 +49,9 @@
        effectiveTime was causing an error to be thrown.
     Jeff Klann 10/21/2012
        Added support for value sets and person date of birth (actually all demographic criteria with type IVL_TS).
-        
+    Jeff Klann 11/8/2012
+       Bugfix: was still referring to DemographicsCriteria in two places in the code.    
+    
     Todo: 
       EncounterCriteria AgeAtVisit.
       Many special cases have a lot of special case code - could use an organizational refresh
@@ -439,7 +441,7 @@
             
       <!-- Translate HQMF code to I2B2 basecode -->
       <xsl:variable name="i2b2-code">
-        <xsl:if test="(ancestor-or-self::hl7v3:DemographicsCriteria or ancestor-or-self::hl7v3:EncounterCriteria) and starts-with(translate($rootkey, 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'\\I2B2')">DEM|</xsl:if>
+        <xsl:if test="(ancestor-or-self::hl7v3:observationCriteria/child::hl7v3:criteriaType='Demographics' or ancestor-or-self::hl7v3:encounterCriteria) and starts-with(translate($rootkey, 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'\\I2B2')">DEM|</xsl:if>
         <xsl:if test="$i2b2-precode/@codeSystem"><xsl:value-of select="$metacodesys/mc:item/@basecode"/>:<xsl:value-of select="$i2b2-precode/@code"/></xsl:if>
         <xsl:if test="$i2b2-precode/@valueSet">OID:<xsl:value-of select="$i2b2-precode/@valueSet"/></xsl:if>
       </xsl:variable>                        
@@ -600,7 +602,7 @@
                     </date_to>
                 </constrain_by_date>                
             </xsl:when>
-            <xsl:when test="ancestor-or-self::hl7v3:DemographicsCriteria/hl7v3:code/@code='424144002'">
+          <xsl:when test="ancestor-or-self::hl7v3:observationCriteria/child::hl7v3:criteriaType='Demographics' and ancestor-or-self::hl7v3:observationCriteria/hl7v3:code/@code='424144002'">
                 <xsl:message terminate="no">
                     Default date constraints on ages need to be handled by adjusting the base age
                     and are currently ignored.
