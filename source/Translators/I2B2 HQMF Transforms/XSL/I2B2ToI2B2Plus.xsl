@@ -22,6 +22,9 @@
        Small bugfix: containers are always unrolled, even if they have a basecode
     Jeff Klann, PhD - 10/22/12
        Small bugfix: CEDD basecodes with constrain_by_value (freetext searches) are no longer ignored.
+    Jeff Klann, PhD - 1/30/13
+       Added alwaysUnroll parameter to unroll all items even when a basecode is present. Turning this off will result in
+      the same behavior as previously.
        
     Todo: should not choose first matching concept for a key, should choose first matching concept with a
      basecode if any exist. However, the likelihood of duplicate keys makes this a minor issue.
@@ -47,6 +50,11 @@
     <!-- If not running locally, extracts security parameters from the i2b2 message. -->
     <!--<xsl:param name="serviceurl">http://ec2-23-20-41-242.compute-1.amazonaws.com:9090/jersey</xsl:param>-->
     <xsl:param name="serviceurl">http://localhost:8080</xsl:param>
+  
+    <!-- The default behavior is to always unroll child concepts, because there is no guarantee we will translate this
+      query back to i2b2 (where the item implicitly includes its children). Note that this makes much, much longer queries 
+      in some cases and should be turned off for applications where the target system will be i2b2. -->
+    <xsl:param name="alwaysUnroll">false</xsl:param>
     
     <!-- Load the metaconfig. -->
     <xsl:variable name="metaconfig" select="document('translatorMetaConfig.xml')"/>
@@ -152,7 +160,14 @@
                    <item>
                        <xsl:apply-templates mode="process"/>
                        <xsl:copy-of select="$myconcept"/>
-                   </item>               
+                   </item>   
+                 <xsl:if test="$alwaysUnroll='true'">
+                   <xsl:comment>ALWAYS UNROLL ON - ADDING CHILDREN</xsl:comment> 
+                   <xsl:call-template name="get-children">
+                     <xsl:with-param name="item-orig" select="current()"/>
+                     <xsl:with-param name="key-current" select="item_key"/>
+                   </xsl:call-template>
+                 </xsl:if>
                </xsl:when>
                <!-- Special handling for age ranges -->
              <xsl:when test="$metaconfig/mc:metaConfig/mc:demographicCodes/mc:item[@i2b2_subtype=$subtype][1]/@code='424144002' 
@@ -202,7 +217,7 @@
         <xsl:if test="not($concepts//status/@type='DONE')">
             <xsl:message terminate="yes">(400) <xsl:value-of select="$concepts//status/@type"/>: <xsl:value-of select="$concepts//status"/> for URL <xsl:value-of select="concat($getChildrenUrl,'?key=',normalize-space($item_key2))"/></xsl:message>
         </xsl:if>
-        <xsl:if test="count($concepts//concept)=0">
+        <xsl:if test="count($concepts//concept)=0 and not($alwaysUnroll='true')">
             <xsl:message terminate="yes">(400) <xsl:value-of select="$key-current"/> has no children and no basecode!</xsl:message>
         </xsl:if>
             

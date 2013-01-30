@@ -24,7 +24,7 @@ public class MyProps {
 	String baseURL;
 	String fullI2B2;
 	String rootKey;
-	String subkeyAge;
+	String alwaysUnroll;
 	
 	protected MyProps() {
 		reload();
@@ -49,7 +49,7 @@ public class MyProps {
 		baseURL = myProps.getProperty("baseurl");
 		fullI2B2 = myProps.getProperty("fulli2b2");
 		rootKey = myProps.getProperty("rootkey");
-		subkeyAge = myProps.getProperty("subkey_age");
+		alwaysUnroll = myProps.getProperty("alwaysUnroll");
 		System.out.println("rootkey is:"+rootKey);
 		System.out.println("fulli2b2 is:"+fullI2B2+".");
 	}

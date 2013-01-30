@@ -1,5 +1,3 @@
-This change log does not include changes to the XSL transforms. 
-
 7/9/12: Jeff Klann
  Initial Version
 7/16/12: Jeff Klann
@@ -13,6 +11,8 @@ This change log does not include changes to the XSL transforms.
  Expects new XSL names.
 10/2/12: Jeff Klann
  Now includes (untested, not fully implemented) modifier hook that aren't used anywhere.
+1/30/13: Jeff Klann
+ Passes alwaysUnroll through. No longer uses subkey-age. 
  
 TODO list:
 - Pass out the i2b2 auth information after HQMF conversion: wrapper/stuff in comments?

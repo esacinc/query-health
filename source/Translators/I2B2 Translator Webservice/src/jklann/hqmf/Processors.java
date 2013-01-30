@@ -24,6 +24,7 @@ import com.sun.jersey.api.client.WebResource;
 public class Processors {
 	private static Processors instance = null;
 
+
 	protected Processors() {
 		MyProps myProps = MyProps.getInstance();
 		
@@ -39,6 +40,9 @@ public class Processors {
 		getTermInfo = httpClient.resource(myProps.ontLoc+"/getTermInfo");
 		getCodeInfo = httpClient.resource(myProps.ontLoc+"/getCodeInfo");
 		getChildren = httpClient.resource(myProps.ontLoc+"/getChildren");
+		getModifierCodeInfo = httpClient.resource(myProps.ontLoc+"/getModifierCodeInfo");
+		getModifierInfo = httpClient.resource(myProps.ontLoc+"/getModifierInfo");
+		getModifierChildren = httpClient.resource(myProps.ontLoc+"/getModifierChildren");
 		header = new StringBuilder();
 		
 		header.append("<?xml version='1.0' encoding='UTF-8' standalone='yes'?>");
@@ -55,7 +59,7 @@ public class Processors {
 		try {
 			i2b2plus = tFactory.newTransformer(new StreamSource(MyProps.getInstance().xslLoc+"/I2B2ToI2B2Plus.xsl"));
 			i2b2plus.setParameter("serviceurl", MyProps.getInstance().baseURL);
-			i2b2plus.setParameter("subkey-age", MyProps.getInstance().subkeyAge);
+			i2b2plus.setParameter("alwaysUnroll", MyProps.getInstance().alwaysUnroll);
 			i2b2plus.setErrorListener(new ProcessorErrorHandler());
 		} catch (TransformerConfigurationException e) {
 			Logger.getLogger("jklann.hqmf.Processors").log(Level.SEVERE,"Could not load toi2b2plus.xsl! "+e.getMessageAndLocation());
@@ -83,7 +87,6 @@ public class Processors {
 			i2b2.setParameter("serviceurl", MyProps.getInstance().baseURL);
 			i2b2.setParameter("fullquery", MyProps.getInstance().fullI2B2);
 			i2b2.setParameter("rootkey", MyProps.getInstance().rootKey);
-			i2b2.setParameter("subkey-age", MyProps.getInstance().subkeyAge);
 			i2b2.setErrorListener(new ProcessorErrorHandler());
 		} catch (TransformerConfigurationException e) {
 			Logger.getLogger("jklann.hqmf.Processors").log(Level.SEVERE,"Could not load toi2b2.xsl! "+e.getMessageAndLocation());
@@ -107,14 +110,29 @@ public class Processors {
 			request.append("<message_body><ns4:get_term_info blob='true' type='core' synonyms='true' hiddens='true'><self>");
 			request.append(key);
 			request.append("</self></ns4:get_term_info></message_body>");
+		} else if (requestType.equals("getModifierInfo")) {
+				request.append("<message_body><ns4:get_modifier_info blob='true' type='core' synonyms='true' hiddens='true'><self>");
+				request.append(key);
+				request.append("</self></ns4:get_modifier_info></message_body>");	
+				// TODO: Might also require applied_path - the path for the modifiers
 		} else if (requestType.equals("getCodeInfo")) {
 			request.append("<message_body><ns4:get_code_info hiddens='true' synonyms='true' type='core' blob='false'><match_str strategy='exact'>");
 			request.append(key);
 			request.append("</match_str></ns4:get_code_info></message_body>");
+		} else if (requestType.equals("getModifierCodeInfo")) {
+			request.append("<message_body><ns4:get_modifier_code_info hiddens='true' synonyms='true' type='limited' blob='false'><match_str strategy='exact'>");
+			request.append(key);
+			request.append("</match_str></ns4:get_modifier_code_info></message_body>");
+			// TODO: Might also require self - the node with the modifier
 		} else if (requestType.equals("getChildren")) {
 			request.append("<message_body><ns4:get_children hiddens='true' synonyms='true' type='core' blob='false'><parent>");
 			request.append(key);
 			request.append("</parent></ns4:get_children></message_body>");
+		} else if (requestType.equals("getModifierChildren")) {
+			request.append("<message_body><ns4:get_modifier_children hiddens='true' synonyms='true' type='core' blob='false'><parent>");
+			request.append(key);
+			request.append("</parent></ns4:get_modifier_children></message_body>");
+			// TODO: Also requires applied_path and applied_concept
 		}
 		request.append("</ns3:request>");
 		//System.out.println(request.toString());
@@ -126,6 +144,5 @@ public class Processors {
 	javax.xml.transform.TransformerFactory tFactory;
 	public Transformer hqmf, i2b2, ihqmf, i2b2plus;
 	public Client httpClient = null;
-	public WebResource getTermInfo = null, getCodeInfo = null, getChildren = null;
-
+	public WebResource getTermInfo = null, getCodeInfo = null, getChildren = null, getModifierInfo = null, getModifierCodeInfo = null, getModifierChildren = null;
 }

@@ -306,6 +306,90 @@ public class HQMF {
 		return xmlResponse;
     }
     
+    /** Given an i2b2 modifier key, return the associated child nodes. Authentication info must be on the path.
+     * Takes the form /getChildren/{domain}/{project}/{username}/token/{sessionkey}?key={i2b2key}&applied_path={path}&applied_concept={concept}
+     * or /getTermInfo/{domain}/{project}/{username}/password/{password}?key={i2b2key}&applied_path={path}&applied_concept={concept}
+     * 
+     * @param id Auth info on the path
+     * @param key I2B2 key specified as a GET parameter.
+     * @param applied_path The associated modifier path.
+     * @param applied_concept The associated modified concept.
+     * @return The associated children.
+     * @throws Exception
+     */
+    @Path("/getModifierChildren/{id: .+}")
+    @GET
+    @Produces("text/xml")
+    public String getModifierChildren(@DefaultValue("i2b2demo/Demo/demo/password/demouser") @PathParam("id") String id,
+    		@DefaultValue("\\\\CEDD\\categoryAttribute\\problem\\problemStatus_code\\SNOMED\\Active\\") @QueryParam("key") String key,
+    		@QueryParam("applied_concept") String applied_concept,
+    		@DefaultValue("\\CEDD\\problem\\%") @QueryParam("applied_path") String applied_path
+    		) {
+    	HashMap<String,String> m = parseParams(id);
+    	Processors p = Processors.getInstance();
+    	String request = p.generateRequest(m.get("username"), m.get("project"), m.get("domain"),m.get("key"),m.get("isToken").equals("true"), key,"getModifierChildren");
+    	logger.log(Level.INFO,"getModifierChildren request",request);
+    	ClientResponse response = p.getModifierChildren.accept(MediaType.APPLICATION_XML,MediaType.TEXT_XML).type(MediaType.TEXT_XML).post(ClientResponse.class, request);
+    	String xmlResponse = response.getEntity(String.class);  	
+    	logger.log(Level.INFO,"getModifierChildren response",xmlResponse);
+		return xmlResponse.toString();
+    }
+    
+    /** Given an i2b2 modifier key, return the associated code. Authentication info must be on the path.
+     * Takes the form /getTermInfo/{domain}/{project}/{username}/token/{sessionkey}?key={i2b2key}&applied_path={path}
+     * or /getTermInfo/{domain}/{project}/{username}/password/{password}?key={i2b2key}&applied_path={path}
+     * 
+     * @param id Auth info on the path
+     * @param key I2B2 key specified as a GET parameter.
+     * @param applied_path The modifier applied path.
+     * @return The associated code.
+     * @throws Exception
+     */
+    @Path("/getModifierInfo/{id: .+}")
+    @GET
+    @Produces("text/xml")
+    public String getModifierInfo(@DefaultValue("i2b2demo/Demo/demo/password/demouser") @PathParam("id") String id,
+    		@DefaultValue("\\\\CEDD\\categoryAttribute\\problem\\problemStatus_code\\SNOMED\\Active\\") @QueryParam("key") String key,
+    		@DefaultValue("\\CEDD\\problem\\%") @QueryParam("applied_path") String applied_path // TODO: This is not processed yet
+    		) {
+    	HashMap<String,String> m = parseParams(id);
+    	Processors p = Processors.getInstance();
+    	String request = p.generateRequest(m.get("username"), m.get("project"), m.get("domain"),m.get("key"),m.get("isToken").equals("true"), key,"getModifierInfo");
+    	logger.log(Level.INFO,"getModifierInfo request for "+id+"?key="+key,request.toString());
+    	ClientResponse response = p.getModifierInfo.accept(MediaType.APPLICATION_XML,MediaType.TEXT_XML).type(MediaType.TEXT_XML).post(ClientResponse.class, request);
+    	String xmlResponse = response.getEntity(String.class);
+    	logger.log(Level.INFO,"getModifierInfo response",xmlResponse);
+		return xmlResponse.toString();
+    }
+    
+    /** Given an i2b2 modifier code (and possibly requiring the key it modifies), return the associated key. 
+     * Authentication info must be on the path.
+     * Takes the form /getCodeInfo/{domain}/{project}/{username}/token/{sessionkey}?key={i2b2code}&self={parent_key}
+     * or /getCodeInfo/{domain}/{project}/{username}/password/{password}?key={i2b2code}&self={parent_key}
+     * 
+     * @param id Auth info on the path
+     * @param key I2B2 code specified as a GET parameter.
+     * @param self The associated i2b2 key this code modifies.
+     * @return The associated key.
+     * @throws Exception
+     */
+    @Path("/getModifierCodeInfo/{id: .+}")
+    @GET
+    @Produces("text/xml")
+    public String getModifierCodeInfo(@DefaultValue("i2b2demo/Demo/demo/password/demouser") @PathParam("id") String id,
+    		@DefaultValue("SNO:409586006") @QueryParam("key") String key,
+    		@QueryParam("self") String self // TODO: SELF is not implemented yet
+    		) { 	
+    	HashMap<String,String> m = parseParams(id);
+    	Processors p = Processors.getInstance();
+    	String request = p.generateRequest(m.get("username"), m.get("project"), m.get("domain"),m.get("key"),m.get("isToken").equals("true"), key,"getModifierCodeInfo");
+    	logger.log(Level.INFO,"getModifierCodeInfo request for "+id+"?key="+key,request.toString());
+    	ClientResponse response = p.getModifierCodeInfo.accept(MediaType.APPLICATION_XML,MediaType.TEXT_XML).type(MediaType.TEXT_XML).post(ClientResponse.class, request);
+    	String xmlResponse = response.getEntity(String.class);   	
+    	logger.log(Level.INFO,"getModifierCodeInfo response",xmlResponse);
+		return xmlResponse;
+    }    
+    
     private HashMap<String, String> parseParams(String id) {
         UriTemplate ut1 = new UriTemplate("{domain}/{project}/{username}/token/{key}"); // If receiving an entire URI, use {context: .*} at the start
         UriTemplate ut2 = new UriTemplate("{domain}/{project}/{username}/password/{key}");

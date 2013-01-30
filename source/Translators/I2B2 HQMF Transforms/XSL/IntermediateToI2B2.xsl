@@ -50,7 +50,12 @@
     Jeff Klann 10/21/2012
        Added support for value sets and person date of birth (actually all demographic criteria with type IVL_TS).
     Jeff Klann 11/8/2012
-       Bugfix: was still referring to DemographicsCriteria in two places in the code.    
+       Bugfix: was still referring to DemographicsCriteria in two places in the code. 
+    Jeff Klann 12/13/12
+       Rootkey of \\i2b2_ now signals DEM| and DIAG| basecode prefixes and \\i2b2_DEMO usage for age range queries
+         AND lowercasing of codes (this works for the BIDMC demo but seems like a bit of a hack in the general case)
+    Jeff Klann 1/30/13
+       Somehow a typo crept in that completely broke this. Fixed now.
     
     Todo: 
       EncounterCriteria AgeAtVisit.
@@ -91,7 +96,7 @@
     <!--<xsl:param name="serviceurl">http://ec2-23-20-41-242.compute-1.amazonaws.com:9090/jersey</xsl:param> -->
     <xsl:param name="serviceurl">http://localhost:8080</xsl:param> <!-- The base URL and port of the webservice. -->
     <xsl:param name="fullquery">false</xsl:param> <!-- Set to true to produce all headers for the query -->
-    <xsl:param name="rootkey">\\CEDD</xsl:param> <!-- Set which ontology hierarchy to search for reverse translation. -->
+    <xsl:param name="rootkey">\\I2B2</xsl:param> <!-- Set which ontology hierarchy to search for reverse translation. -->
       <!-- Put the root key here, e.g. \\I2B2, \\I2B2_DEMO, \\SHRINE, \\CEDD.
          The root key of \\ is special and forces use of the local concepts.xml instead of live terminology lookups. 
          \\SHRINE also causes SHRINE| to be prepended in getTermInfo. This is used for filtering except 
@@ -118,13 +123,13 @@
       <xsl:variable name="criteriaType" select="ancestor::node()/hl7v3:criteriaType"></xsl:variable> 
       <xsl:variable name="code" select="current()"/>
       <xsl:variable name="parent" select="parent::node()"/>
-            
+      
       <!-- extract the criteria mapping from the metaconfig -->
       <!-- TODO: could return multiple criteria mappings in cases where I reused an extension (social history and healthcare provider). 
            Right now the workaround is that all possible modifier mappings are considered for reused extensions. -->
       <xsl:variable name="metacriteria"
         select="$metaconfig/mc:metaConfig/mc:criteriaMappings/mc:item[@extension=$criteriaType][@i2b2_rootkey=$rootkey][1]"/>      
-      <xsl:if test="not($metacriteria)"><xsl:message terminate="yes">(501) Undefined criteria type <xsl:value-of select="$criteriaType"/></xsl:message></xsl:if> 
+      <xsl:if test="not($metacriteria)"><xsl:message terminate="yes">(501) Undefined criteria type <xsl:value-of select="$criteriaType"/>, of <xsl:value-of select="count($metaconfig/mc:metaConfig/mc:criteriaMapgpings/mc:item)"/> possibilities.</xsl:message></xsl:if> 
       
       <!-- Extract modifier criteria information from the metaconfig -->
       <xsl:variable name="metamodifier"
@@ -440,9 +445,12 @@
       </xsl:message></xsl:if>
             
       <!-- Translate HQMF code to I2B2 basecode -->
+      <!-- Some special casing for rootkeys \\I2B2 and \\i2b2_ -->
       <xsl:variable name="i2b2-code">
         <xsl:if test="(ancestor-or-self::hl7v3:observationCriteria/child::hl7v3:criteriaType='Demographics' or ancestor-or-self::hl7v3:encounterCriteria) and starts-with(translate($rootkey, 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'\\I2B2')">DEM|</xsl:if>
-        <xsl:if test="$i2b2-precode/@codeSystem"><xsl:value-of select="$metacodesys/mc:item/@basecode"/>:<xsl:value-of select="$i2b2-precode/@code"/></xsl:if>
+        <xsl:if test="(ancestor-or-self::hl7v3:observationCriteria/child::hl7v3:criteriaType='Problems') and starts-with(translate($rootkey, 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'\\I2B2_')">DIAG|</xsl:if>
+        <xsl:if test="$i2b2-precode/@codeSystem and starts-with(translate($rootkey, 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'\\I2B2_')"><xsl:value-of select="$metacodesys/mc:item/@basecode"/>:<xsl:value-of select="translate($i2b2-precode/@code, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')"/></xsl:if>
+        <xsl:if test="$i2b2-precode/@codeSystem and not(starts-with(translate($rootkey, 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'\\I2B2_'))"><xsl:value-of select="$metacodesys/mc:item/@basecode"/>:<xsl:value-of select="$i2b2-precode/@code"/></xsl:if>
         <xsl:if test="$i2b2-precode/@valueSet">OID:<xsl:value-of select="$i2b2-precode/@valueSet"/></xsl:if>
       </xsl:variable>                        
 
@@ -542,8 +550,10 @@
           <xsl:variable name="url">
             <xsl:if test="$sessiontoken=''"><xsl:value-of select="concat($serviceurl,'/hqmf/getTermInfo/',$userdomain,'/',$userproject,'/',$username,'/password/',$userpassword)"/></xsl:if>
             <xsl:if test="not($sessiontoken='')"><xsl:value-of select="concat($serviceurl,'/hqmf/getTermInfo/',$userdomain,'/',$userproject,'/',$username,'/token/SessionKey:',$sessiontoken)"/></xsl:if>
-          </xsl:variable>
-          <xsl:variable name="agerange" select="document(concat($url,'?key=%5C%5C',substring($rootkey,3),'%5C%25',$subtype,'%5C',$i2b2-precode/@code,'%20years%20old%5C'))"/>         
+          </xsl:variable> 
+          <!-- todo: Slight hack, add DEMO extension if rootkey is \\i2b2_ -->
+          <xsl:variable name="rootext"><xsl:if test="substring($rootkey,3)='i2b2_'">DEMO</xsl:if></xsl:variable>
+          <xsl:variable name="agerange" select="document(concat($url,'?key=%5C%5C',substring($rootkey,3),$rootext,'%5C%25',$subtype,'%5C',$i2b2-precode/@code,'%20years%20old%5C'))"/>         
           <xsl:if test="not($agerange//status/@type='DONE')">
             <xsl:message terminate="yes"><xsl:value-of select="$agerange//status/@type"/>: <xsl:value-of select="$agerange//status"/> with URL <xsl:value-of select="concat($url,' and code',$agerange)"/></xsl:message>
           </xsl:if>
@@ -861,7 +871,7 @@
         select="$metaconfig/mc:metaConfig/mc:criteriaMappings/mc:item[@extension=current()/hl7v3:criteriaType][@i2b2_rootkey=$rootkey][1]"/>      
       <xsl:if test="not($metacriteria)"><xsl:message terminate="yes">
         Undefined criteria type <xsl:value-of select="hl7v3:criteriaType"/> in item <xsl:value-of select="hl7v3:localVariableName"/></xsl:message></xsl:if> 
-      
+          
       <item>
       
         <!-- Insert the concept elements -->

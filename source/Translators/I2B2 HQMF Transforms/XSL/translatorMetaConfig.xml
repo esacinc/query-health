@@ -12,9 +12,11 @@
      Initial version
    Jeff Klann, PhD - 10/1/12
      Much more comprehensive version, now includes criteriaMappings as well.
+   Jeff Klann, PhD - 12/12/12
+     Updates for clinquery2
    -->
 <metaConfig xmlns="urn:jklann:hqmf:metaConfig">
-    <!-- i2b2 key name \\*\*\[x] to criteria type, given I2B2 rootkey -->
+    <!-- i2b2 key name \\*\*\[x] to criteria type; uses I2B2 rootkey on reverse so we know how to rebuild our key properly, but not on conversion to HQMF because this is a many(i2b2):one(hqmf) mapping -->
     <criteriaMappings>
       <!-- I2B2 Demo -->
       <item extension="Demographics" criteria="observationCriteria" ref="observationReference" tag_name='value'
@@ -29,6 +31,12 @@
         i2b2_type='Procedures' i2b2_rootkey="\\I2B2"/>
       <item extension="Encounters" criteria="encounterCriteria" ref="encounterReference" tag_name='code'
         i2b2_type='Visit Details' i2b2_rootkey="\\I2B2"/>   
+      
+      <!-- ClinQuery2-->
+      <item extension="Demographics" criteria="observationCriteria" ref="observationReference" tag_name='value'
+        i2b2_type='Demographics' i2b2_rootkey="\\i2b2_"/> 
+      <item extension="Problems" criteria="observationCriteria" ref="observationReference" tag_name='value'
+        i2b2_type='Diagnoses' i2b2_rootkey="\\i2b2_"/> 
       
       <!-- SHRINE -->
       <item extension="Demographics" criteria="observationCriteria" ref="observationReference" tag_name='value'
