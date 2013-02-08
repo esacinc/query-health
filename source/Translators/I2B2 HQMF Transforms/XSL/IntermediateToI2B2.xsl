@@ -56,6 +56,8 @@
          AND lowercasing of codes (this works for the BIDMC demo but seems like a bit of a hack in the general case)
     Jeff Klann 1/30/13
        Somehow a typo crept in that completely broke this. Fixed now.
+    Jeff Klann 2/6/13
+       Bugfix: Now age ranges do not require inclusive to be specified on the IVL_TS
     
     Todo: 
       EncounterCriteria AgeAtVisit.
@@ -521,10 +523,10 @@
             <xsl:otherwise>
               <xsl:variable name="agerange">
                 <xsl:if test="current()/hl7v3:low/@inclusive='false'"><xsl:value-of select="current()/hl7v3:low/@value +1"/></xsl:if>
-                <xsl:if test="current()/hl7v3:low/@inclusive='true'"><xsl:value-of select="current()/hl7v3:low/@value"/></xsl:if>
+                <xsl:if test="current()/hl7v3:low/@inclusive='true' or not(current()/hl7v3:low/@inclusive)"><xsl:value-of select="current()/hl7v3:low/@value"/></xsl:if>
                 <xsl:text>-</xsl:text>
                 <xsl:if test="current()/hl7v3:high/@inclusive='false'"><xsl:value-of select="current()/hl7v3:high/@value -1"/></xsl:if>
-                <xsl:if test="current()/hl7v3:high/@inclusive='true'"><xsl:value-of select="current()/hl7v3:high/@value"/></xsl:if>
+                <xsl:if test="current()/hl7v3:high/@inclusive='true' or not(current()/hl7v3:high/@inclusive)"><xsl:value-of select="current()/hl7v3:high/@value"/></xsl:if>
               </xsl:variable>
               <hl7v3:code>
                 <xsl:attribute name="code">

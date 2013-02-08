@@ -23,6 +23,9 @@
           population criteria, temporal relationship, and excerpt code from Keith's original version. Otherwise it just straight up copies
           the data criteria so it can be properly processed in the reverse transform. This was needed to quickly support all the neat new
           features in CEDD and mesh with the XML config file.
+        Jeff Klann - 2/8/13 - Bugfix: Modified the output of this to support constructions of population criteria with an allTrue
+          of multiple items, or without a combiner at all. Also an id can be an II element (pre-ballot schema) or a DSET_II with one subitem
+          (in-ballot schema).
   -->
   <xsl:template match="/v3:QualityMeasureDocument">
     <ihqmf>
@@ -76,6 +79,10 @@
   <xsl:template match="v3:definition" mode="copy">
     <xsl:element name="criteriaType"><xsl:value-of select="current()/v3:*[1]/v3:id/@extension"/></xsl:element>
   </xsl:template>
+  
+ <xsl:template match="v3:id" mode="copy">
+   <id><xsl:copy-of select="@*|v3:item/@*" /></id>
+ </xsl:template>
   
   <xsl:template match="@*|node()" mode="copy">
     <xsl:copy>
@@ -170,6 +177,21 @@
     </dataCriteriaReference>
   </xsl:template>
   
+  <xsl:template match="v3:observationReference|v3:actReference|
+    v3:substanceAdministrationReference|v3:supplyReference|
+    v3:procedureReference|v3:encounterReference" mode="outer">
+    <!-- TBD: Move @root/@extension up to dataCriteriaReference 
+      (Change v3:id below to v3:id/@*)
+    -->
+    <dataCriteriaCombiner>
+      <criteriaOperation>AtLeastOneTrue</criteriaOperation>
+       <dataCriteriaReference>
+         <xsl:copy-of select="v3:id/@*"/>
+       </dataCriteriaReference>
+    </dataCriteriaCombiner>
+  </xsl:template>
+  
+  
   <xsl:template
     name="dataCriteriaCombiner"
     match="v3:allTrue|v3:allFalse|
@@ -192,10 +214,21 @@
       <criteriaOperation>
         <xsl:value-of select="$operation"/>
       </criteriaOperation>
-      <xsl:apply-templates 
-        select="v3:precondition[v3:observationReference|v3:actReference|
-        v3:substanceAdministrationReference|v3:supplyReference|
-        v3:procedureReference|v3:encounterReference]/*"/>
+      
+      <xsl:choose>
+        <xsl:when test="$operation='AllTrue'">
+          <xsl:apply-templates 
+            select="v3:precondition[v3:observationReference|v3:actReference|
+            v3:substanceAdministrationReference|v3:supplyReference|
+            v3:procedureReference|v3:encounterReference]/*" mode="outer"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates 
+            select="v3:precondition[v3:observationReference|v3:actReference|
+            v3:substanceAdministrationReference|v3:supplyReference|
+            v3:procedureReference|v3:encounterReference]/*"/>
+        </xsl:otherwise>
+      </xsl:choose>
       
       <xsl:apply-templates 
         select="v3:precondition[v3:allTrue|v3:allFalse|
