@@ -58,6 +58,8 @@
        Somehow a typo crept in that completely broke this. Fixed now.
     Jeff Klann 2/6/13
        Bugfix: Now age ranges do not require inclusive to be specified on the IVL_TS
+    Jeff Klann 2/20/13
+       Bugfix: Now suppports both participant/roleParticipant and participation/role constructions for substance administration.
     
     Todo: 
       EncounterCriteria AgeAtVisit.
@@ -197,7 +199,7 @@
              looking for situations where the demographic code is undefined in the config file. Also demographic values with a string or IVL_TS type (like postalcode or date of birth) require the code to be repeated.
               TODO: Technically should do this for IVL_PQ as well but I use not very portable translation code that requires it be ignored here. -->
         <xsl:when test="local-name()='code' and $metacriteria/@extension='Demographics' and not(count(xalan:nodeset($metademo)/mc:item)=0 or xalan:nodeset($metademo)/mc:item/@dataType='ST' or xalan:nodeset($metademo)/mc:item/@dataType='IVL_TS')"/>
-        <xsl:when test="local-name()='participant'"/> <!-- We also ignore the top level participant element, it gets unpacked in a later template. (Note that this is strange organization.) -->
+        <xsl:when test="local-name()='participant' or local-name()='participation'"/> <!-- We also ignore the top level participant element, it gets unpacked in a later template. (Note that this is strange organization.) -->
         <xsl:when test="local-name()='effectiveTime'"/>
         
         <!-- Todo:  cases where key needs to be rebuilt, cases where we want the demographic code reinserted TODO: bug social history modifiers stopped working!!-->
@@ -880,10 +882,11 @@
         <!-- Handle top-level codes -->
         <xsl:apply-templates select="current()/*" mode="get-concept"/>
         <xsl:choose>
-          <!-- Handle medication codes -->
+          <!-- Handle medication codes, pre-ballot and ballot versions -->
           <xsl:when test="$metacriteria/@extension='Medications'">
             <xsl:apply-templates select="hl7v3:participant[@typeCode='CSM']/hl7v3:roleParticipant[@classCode='THER']/*" mode="get-concept"/>
-          </xsl:when>
+            <xsl:apply-templates select="hl7v3:participation[@typeCode='CSM']/hl7v3:role[@classCode='THER']/*" mode="get-concept"/>
+          </xsl:when>          
           <!-- Handle provider codes -->
           <xsl:when test="hl7v3:participant[@typeCode='PRF']/hl7v3:qualifiedEntityParticipant[@classCode='PHYS']">
             <xsl:apply-templates select="hl7v3:participant[@typeCode='PRF']/hl7v3:qualifiedEntityParticipant[@classCode='PHYS']/*" mode="get-concept"/>
