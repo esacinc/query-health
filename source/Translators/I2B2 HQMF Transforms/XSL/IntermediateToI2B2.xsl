@@ -60,7 +60,9 @@
        Bugfix: Now age ranges do not require inclusive to be specified on the IVL_TS
     Jeff Klann 2/20/13
        Bugfix: Now suppports both participant/roleParticipant and participation/role constructions for substance administration.
-    
+       Now ignores statusCode and outputs a warning (should later be implemented).
+       Bugfix: measurePeriods with literal low/high never actually worked! Oops.
+       
     Todo: 
       EncounterCriteria AgeAtVisit.
       Many special cases have a lot of special case code - could use an organizational refresh
@@ -201,6 +203,7 @@
         <xsl:when test="local-name()='code' and $metacriteria/@extension='Demographics' and not(count(xalan:nodeset($metademo)/mc:item)=0 or xalan:nodeset($metademo)/mc:item/@dataType='ST' or xalan:nodeset($metademo)/mc:item/@dataType='IVL_TS')"/>
         <xsl:when test="local-name()='participant' or local-name()='participation'"/> <!-- We also ignore the top level participant element, it gets unpacked in a later template. (Note that this is strange organization.) -->
         <xsl:when test="local-name()='effectiveTime'"/>
+        <xsl:when test="local-name()='statusCode'"><xsl:comment>This item had a status code, which is currently ignored.</xsl:comment><xsl:message terminate="no">Status code currently ignored.</xsl:message></xsl:when>
         
         <!-- Todo:  cases where key needs to be rebuilt, cases where we want the demographic code reinserted TODO: bug social history modifiers stopped working!!-->
  
@@ -585,7 +588,8 @@
                 <hl7v3:high value="{$now}"/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:value-of select="."/>
+                <xsl:copy-of select="./hl7v3:low"/>
+                <xsl:copy-of select="./hl7v3:high"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
